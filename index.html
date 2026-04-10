@@ -7,8 +7,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     /* ============================================================
-       RESET & ROOT
-    ============================================================ */
+       RESET & ROOT (same as original – kept intact for brevity)
+       ============================================================ */
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
     :root {
       --bg:          #080b12;
@@ -489,17 +489,10 @@
 </head>
 <body>
 
-<!-- ============================================================
-     TOAST CONTAINER
-============================================================ -->
 <div id="toast-container"></div>
 
-<!-- ============================================================
-     APP WRAPPER
-============================================================ -->
 <div class="app-wrapper">
 
-  <!-- APP HEADER -->
   <div class="app-header">
     <div>
       <div class="app-title">
@@ -519,7 +512,6 @@
     </div>
   </div>
 
-  <!-- STATS ROW -->
   <div class="stats-row" id="statsRow">
     <div class="stat-card"><div class="stat-value" id="statHeadings">0</div><div class="stat-label">Headings</div></div>
     <div class="stat-card"><div class="stat-value" id="statItems">0</div><div class="stat-label">Total Items</div></div>
@@ -528,10 +520,8 @@
     <div class="stat-card"><div class="stat-value" id="statVariations">0</div><div class="stat-label">Variations</div></div>
   </div>
 
-  <!-- MAIN GRID -->
   <div class="main-grid">
 
-    <!-- ── LEFT PANEL: HEADINGS ── -->
     <div class="panel" id="headingsPanel">
       <div class="panel-header">
         <div class="panel-title"><span class="panel-title-icon">📌</span> Headings <span class="counter-badge" id="headingCount">0</span></div>
@@ -540,7 +530,6 @@
           <button class="btn btn-sm btn-primary" id="newHeadingBtn">+ New</button>
         </div>
       </div>
-      <!-- HEADING SEARCH -->
       <div style="padding: 12px 16px; border-bottom: 1px solid var(--border);">
         <div class="search-wrapper">
           <span class="search-icon">🔍</span>
@@ -548,26 +537,17 @@
         </div>
       </div>
       <div class="panel-body">
-        <div class="headings-list" id="headingsList">
-          <div class="empty-state">
-            <div class="empty-icon">📂</div>
-            <div class="empty-title">No headings yet</div>
-            <div class="empty-desc">Click "Load Drive" to fetch your menu, or "+ New" to create a heading.</div>
-          </div>
-        </div>
+        <div class="headings-list" id="headingsList"></div>
       </div>
     </div>
 
-    <!-- ── RIGHT PANEL: ITEMS ── -->
     <div class="panel" id="itemsPanel">
-      <!-- TOOLBAR -->
       <div class="toolbar">
         <div class="toolbar-title">
           <span class="text-dim">Editing: </span>
           <span id="selectedHeadingLabel" class="toolbar-accent">— Select a heading —</span>
         </div>
         <div class="flex gap-8">
-          <!-- Filter chips -->
           <div class="filter-chips" id="filterChips" style="margin:0;">
             <span class="filter-chip active" data-filter="all">All</span>
             <span class="filter-chip" data-filter="veg">🌿 Veg</span>
@@ -580,7 +560,6 @@
           <button class="btn btn-sm btn-primary" id="addItemBtn" disabled>+ Add Item</button>
         </div>
       </div>
-      <!-- BULK BAR -->
       <div class="bulk-bar" id="bulkBar">
         <input type="checkbox" id="selectAll" style="width:16px;height:16px;accent-color:var(--accent);">
         <span id="bulkCountLabel">0 selected</span>
@@ -588,22 +567,14 @@
         <button class="btn btn-xs" id="bulkMoveBtn">📦 Move to…</button>
         <button class="btn btn-xs" style="margin-left:auto;" id="bulkCancelBtn">Cancel</button>
       </div>
-      <!-- ITEMS BODY -->
       <div class="panel-body">
         <div class="items-scroll">
-          <div class="items-grid" id="itemsGrid">
-            <div class="empty-state">
-              <div class="empty-icon">🧩</div>
-              <div class="empty-title">Select a heading</div>
-              <div class="empty-desc">Choose a heading on the left to manage its menu items.</div>
-            </div>
-          </div>
+          <div class="items-grid" id="itemsGrid"></div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- PREVIEW PANEL -->
   <div class="panel preview-panel">
     <div class="panel-header">
       <div class="panel-title"><span class="panel-title-icon">🔍</span> Live Preview</div>
@@ -617,165 +588,70 @@
     </div>
   </div>
 
-</div><!-- /app-wrapper -->
+</div>
 
-<!-- ============================================================
-     MODAL: ADD / EDIT ITEM
-============================================================ -->
+<!-- MODALS: itemModal, headingModal, confirmModal, bulkMoveModal (same as original – included for completeness) -->
 <div class="modal-overlay" id="itemModal" role="dialog" aria-modal="true" aria-labelledby="itemModalTitle">
   <div class="modal-box">
     <div class="modal-header">
       <h2 class="modal-title" id="itemModalTitle">Add Item</h2>
       <button class="modal-close" id="itemModalClose" aria-label="Close">×</button>
     </div>
-
-    <!-- TABS -->
     <div class="tabs">
       <button class="tab-btn active" data-tab="basicTab">Basic Info</button>
       <button class="tab-btn" data-tab="imageTab">Image</button>
       <button class="tab-btn" data-tab="variationsTab">Variations</button>
     </div>
-
-    <!-- TAB: BASIC INFO -->
     <div class="tab-pane active" id="basicTab">
-      <div class="form-group">
-        <label class="form-label" for="iName">Item Name *</label>
-        <input type="text" class="form-input" id="iName" placeholder="e.g. Paneer Butter Masala" autocomplete="off">
-      </div>
+      <div class="form-group"><label class="form-label" for="iName">Item Name *</label><input type="text" class="form-input" id="iName" placeholder="e.g. Paneer Butter Masala" autocomplete="off"></div>
       <div class="form-row">
-        <div class="form-group">
-          <label class="form-label" for="iType">Type</label>
-          <select class="form-select" id="iType">
-            <option value="veg">🌿 Vegetarian</option>
-            <option value="nonveg">🍗 Non-Vegetarian</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label" for="iTime">Prep Time</label>
-          <input type="text" class="form-input" id="iTime" placeholder="15-20 min">
-        </div>
+        <div class="form-group"><label class="form-label" for="iType">Type</label><select class="form-select" id="iType"><option value="veg">🌿 Vegetarian</option><option value="nonveg">🍗 Non-Vegetarian</option></select></div>
+        <div class="form-group"><label class="form-label" for="iTime">Prep Time</label><input type="text" class="form-input" id="iTime" placeholder="15-20 min"></div>
       </div>
-      <div class="form-group">
-        <label class="form-label" for="iDesc">Description</label>
-        <textarea class="form-textarea" id="iDesc" placeholder="A brief description of the item…" rows="2"></textarea>
-      </div>
-      <div class="form-group">
-        <label class="form-label" for="iCategory">Sub-Category (optional)</label>
-        <input type="text" class="form-input" id="iCategory" placeholder="e.g. Starter, Main Course…">
-      </div>
-      <div class="form-group">
-        <label class="checkbox-label">
-          <input type="checkbox" id="iHasVar">
-          This item has size/portion variations
-        </label>
-      </div>
-      <div id="simplePriceSection" class="form-group">
-        <label class="form-label" for="iPrice">Price (₹)</label>
-        <input type="number" class="form-input" id="iPrice" placeholder="e.g. 249" min="0">
-      </div>
+      <div class="form-group"><label class="form-label" for="iDesc">Description</label><textarea class="form-textarea" id="iDesc" placeholder="A brief description of the item…" rows="2"></textarea></div>
+      <div class="form-group"><label class="form-label" for="iCategory">Sub-Category (optional)</label><input type="text" class="form-input" id="iCategory" placeholder="e.g. Starter, Main Course…"></div>
+      <div class="form-group"><label class="checkbox-label"><input type="checkbox" id="iHasVar"> This item has size/portion variations</label></div>
+      <div id="simplePriceSection" class="form-group"><label class="form-label" for="iPrice">Price (₹)</label><input type="number" class="form-input" id="iPrice" placeholder="e.g. 249" min="0"></div>
     </div>
-
-    <!-- TAB: IMAGE -->
     <div class="tab-pane" id="imageTab">
-      <div class="form-group">
-        <label class="form-label">Upload Image</label>
-        <input type="file" class="form-file" id="iImageFile" accept="image/*">
-        <input type="hidden" id="iImageUrl">
-        <div id="iImagePreview"></div>
-        <p class="fs-sm text-dim mt-8">Supported: JPG, PNG, WEBP, GIF. Max 5 MB. Image will be uploaded to Drive.</p>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Or paste an image URL</label>
-        <input type="url" class="form-input" id="iImageUrlInput" placeholder="https://…">
-        <button class="btn btn-sm mt-8" id="iImageUrlApply">Apply URL</button>
-      </div>
+      <div class="form-group"><label class="form-label">Upload Image</label><input type="file" class="form-file" id="iImageFile" accept="image/*"><input type="hidden" id="iImageUrl"><div id="iImagePreview"></div><p class="fs-sm text-dim mt-8">Supported: JPG, PNG, WEBP, GIF. Max 5 MB. Image will be uploaded to Drive.</p></div>
+      <div class="form-group"><label class="form-label">Or paste an image URL</label><input type="url" class="form-input" id="iImageUrlInput" placeholder="https://…"><button class="btn btn-sm mt-8" id="iImageUrlApply">Apply URL</button></div>
     </div>
-
-    <!-- TAB: VARIATIONS -->
     <div class="tab-pane" id="variationsTab">
       <p class="text-dim fs-sm" style="margin-bottom:14px;">Add size, portion, or combo variations with individual prices.</p>
       <div id="varList"></div>
       <button class="btn btn-sm mt-8" id="addVariationBtn">+ Add Variation</button>
       <p class="fs-sm text-dim mt-8">💡 Enable "has variations" on the Basic tab to activate variation pricing.</p>
     </div>
-
-    <div class="modal-footer">
-      <button class="btn" id="itemModalCancel">Cancel</button>
-      <button class="btn btn-primary" id="saveItemBtn"><span id="saveItemBtnLabel">Save Item</span></button>
-    </div>
+    <div class="modal-footer"><button class="btn" id="itemModalCancel">Cancel</button><button class="btn btn-primary" id="saveItemBtn"><span id="saveItemBtnLabel">Save Item</span></button></div>
   </div>
 </div>
 
-<!-- ============================================================
-     MODAL: NEW / EDIT HEADING
-============================================================ -->
 <div class="modal-overlay heading-modal" id="headingModal" role="dialog" aria-modal="true">
   <div class="modal-box">
-    <div class="modal-header">
-      <h2 class="modal-title" id="headingModalTitle">New Heading</h2>
-      <button class="modal-close" id="headingModalClose" aria-label="Close">×</button>
-    </div>
-    <div class="form-group">
-      <label class="form-label" for="newHeadingInput">Heading Name *</label>
-      <input type="text" class="form-input" id="newHeadingInput" placeholder="e.g. Lunch Specials" autocomplete="off">
-    </div>
-    <div class="form-group">
-      <label class="form-label" for="headingEmojiInput">Emoji / Icon (optional)</label>
-      <input type="text" class="form-input" id="headingEmojiInput" placeholder="🍕" maxlength="4">
-    </div>
-    <div class="modal-footer">
-      <button class="btn" id="headingModalCancel">Cancel</button>
-      <button class="btn btn-primary" id="createHeadingBtn">Create Heading</button>
-    </div>
+    <div class="modal-header"><h2 class="modal-title" id="headingModalTitle">New Heading</h2><button class="modal-close" id="headingModalClose" aria-label="Close">×</button></div>
+    <div class="form-group"><label class="form-label" for="newHeadingInput">Heading Name *</label><input type="text" class="form-input" id="newHeadingInput" placeholder="e.g. Lunch Specials" autocomplete="off"></div>
+    <div class="form-group"><label class="form-label" for="headingEmojiInput">Emoji / Icon (optional)</label><input type="text" class="form-input" id="headingEmojiInput" placeholder="🍕" maxlength="4"></div>
+    <div class="modal-footer"><button class="btn" id="headingModalCancel">Cancel</button><button class="btn btn-primary" id="createHeadingBtn">Create Heading</button></div>
   </div>
 </div>
 
-<!-- ============================================================
-     MODAL: CONFIRM DELETE
-============================================================ -->
 <div class="modal-overlay confirm-dialog" id="confirmModal" role="dialog" aria-modal="true">
-  <div class="modal-box">
-    <div class="modal-header">
-      <h2 class="modal-title" id="confirmTitle">Confirm Delete</h2>
-      <button class="modal-close" id="confirmModalClose">×</button>
-    </div>
-    <p class="confirm-msg" id="confirmMessage">Are you sure?</p>
-    <div class="modal-footer">
-      <button class="btn" id="confirmCancel">Cancel</button>
-      <button class="btn btn-danger" id="confirmOk">Delete</button>
-    </div>
-  </div>
+  <div class="modal-box"><div class="modal-header"><h2 class="modal-title" id="confirmTitle">Confirm Delete</h2><button class="modal-close" id="confirmModalClose">×</button></div><p class="confirm-msg" id="confirmMessage">Are you sure?</p><div class="modal-footer"><button class="btn" id="confirmCancel">Cancel</button><button class="btn btn-danger" id="confirmOk">Delete</button></div></div>
 </div>
 
-<!-- ============================================================
-     MODAL: BULK MOVE
-============================================================ -->
 <div class="modal-overlay" id="bulkMoveModal" role="dialog" aria-modal="true">
-  <div class="modal-box" style="max-width:380px;">
-    <div class="modal-header">
-      <h2 class="modal-title">Move Items To…</h2>
-      <button class="modal-close" id="bulkMoveClose">×</button>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Target Heading</label>
-      <select class="form-select" id="bulkMoveTarget"></select>
-    </div>
-    <div class="modal-footer">
-      <button class="btn" id="bulkMoveCancelBtn">Cancel</button>
-      <button class="btn btn-primary" id="bulkMoveConfirmBtn">Move</button>
-    </div>
-  </div>
+  <div class="modal-box" style="max-width:380px;"><div class="modal-header"><h2 class="modal-title">Move Items To…</h2><button class="modal-close" id="bulkMoveClose">×</button></div><div class="form-group"><label class="form-label">Target Heading</label><select class="form-select" id="bulkMoveTarget"></select></div><div class="modal-footer"><button class="btn" id="bulkMoveCancelBtn">Cancel</button><button class="btn btn-primary" id="bulkMoveConfirmBtn">Move</button></div></div>
 </div>
 
-<!-- ============================================================
-     JAVASCRIPT — FULL CRUD ENGINE
-============================================================ -->
 <script>
 /* ============================================================
-   0. CONFIGURATION
+   FULL CRUD ENGINE – with dynamic BASE_URL and fixed heading actions
 ============================================================ */
+const BASE_URL = "https://script.google.com/macros/s/AKfycby8qo4d7vCkTzQouZxuuZplEtFN-DPrZXmuuMV13OI1f4r2ba94Wq7QIDPYCXbAXZvd9Q/exec";
+
 const CFG = {
-  WEB_APP_URL: 'https://script.google.com/macros/s/AKfycbxcUYLRI5BpRwR4JS9mRF-khA5PnfhXbR0v0uJ8kGVlJ0rpT8RLKKtOLZ1m81CYrtBFSA/exec',
+  WEB_APP_URL: BASE_URL,
   LOCAL_KEY:    'menuManagerData_v3',
   HISTORY_LIMIT: 50,
   AUTO_SAVE_DELAY: 2000,
@@ -783,11 +659,8 @@ const CFG = {
   RETRY_DELAY: 1200,
 };
 
-/* ============================================================
-   1. STATE MANAGER
-============================================================ */
 const STATE = {
-  menu:           {},      // { "Heading": [items…] }
+  menu:           {},
   currentHeading: null,
   filter:         'all',
   itemSearch:     '',
@@ -798,85 +671,26 @@ const STATE = {
   isDriveLoaded:  false,
   lastSaveTime:   null,
   pendingChanges: false,
-
-  /* undo/redo history */
   _history:   [],
   _future:    [],
-
-  /** deep clone of menu for snapshot */
-  snapshot() {
-    return JSON.parse(JSON.stringify(this.menu));
-  },
-
-  /** push current state to history before mutation */
-  pushHistory() {
-    this._history.push(this.snapshot());
-    if (this._history.length > CFG.HISTORY_LIMIT) this._history.shift();
-    this._future = [];
-    updateUndoRedoBtns();
-  },
-
-  undo() {
-    if (!this._history.length) return;
-    this._future.push(this.snapshot());
-    this.menu = this._history.pop();
-    updateUndoRedoBtns();
-    renderAll();
-    toast('Undo', 'info');
-    markPending();
-  },
-
-  redo() {
-    if (!this._future.length) return;
-    this._history.push(this.snapshot());
-    this.menu = this._future.pop();
-    updateUndoRedoBtns();
-    renderAll();
-    toast('Redo', 'info');
-    markPending();
-  },
+  snapshot() { return JSON.parse(JSON.stringify(this.menu)); },
+  pushHistory() { this._history.push(this.snapshot()); if (this._history.length > CFG.HISTORY_LIMIT) this._history.shift(); this._future = []; updateUndoRedoBtns(); },
+  undo() { if (!this._history.length) return; this._future.push(this.snapshot()); this.menu = this._history.pop(); updateUndoRedoBtns(); renderAll(); toast('Undo', 'info'); markPending(); },
+  redo() { if (!this._future.length) return; this._history.push(this.snapshot()); this.menu = this._future.pop(); updateUndoRedoBtns(); renderAll(); toast('Redo', 'info'); markPending(); },
 };
 
-/* ============================================================
-   2. UTILS
-============================================================ */
-function escHtml(s) {
-  if (s == null) return '';
-  return String(s)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#x27;');
-}
-
+function escHtml(s) { if (s == null) return ''; return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#x27;'); }
 function escAttr(s) { return escHtml(s); }
-
-function debounce(fn, ms) {
-  let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); };
-}
-
+function debounce(fn, ms) { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; }
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
-
 function uid() { return Math.random().toString(36).slice(2, 10); }
-
-function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
 
 function countAll() {
   let items = 0, veg = 0, nonveg = 0, vars = 0;
-  for (const k in STATE.menu) {
-    const arr = STATE.menu[k] || [];
-    items += arr.length;
-    veg    += arr.filter(i => i.type === 'veg').length;
-    nonveg += arr.filter(i => i.type !== 'veg').length;
-    vars   += arr.reduce((s, i) => s + (i.vars ? i.vars.length : 0), 0);
-  }
+  for (const k in STATE.menu) { const arr = STATE.menu[k] || []; items += arr.length; veg += arr.filter(i => i.type === 'veg').length; nonveg += arr.filter(i => i.type !== 'veg').length; vars += arr.reduce((s, i) => s + (i.vars ? i.vars.length : 0), 0); }
   return { headings: Object.keys(STATE.menu).length, items, veg, nonveg, vars };
 }
 
-/* ============================================================
-   3. TOAST SYSTEM
-============================================================ */
 function toast(msg, type = 'success', duration = 3200) {
   const container = document.getElementById('toast-container');
   const icons = { success: '✓', error: '✕', info: 'ℹ', warning: '⚠' };
@@ -884,101 +698,31 @@ function toast(msg, type = 'success', duration = 3200) {
   el.className = `toast-item toast-${type}`;
   el.innerHTML = `<span style="font-size:15px;">${icons[type]||'•'}</span><span>${escHtml(msg)}</span>`;
   container.appendChild(el);
-
-  /* auto-remove */
-  setTimeout(() => {
-    el.classList.add('removing');
-    setTimeout(() => el.remove(), 260);
-  }, duration);
+  setTimeout(() => { el.classList.add('removing'); setTimeout(() => el.remove(), 260); }, duration);
 }
 
-/* ============================================================
-   4. SYNC STATUS
-============================================================ */
-function setSyncStatus(state, text) {
-  const bar  = document.getElementById('syncStatusBar');
-  const txt  = document.getElementById('syncStatusText');
-  bar.className = `sync-bar ${state}`;
-  txt.textContent = text;
-}
+function setSyncStatus(state, text) { const bar = document.getElementById('syncStatusBar'); const txt = document.getElementById('syncStatusText'); bar.className = `sync-bar ${state}`; txt.textContent = text; }
+function markPending() { STATE.pendingChanges = true; setSyncStatus('pending', 'Unsaved changes'); debouncedLocalSave(); }
+function markSynced() { STATE.pendingChanges = false; STATE.lastSaveTime = new Date(); setSyncStatus('synced', `Saved ${STATE.lastSaveTime.getHours().toString().padStart(2,'0')}:${STATE.lastSaveTime.getMinutes().toString().padStart(2,'0')}`); }
 
-function markPending() {
-  STATE.pendingChanges = true;
-  setSyncStatus('pending', 'Unsaved changes');
-  debouncedLocalSave();
-}
-
-function markSynced() {
-  STATE.pendingChanges = false;
-  STATE.lastSaveTime = new Date();
-  const t = STATE.lastSaveTime;
-  setSyncStatus('synced', `Saved ${t.getHours().toString().padStart(2,'0')}:${t.getMinutes().toString().padStart(2,'0')}`);
-}
-
-/* ============================================================
-   5. LOCAL STORAGE BACKUP
-============================================================ */
-function saveLocal() {
-  try {
-    localStorage.setItem(CFG.LOCAL_KEY, JSON.stringify({
-      menu: STATE.menu,
-      ts: Date.now(),
-    }));
-  } catch (e) { /* storage full – silently ignore */ }
-}
-
-function loadLocal() {
-  try {
-    const raw = localStorage.getItem(CFG.LOCAL_KEY);
-    if (!raw) return false;
-    const obj = JSON.parse(raw);
-    if (obj && obj.menu && typeof obj.menu === 'object') {
-      STATE.menu = obj.menu;
-      return true;
-    }
-  } catch (e) {}
-  return false;
-}
-
+function saveLocal() { try { localStorage.setItem(CFG.LOCAL_KEY, JSON.stringify({ menu: STATE.menu, ts: Date.now() })); } catch (e) {} }
+function loadLocal() { try { const raw = localStorage.getItem(CFG.LOCAL_KEY); if (raw) { const obj = JSON.parse(raw); if (obj && obj.menu && typeof obj.menu === 'object') { STATE.menu = obj.menu; return true; } } } catch (e) {} return false; }
 const debouncedLocalSave = debounce(saveLocal, 800);
 
-/* ============================================================
-   6. UNDO / REDO BUTTON STATE
-============================================================ */
-function updateUndoRedoBtns() {
-  document.getElementById('undoBtn').disabled = STATE._history.length === 0;
-  document.getElementById('redoBtn').disabled = STATE._future.length === 0;
-}
+function updateUndoRedoBtns() { document.getElementById('undoBtn').disabled = STATE._history.length === 0; document.getElementById('redoBtn').disabled = STATE._future.length === 0; }
 
-/* ============================================================
-   7. NETWORK LAYER — fetch with retry
-============================================================ */
 async function netFetch(url, options = {}, retries = CFG.MAX_RETRIES) {
-  for (let attempt = 1; attempt <= retries; attempt++) {
-    try {
-      const res = await fetch(url, options);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      return res;
-    } catch (err) {
-      if (attempt === retries) throw err;
-      await sleep(CFG.RETRY_DELAY * attempt);
-    }
-  }
+  for (let attempt = 1; attempt <= retries; attempt++) { try { const res = await fetch(url, options); if (!res.ok) throw new Error(`HTTP ${res.status}`); return res; } catch (err) { if (attempt === retries) throw err; await sleep(CFG.RETRY_DELAY * attempt); } }
 }
 
-/* ============================================================
-   8. IMAGE UPLOAD
-============================================================ */
 async function uploadImage(file) {
   if (!file) return null;
   if (file.size > 5 * 1024 * 1024) throw new Error('File too large (max 5 MB)');
-
   const form = new FormData();
-  form.append('action',    'uploadImage');
+  form.append('action', 'uploadImage');
   form.append('imageBlob', file);
-  form.append('fileName',  file.name);
-
-  const res  = await netFetch(CFG.WEB_APP_URL, { method: 'POST', body: form });
+  form.append('fileName', file.name);
+  const res = await netFetch(CFG.WEB_APP_URL, { method: 'POST', body: form });
   const text = await res.text();
   let json;
   try { json = JSON.parse(text); } catch (e) { throw new Error('Bad response from server'); }
@@ -986,1277 +730,205 @@ async function uploadImage(file) {
   return json.url;
 }
 
-/* ============================================================
-   9. DRIVE LOAD — parse raw HTML into STATE.menu
-============================================================ */
 async function loadFromDrive() {
   if (STATE.isSyncing) return;
   STATE.isSyncing = true;
   setSyncStatus('pending', 'Loading…');
   setLoadingOverlay('headingsPanel', true);
-
   try {
-    const res  = await netFetch(CFG.WEB_APP_URL);
+    const res = await netFetch(`${CFG.WEB_APP_URL}?action=getData`);
     const html = await res.text();
     const parsed = parseMenuHTML(html);
-
-    if (Object.keys(parsed).length === 0) {
-      /* Drive file may be blank or new — keep current local data */
-      toast('Drive file is empty — showing local data', 'warning');
-    } else {
-      STATE.pushHistory();
-      STATE.menu = parsed;
-      STATE.isDriveLoaded = true;
-      saveLocal();
-      toast(`Loaded ${Object.keys(parsed).length} headings from Drive`, 'success');
-    }
-
+    if (Object.keys(parsed).length === 0) { toast('Drive file is empty — showing local data', 'warning'); }
+    else { STATE.pushHistory(); STATE.menu = parsed; STATE.isDriveLoaded = true; saveLocal(); toast(`Loaded ${Object.keys(parsed).length} headings from Drive`, 'success'); }
     renderAll();
-    /* auto-select first heading */
     const keys = Object.keys(STATE.menu);
     if (keys.length && !STATE.currentHeading) selectHeading(keys[0]);
     markSynced();
-
-  } catch (err) {
-    setSyncStatus('error', 'Load failed');
-    toast('Failed to load from Drive: ' + err.message, 'error', 6000);
-  } finally {
-    STATE.isSyncing = false;
-    setLoadingOverlay('headingsPanel', false);
-  }
+  } catch (err) { setSyncStatus('error', 'Load failed'); toast('Failed to load from Drive: ' + err.message, 'error', 6000); }
+  finally { STATE.isSyncing = false; setLoadingOverlay('headingsPanel', false); }
 }
 
-/* ============================================================
-   10. HTML PARSER — robust DOM parsing of generated menu HTML
-============================================================ */
 function parseMenuHTML(html) {
   const parser = new DOMParser();
-  const doc    = parser.parseFromString(html, 'text/html');
+  const doc = parser.parseFromString(html, 'text/html');
   const result = {};
-
-  /* Support both h1-based sections and data-heading attributes */
   const h1s = doc.querySelectorAll('h1');
-
   if (h1s.length === 0) {
-    /* Try data-heading fallback */
     const sections = doc.querySelectorAll('[data-heading]');
-    sections.forEach(sec => {
-      const hName = sec.getAttribute('data-heading') || 'Unnamed';
-      result[hName] = [];
-      sec.querySelectorAll('[data-item]').forEach(card => {
-        result[hName].push(parseItemFromDataAttrs(card));
-      });
-    });
+    sections.forEach(sec => { const hName = sec.getAttribute('data-heading') || 'Unnamed'; result[hName] = []; sec.querySelectorAll('[data-item]').forEach(card => { result[hName].push(parseItemFromDataAttrs(card)); }); });
     return result;
   }
-
-  h1s.forEach(h1 => {
-    const headingText = h1.textContent.trim();
-    if (!headingText) return;
-    const items = [];
-    let next = h1.nextElementSibling;
-
-    while (next && !['H1','H2'].includes(next.tagName)) {
-      if (next.classList.contains('mcard') || next.hasAttribute('data-item')) {
-        items.push(parseItemFromCard(next));
-      }
-      next = next.nextElementSibling;
-    }
-    result[headingText] = items;
-  });
-
+  h1s.forEach(h1 => { const headingText = h1.textContent.trim(); if (!headingText) return; const items = []; let next = h1.nextElementSibling; while (next && !['H1','H2'].includes(next.tagName)) { if (next.classList.contains('mcard') || next.hasAttribute('data-item')) { items.push(parseItemFromCard(next)); } next = next.nextElementSibling; } result[headingText] = items; });
   return result;
 }
 
 function parseItemFromCard(el) {
-  /* name */
-  const nameEl = el.querySelector('.mcard-name, [data-name]');
-  let name = '';
-  if (nameEl) {
-    /* strip inner elements (vdot etc.) and get text */
-    const clone = nameEl.cloneNode(true);
-    clone.querySelectorAll('.vdot, span.badge').forEach(n => n.remove());
-    name = clone.textContent.trim();
-  }
-  if (!name) name = el.getAttribute('data-name') || 'Unnamed Item';
-
-  /* type — read data-type first, then attempt color heuristic */
-  let type = el.getAttribute('data-type') || 'veg';
-  if (!el.hasAttribute('data-type')) {
-    const vdot = el.querySelector('.vdot');
-    if (vdot) {
-      /* We cannot read computed borderColor from DOMParser (no CSSOM),
-         so we check inline style directly */
-      const inlineStyle = vdot.getAttribute('style') || '';
-      if (inlineStyle.includes('#ef4444') || inlineStyle.includes('rgb(239') || inlineStyle.includes('nonveg')) {
-        type = 'nonveg';
-      }
-    }
-  }
-
-  /* desc */
-  const descEl = el.querySelector('.mcard-desc, [data-desc]');
-  let desc = descEl ? descEl.textContent.replace(/⏱.*$/, '').trim() : '';
-
-  /* time */
-  let time = el.getAttribute('data-time') || '';
-  if (!time && descEl) {
-    const m = descEl.textContent.match(/⏱[️\s]*([\w\s\-]+)/);
-    if (m) time = m[1].trim();
-  }
-
-  /* price */
-  const priceEl = el.querySelector('.mcard-price, [data-price]');
-  let price = '';
-  if (priceEl) price = priceEl.textContent.replace(/[₹\s]/g, '').trim();
-  if (!price) price = el.getAttribute('data-price') || '';
-
-  /* image */
-  const imgEl = el.querySelector('.mcard-img img, [data-img]');
-  let image = imgEl ? (imgEl.getAttribute('src') || '') : '';
-  if (!image) image = el.getAttribute('data-img') || '';
-
-  /* variations */
-  let vars = [];
-  let hasVar = false;
-  try {
-    const varsAttr = el.getAttribute('data-vars');
-    if (varsAttr) {
-      vars   = JSON.parse(varsAttr);
-      hasVar = vars.length > 0;
-    }
-  } catch (e) {}
-
-  /* category */
+  const nameEl = el.querySelector('.mcard-name, [data-name]'); let name = ''; if (nameEl) { const clone = nameEl.cloneNode(true); clone.querySelectorAll('.vdot, span.badge').forEach(n => n.remove()); name = clone.textContent.trim(); } if (!name) name = el.getAttribute('data-name') || 'Unnamed Item';
+  let type = el.getAttribute('data-type') || 'veg'; if (!el.hasAttribute('data-type')) { const vdot = el.querySelector('.vdot'); if (vdot) { const inlineStyle = vdot.getAttribute('style') || ''; if (inlineStyle.includes('#ef4444') || inlineStyle.includes('rgb(239') || inlineStyle.includes('nonveg')) type = 'nonveg'; } }
+  const descEl = el.querySelector('.mcard-desc, [data-desc]'); let desc = descEl ? descEl.textContent.replace(/⏱.*$/, '').trim() : '';
+  let time = el.getAttribute('data-time') || ''; if (!time && descEl) { const m = descEl.textContent.match(/⏱[️\s]*([\w\s\-]+)/); if (m) time = m[1].trim(); }
+  const priceEl = el.querySelector('.mcard-price, [data-price]'); let price = ''; if (priceEl) price = priceEl.textContent.replace(/[₹\s]/g, '').trim(); if (!price) price = el.getAttribute('data-price') || '';
+  const imgEl = el.querySelector('.mcard-img img, [data-img]'); let image = imgEl ? (imgEl.getAttribute('src') || '') : ''; if (!image) image = el.getAttribute('data-img') || '';
+  let vars = [], hasVar = false; try { const varsAttr = el.getAttribute('data-vars'); if (varsAttr) { vars = JSON.parse(varsAttr); hasVar = vars.length > 0; } } catch(e) {}
   const category = el.getAttribute('data-category') || '';
-
   return { id: uid(), name, type, desc, time, image, price, hasVar, vars, category };
 }
+function parseItemFromDataAttrs(el) { return { id: el.getAttribute('data-id') || uid(), name: el.getAttribute('data-name') || 'Unnamed', type: el.getAttribute('data-type') || 'veg', desc: el.getAttribute('data-desc') || '', time: el.getAttribute('data-time') || '', image: el.getAttribute('data-img') || '', price: el.getAttribute('data-price') || '', hasVar: el.getAttribute('data-hasvar') === 'true', vars: JSON.parse(el.getAttribute('data-vars') || '[]'), category: el.getAttribute('data-category') || '' }; }
 
-function parseItemFromDataAttrs(el) {
-  return {
-    id:       el.getAttribute('data-id') || uid(),
-    name:     el.getAttribute('data-name') || 'Unnamed',
-    type:     el.getAttribute('data-type') || 'veg',
-    desc:     el.getAttribute('data-desc') || '',
-    time:     el.getAttribute('data-time') || '',
-    image:    el.getAttribute('data-img')  || '',
-    price:    el.getAttribute('data-price')|| '',
-    hasVar:   el.getAttribute('data-hasvar') === 'true',
-    vars:     JSON.parse(el.getAttribute('data-vars') || '[]'),
-    category: el.getAttribute('data-category') || '',
-  };
-}
-
-/* ============================================================
-   11. DRIVE SAVE — rebuild full HTML and POST to Apps Script
-============================================================ */
 async function saveToDrive() {
   if (STATE.isSyncing) { toast('Already syncing…', 'info'); return; }
   if (Object.keys(STATE.menu).length === 0) { toast('Nothing to save', 'warning'); return; }
-
-  STATE.isSyncing = true;
-  setSyncStatus('pending', 'Saving…');
-
-  const btn = document.getElementById('saveDriveBtn');
-  const origLabel = btn.innerHTML;
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span> Saving…';
-
-  try {
-    const fullHtml = buildMenuHTML();
-    const res = await netFetch(CFG.WEB_APP_URL, {
-      method:  'POST',
-      body:    fullHtml,
-      headers: { 'Content-Type': 'text/plain' },
-    });
-    const text = await res.text();
-    /* Accept any 2xx + optional JSON confirmation */
-    markSynced();
-    saveLocal();
-    toast('Saved to Drive ✓', 'success');
-
-  } catch (err) {
-    setSyncStatus('error', 'Save failed');
-    toast('Save failed: ' + err.message, 'error', 7000);
-  } finally {
-    STATE.isSyncing = false;
-    btn.disabled = false;
-    btn.innerHTML = origLabel;
-  }
+  STATE.isSyncing = true; setSyncStatus('pending', 'Saving…');
+  const btn = document.getElementById('saveDriveBtn'); const origLabel = btn.innerHTML; btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Saving…';
+  try { const fullHtml = buildMenuHTML(); await netFetch(CFG.WEB_APP_URL, { method: 'POST', body: fullHtml, headers: { 'Content-Type': 'text/plain' } }); markSynced(); saveLocal(); toast('Saved to Drive ✓', 'success'); }
+  catch (err) { setSyncStatus('error', 'Save failed'); toast('Save failed: ' + err.message, 'error', 7000); }
+  finally { STATE.isSyncing = false; btn.disabled = false; btn.innerHTML = origLabel; }
 }
 
-/* ============================================================
-   12. HTML GENERATOR — rich, data-attribute-annotated output
-============================================================ */
 function buildMenuHTML() {
-  const STYLE = `
-:root{--bg:#0f1117;--surf:#1a1e2e;--surf2:#222638;--brd:#2e3350;--acc:#7c5cbf;--text:#e2e8f0;--mut:#8892a4}
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);padding:24px 16px;max-width:700px;margin:0 auto}
-h1{font-size:20px;font-weight:800;color:#fff;margin:32px 0 12px;letter-spacing:-.3px;display:flex;align-items:center;gap:8px}
-h1:first-child{margin-top:0}
-.mcard{background:var(--surf);border:1px solid var(--brd);border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:14px;margin-bottom:10px;transition:.15s}
-.mcard:hover{border-color:var(--acc);background:var(--surf2)}
-.mcard-img{width:72px;height:72px;border-radius:10px;background:var(--surf2);overflow:hidden;flex-shrink:0;border:1px solid var(--brd)}
-.mcard-img img{width:100%;height:100%;object-fit:cover;display:block}
-.mcard-body{flex:1;min-width:0}
-.mcard-name{font-size:14.5px;font-weight:700;display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap}
-.vdot{width:14px;height:14px;border-radius:3px;border:2px solid;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
-.vdot span{width:6px;height:6px;border-radius:50%;display:block}
-.mcard-desc{font-size:12.5px;color:var(--mut);margin-bottom:6px;line-height:1.4}
-.mcard-price{font-size:14px;font-weight:700;color:#a29bfe}
-.vars-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-.vchip{background:var(--surf2);border:1px solid var(--brd);border-radius:8px;padding:5px 10px;font-size:12px;display:flex;align-items:center;gap:6px}
-.vchip-price{color:#a29bfe;font-weight:600}
-.vchip-img{width:20px;height:20px;border-radius:4px;object-fit:cover}
-.addbtn{background:var(--acc);color:#fff;border:none;border-radius:10px;padding:9px 18px;cursor:pointer;font-weight:600;font-size:13px;flex-shrink:0;transition:.15s}
-.addbtn:hover{filter:brightness(1.15)}
-@media(max-width:480px){.mcard{flex-wrap:wrap}.mcard-img{width:56px;height:56px}.addbtn{width:100%;margin-top:8px;text-align:center}}
-  `.trim();
-
+  const STYLE = `:root{--bg:#0f1117;--surf:#1a1e2e;--surf2:#222638;--brd:#2e3350;--acc:#7c5cbf;--text:#e2e8f0;--mut:#8892a4}*{margin:0;padding:0;box-sizing:border-box}body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);padding:24px 16px;max-width:700px;margin:0 auto}h1{font-size:20px;font-weight:800;color:#fff;margin:32px 0 12px;letter-spacing:-.3px;display:flex;align-items:center;gap:8px}h1:first-child{margin-top:0}.mcard{background:var(--surf);border:1px solid var(--brd);border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:14px;margin-bottom:10px;transition:.15s}.mcard:hover{border-color:var(--acc);background:var(--surf2)}.mcard-img{width:72px;height:72px;border-radius:10px;background:var(--surf2);overflow:hidden;flex-shrink:0;border:1px solid var(--brd)}.mcard-img img{width:100%;height:100%;object-fit:cover;display:block}.mcard-body{flex:1;min-width:0}.mcard-name{font-size:14.5px;font-weight:700;display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap}.vdot{width:14px;height:14px;border-radius:3px;border:2px solid;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}.vdot span{width:6px;height:6px;border-radius:50%;display:block}.mcard-desc{font-size:12.5px;color:var(--mut);margin-bottom:6px;line-height:1.4}.mcard-price{font-size:14px;font-weight:700;color:#a29bfe}.vars-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.vchip{background:var(--surf2);border:1px solid var(--brd);border-radius:8px;padding:5px 10px;font-size:12px;display:flex;align-items:center;gap:6px}.vchip-price{color:#a29bfe;font-weight:600}.vchip-img{width:20px;height:20px;border-radius:4px;object-fit:cover}.addbtn{background:var(--acc);color:#fff;border:none;border-radius:10px;padding:9px 18px;cursor:pointer;font-weight:600;font-size:13px;flex-shrink:0;transition:.15s}.addbtn:hover{filter:brightness(1.15)}@media(max-width:480px){.mcard{flex-wrap:wrap}.mcard-img{width:56px;height:56px}.addbtn{width:100%;margin-top:8px;text-align:center}}`.trim();
   let body = '';
-  for (const heading in STATE.menu) {
-    const items = STATE.menu[heading] || [];
-    body += `\n<h1>${escHtml(heading)}</h1>\n`;
-    for (const item of items) {
-      body += buildItemCard(item);
-    }
-  }
-
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Menu</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
-<style>${STYLE}</style>
-</head>
-<body>${body}
-</body>
-</html>`;
+  for (const heading in STATE.menu) { const items = STATE.menu[heading] || []; body += `\n<h1>${escHtml(heading)}</h1>\n`; for (const item of items) body += buildItemCard(item); }
+  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Menu</title><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet"><style>${STYLE}</style></head><body>${body}</body></html>`;
 }
-
 function buildItemCard(item) {
-  const dotColor  = item.type === 'veg' ? '#22c55e' : '#ef4444';
-  const imgInner  = item.image
-    ? `<img src="${escAttr(item.image)}" alt="${escAttr(item.name)}" loading="lazy" onerror="this.parentElement.innerHTML='📷'">`
-    : '📷';
-  const priceHtml = (!item.hasVar && item.price)
-    ? `<div class="mcard-price">₹${escHtml(item.price)}</div>`
-    : '';
-  const timeHtml  = item.time ? ` · ⏱ ${escHtml(item.time)}` : '';
-  const catHtml   = item.category ? `<span style="font-size:11px;opacity:.6;">[${escHtml(item.category)}]</span>` : '';
-
+  const dotColor = item.type === 'veg' ? '#22c55e' : '#ef4444';
+  const imgInner = item.image ? `<img src="${escAttr(item.image)}" alt="${escAttr(item.name)}" loading="lazy" onerror="this.parentElement.innerHTML='📷'">` : '📷';
+  const priceHtml = (!item.hasVar && item.price) ? `<div class="mcard-price">₹${escHtml(item.price)}</div>` : '';
+  const timeHtml = item.time ? ` · ⏱ ${escHtml(item.time)}` : '';
+  const catHtml = item.category ? `<span style="font-size:11px;opacity:.6;">[${escHtml(item.category)}]</span>` : '';
   let varsHtml = '';
-  if (item.hasVar && item.vars && item.vars.length) {
-    const chips = item.vars.map(v => {
-      const vImg = v.image ? `<img class="vchip-img" src="${escAttr(v.image)}" alt="${escAttr(v.name)}" onerror="this.style.display='none'">` : '';
-      return `<span class="vchip">${vImg}<span>${escHtml(v.name)}</span><span class="vchip-price">₹${escHtml(v.price)}</span></span>`;
-    }).join('');
-    varsHtml = `<div class="vars-row">${chips}</div>`;
-  }
-
-  /* Store raw data in data-attrs for re-parsing */
+  if (item.hasVar && item.vars && item.vars.length) { const chips = item.vars.map(v => { const vImg = v.image ? `<img class="vchip-img" src="${escAttr(v.image)}" alt="${escAttr(v.name)}" onerror="this.style.display='none'">` : ''; return `<span class="vchip">${vImg}<span>${escHtml(v.name)}</span><span class="vchip-price">₹${escHtml(v.price)}</span></span>`; }).join(''); varsHtml = `<div class="vars-row">${chips}</div>`; }
   const dataVars = escAttr(JSON.stringify(item.vars || []));
-
-  return `<div class="mcard"
-  data-item="1"
-  data-id="${escAttr(item.id||uid())}"
-  data-name="${escAttr(item.name)}"
-  data-type="${escAttr(item.type)}"
-  data-desc="${escAttr(item.desc||'')}"
-  data-time="${escAttr(item.time||'')}"
-  data-price="${escAttr(item.price||'')}"
-  data-img="${escAttr(item.image||'')}"
-  data-hasvar="${item.hasVar?'true':'false'}"
-  data-vars="${dataVars}"
-  data-category="${escAttr(item.category||'')}">
-  <div class="mcard-img">${imgInner}</div>
-  <div class="mcard-body">
-    <div class="mcard-name">
-      <span class="vdot" style="border-color:${dotColor}"><span style="background:${dotColor}"></span></span>
-      ${escHtml(item.name)} ${catHtml}
-    </div>
-    <div class="mcard-desc">${escHtml(item.desc||'')}${timeHtml}</div>
-    ${priceHtml}
-    ${varsHtml}
-  </div>
-  <button class="addbtn" onclick="this.textContent='✓ Added';setTimeout(()=>this.textContent='Add',1800)">Add</button>
-</div>`;
+  return `<div class="mcard" data-item="1" data-id="${escAttr(item.id||uid())}" data-name="${escAttr(item.name)}" data-type="${escAttr(item.type)}" data-desc="${escAttr(item.desc||'')}" data-time="${escAttr(item.time||'')}" data-price="${escAttr(item.price||'')}" data-img="${escAttr(item.image||'')}" data-hasvar="${item.hasVar?'true':'false'}" data-vars="${dataVars}" data-category="${escAttr(item.category||'')}"><div class="mcard-img">${imgInner}</div><div class="mcard-body"><div class="mcard-name"><span class="vdot" style="border-color:${dotColor}"><span style="background:${dotColor}"></span></span>${escHtml(item.name)} ${catHtml}</div><div class="mcard-desc">${escHtml(item.desc||'')}${timeHtml}</div>${priceHtml}${varsHtml}</div><button class="addbtn" onclick="this.textContent='✓ Added';setTimeout(()=>this.textContent='Add',1800)">Add</button></div>`;
 }
 
-/* ============================================================
-   13. RENDER ENGINE
-============================================================ */
-function renderAll() {
-  renderHeadings();
-  renderItems();
-  updateStats();
-}
+function renderAll() { renderHeadings(); renderItems(); updateStats(); }
 
-/* ── HEADINGS LIST ── */
 function renderHeadings() {
   const container = document.getElementById('headingsList');
-  const search    = STATE.headingSearch.toLowerCase();
-  const keys      = Object.keys(STATE.menu).filter(k => k.toLowerCase().includes(search));
-
+  const search = STATE.headingSearch.toLowerCase();
+  const keys = Object.keys(STATE.menu).filter(k => k.toLowerCase().includes(search));
   document.getElementById('headingCount').textContent = Object.keys(STATE.menu).length;
-
-  if (keys.length === 0) {
-    container.innerHTML = `<div class="empty-state">
-      <div class="empty-icon">${search ? '🔍' : '📂'}</div>
-      <div class="empty-title">${search ? 'No match' : 'No headings yet'}</div>
-      <div class="empty-desc">${search ? 'Try a different search.' : 'Click "+ New" or "Load Drive".'}</div>
-    </div>`;
-    return;
-  }
-
+  if (keys.length === 0) { container.innerHTML = `<div class="empty-state"><div class="empty-icon">${search ? '🔍' : '📂'}</div><div class="empty-title">${search ? 'No match' : 'No headings yet'}</div><div class="empty-desc">${search ? 'Try a different search.' : 'Click "+ New" or "Load Drive".'}</div></div>`; return; }
   container.innerHTML = '';
-  keys.forEach(heading => {
-    const items  = STATE.menu[heading] || [];
-    const isActive = STATE.currentHeading === heading;
-    const div = document.createElement('div');
-    div.className = `heading-item${isActive ? ' active' : ''}`;
-    div.setAttribute('draggable', 'true');
-    div.dataset.heading = heading;
-
-    div.innerHTML = `
-      <div class="heading-item-left">
-        <span class="heading-drag-handle" title="Drag to reorder">⠿</span>
-        <span class="heading-item-name" title="${escAttr(heading)}">${escHtml(heading)}</span>
-        <span class="badge-count">${items.length}</span>
-      </div>
-      <div class="heading-item-actions">
-        <button class="btn btn-xs" data-action="rename-heading" data-heading="${escAttr(heading)}" title="Rename">✏️</button>
-        <button class="btn btn-xs btn-danger" data-action="delete-heading" data-heading="${escAttr(heading)}" title="Delete">🗑</button>
-      </div>`;
-
-    /* click = select */
-    div.addEventListener('click', e => {
-      if (e.target.closest('[data-action]')) return;
-      selectHeading(heading);
-    });
-
-    /* drag & drop */
-    div.addEventListener('dragstart', handleHeadingDragStart);
-    div.addEventListener('dragover',  handleHeadingDragOver);
-    div.addEventListener('drop',      handleHeadingDrop);
-    div.addEventListener('dragend',   handleHeadingDragEnd);
-    div.addEventListener('dragleave', e => div.classList.remove('drag-over'));
-
-    container.appendChild(div);
-  });
-
-  /* delegated action buttons */
-  container.addEventListener('click', headingActionHandler, { once: true });
+  keys.forEach(heading => { const items = STATE.menu[heading] || []; const isActive = STATE.currentHeading === heading; const div = document.createElement('div'); div.className = `heading-item${isActive ? ' active' : ''}`; div.setAttribute('draggable', 'true'); div.dataset.heading = heading; div.innerHTML = `<div class="heading-item-left"><span class="heading-drag-handle" title="Drag to reorder">⠿</span><span class="heading-item-name" title="${escAttr(heading)}">${escHtml(heading)}</span><span class="badge-count">${items.length}</span></div><div class="heading-item-actions"><button class="btn btn-xs" data-action="rename-heading" data-heading="${escAttr(heading)}" title="Rename">✏️</button><button class="btn btn-xs btn-danger" data-action="delete-heading" data-heading="${escAttr(heading)}" title="Delete">🗑</button></div>`; div.addEventListener('click', e => { if (e.target.closest('[data-action]')) return; selectHeading(heading); }); div.addEventListener('dragstart', handleHeadingDragStart); div.addEventListener('dragover', handleHeadingDragOver); div.addEventListener('drop', handleHeadingDrop); div.addEventListener('dragend', handleHeadingDragEnd); div.addEventListener('dragleave', () => div.classList.remove('drag-over')); container.appendChild(div); });
 }
+function selectHeading(heading) { STATE.currentHeading = heading; STATE.selectedItems.clear(); renderAll(); }
 
-/* ── ITEMS GRID ── */
 function renderItems() {
-  const grid = document.getElementById('itemsGrid');
-  const addBtn = document.getElementById('addItemBtn');
-  const label  = document.getElementById('selectedHeadingLabel');
-
-  if (!STATE.currentHeading || !STATE.menu[STATE.currentHeading]) {
-    label.textContent = '— Select a heading —';
-    addBtn.disabled = true;
-    grid.innerHTML = `<div class="empty-state">
-      <div class="empty-icon">🧩</div>
-      <div class="empty-title">Select a heading</div>
-      <div class="empty-desc">Choose a heading on the left to manage its items.</div>
-    </div>`;
-    return;
-  }
-
-  label.textContent = STATE.currentHeading;
-  addBtn.disabled = false;
-
-  let items = [...(STATE.menu[STATE.currentHeading] || [])];
-
-  /* filter */
-  if (STATE.filter !== 'all') {
-    items = items.filter(i => i.type === STATE.filter);
-  }
-
-  /* search */
-  if (STATE.itemSearch) {
-    const q = STATE.itemSearch.toLowerCase();
-    items = items.filter(i =>
-      (i.name || '').toLowerCase().includes(q) ||
-      (i.desc || '').toLowerCase().includes(q) ||
-      (i.category || '').toLowerCase().includes(q)
-    );
-  }
-
-  if (items.length === 0) {
-    grid.innerHTML = `<div class="empty-state">
-      <div class="empty-icon">${STATE.itemSearch || STATE.filter !== 'all' ? '🔍' : '🍽️'}</div>
-      <div class="empty-title">${STATE.itemSearch || STATE.filter !== 'all' ? 'No match' : 'No items yet'}</div>
-      <div class="empty-desc">Click "+ Add Item" to add the first item under "${escHtml(STATE.currentHeading)}".</div>
-    </div>`;
-    return;
-  }
-
+  const grid = document.getElementById('itemsGrid'); const addBtn = document.getElementById('addItemBtn'); const label = document.getElementById('selectedHeadingLabel');
+  if (!STATE.currentHeading || !STATE.menu[STATE.currentHeading]) { label.textContent = '— Select a heading —'; addBtn.disabled = true; grid.innerHTML = `<div class="empty-state"><div class="empty-icon">🧩</div><div class="empty-title">Select a heading</div><div class="empty-desc">Choose a heading on the left to manage its items.</div></div>`; return; }
+  label.textContent = STATE.currentHeading; addBtn.disabled = false;
+  let items = [...(STATE.menu[STATE.currentHeading] || [])]; if (STATE.filter !== 'all') items = items.filter(i => i.type === STATE.filter); if (STATE.itemSearch) { const q = STATE.itemSearch.toLowerCase(); items = items.filter(i => (i.name || '').toLowerCase().includes(q) || (i.desc || '').toLowerCase().includes(q) || (i.category || '').toLowerCase().includes(q)); }
+  if (items.length === 0) { grid.innerHTML = `<div class="empty-state"><div class="empty-icon">${STATE.itemSearch || STATE.filter !== 'all' ? '🔍' : '🍽️'}</div><div class="empty-title">${STATE.itemSearch || STATE.filter !== 'all' ? 'No match' : 'No items yet'}</div><div class="empty-desc">Click "+ Add Item" to add the first item under "${escHtml(STATE.currentHeading)}".</div></div>`; return; }
   grid.innerHTML = '';
-
-  /* Find original indices for filtered items */
   const sourceItems = STATE.menu[STATE.currentHeading] || [];
-
-  items.forEach(item => {
-    const realIdx = sourceItems.findIndex(s => s === item || (s.id && s.id === item.id));
-    const card    = buildItemCardEl(item, realIdx);
-    grid.appendChild(card);
-  });
+  items.forEach(item => { const realIdx = sourceItems.findIndex(s => s === item || (s.id && s.id === item.id)); const card = buildItemCardEl(item, realIdx); grid.appendChild(card); });
 }
-
-/* ── BUILD ITEM CARD ELEMENT ── */
 function buildItemCardEl(item, idx) {
-  const card = document.createElement('div');
-  card.className = 'item-card';
-  card.setAttribute('draggable', 'true');
-  card.dataset.idx = idx;
-
-  const dotColor = item.type === 'veg' ? '#22c55e' : '#ef4444';
-  const typeLabel = item.type === 'veg' ? 'Veg' : 'Non-Veg';
-  const checked   = STATE.selectedItems.has(item.id || idx) ? 'checked' : '';
-
-  /* image area */
-  const imgHtml = item.image
-    ? `<div class="item-card-img"><img src="${escAttr(item.image)}" alt="${escAttr(item.name)}" onerror="this.parentElement.innerHTML='<div style=height:100%;display:flex;align-items:center;justify-content:center;font-size:24px;>📷</div>'"></div>`
-    : `<div class="item-card-img-placeholder">🍽️</div>`;
-
-  /* price / variation info */
-  const priceInfo = item.hasVar
-    ? `<span class="text-muted fs-sm">${(item.vars||[]).length} variation(s)</span>`
-    : (item.price ? `<span class="item-card-price">₹${escHtml(item.price)}</span>` : '<span class="text-dim fs-sm">No price</span>');
-
-  /* variations chips */
-  let varsHtml = '';
-  if (item.hasVar && item.vars && item.vars.length) {
-    const chips = item.vars.slice(0, 5).map(v => {
-      const vImg = v.image
-        ? `<img class="variation-chip-img" src="${escAttr(v.image)}" onerror="this.style.display='none'">`
-        : '';
-      return `<span class="variation-chip">${vImg}<span>${escHtml(v.name)}</span><span class="variation-chip-price">₹${escHtml(v.price)}</span></span>`;
-    }).join('');
-    const more = item.vars.length > 5 ? `<span class="variation-chip text-dim">+${item.vars.length - 5} more</span>` : '';
-    varsHtml = `<div class="variations-section">
-      <div class="variations-title">Variations</div>
-      <div class="variations-list">${chips}${more}</div>
-    </div>`;
-  }
-
-  card.innerHTML = `
-    <span class="item-drag-handle" title="Drag to reorder">⠿</span>
-    <div class="item-card-top">
-      <div class="item-card-main">
-        ${STATE.bulkMode ? `<input type="checkbox" class="item-check" data-id="${escAttr(item.id||idx)}" ${checked} style="width:16px;height:16px;accent-color:var(--accent);flex-shrink:0;margin-top:4px;">` : ''}
-        ${imgHtml}
-        <div class="item-card-info">
-          <div class="item-card-name">
-            <span class="type-indicator">
-              <span class="type-dot" style="border-color:${dotColor}">
-                <span class="type-dot-inner" style="background:${dotColor}"></span>
-              </span>
-            </span>
-            ${escHtml(item.name)}
-            ${item.category ? `<span class="badge-count fs-sm">${escHtml(item.category)}</span>` : ''}
-          </div>
-          <div class="item-card-desc">${escHtml(item.desc||'—')} ${item.time ? `<span class="text-dim">· ⏱ ${escHtml(item.time)}</span>` : ''}</div>
-          <div class="item-card-meta">${priceInfo}</div>
-        </div>
-      </div>
-      <div class="item-card-actions">
-        <button class="btn btn-icon btn-sm" data-action="edit-item" data-idx="${idx}" title="Edit item">✏️</button>
-        <button class="btn btn-icon btn-sm btn-danger" data-action="delete-item" data-idx="${idx}" title="Delete item">🗑</button>
-        <button class="btn btn-icon btn-sm" data-action="duplicate-item" data-idx="${idx}" title="Duplicate item">📋</button>
-      </div>
-    </div>
-    ${varsHtml}`;
-
-  /* drag events */
-  card.addEventListener('dragstart', handleItemDragStart);
-  card.addEventListener('dragover',  handleItemDragOver);
-  card.addEventListener('drop',      handleItemDrop);
-  card.addEventListener('dragend',   handleItemDragEnd);
-  card.addEventListener('dragleave', () => card.classList.remove('drag-over'));
-
-  /* action button clicks */
-  card.addEventListener('click', e => {
-    const btn = e.target.closest('[data-action]');
-    if (!btn) return;
-    const action = btn.getAttribute('data-action');
-    const i      = parseInt(btn.getAttribute('data-idx'), 10);
-    if (action === 'edit-item')      openItemModal(i);
-    if (action === 'delete-item')    confirmDeleteItem(i);
-    if (action === 'duplicate-item') duplicateItem(i);
-  });
-
-  /* bulk checkbox */
-  const chk = card.querySelector('.item-check');
-  if (chk) {
-    chk.addEventListener('change', e => {
-      const id = chk.dataset.id;
-      if (chk.checked) STATE.selectedItems.add(id);
-      else             STATE.selectedItems.delete(id);
-      updateBulkBar();
-    });
-  }
-
+  const card = document.createElement('div'); card.className = 'item-card'; card.setAttribute('draggable', 'true'); card.dataset.idx = idx; const dotColor = item.type === 'veg' ? '#22c55e' : '#ef4444'; const typeLabel = item.type === 'veg' ? 'Veg' : 'Non-Veg'; const checked = STATE.selectedItems.has(item.id || idx) ? 'checked' : '';
+  const imgHtml = item.image ? `<div class="item-card-img"><img src="${escAttr(item.image)}" alt="${escAttr(item.name)}" onerror="this.parentElement.innerHTML='<div style=height:100%;display:flex;align-items:center;justify-content:center;font-size:24px;>📷</div>'"></div>` : `<div class="item-card-img-placeholder">🍽️</div>`;
+  const priceInfo = item.hasVar ? `<span class="text-muted fs-sm">${(item.vars||[]).length} variation(s)</span>` : (item.price ? `<span class="item-card-price">₹${escHtml(item.price)}</span>` : '<span class="text-dim fs-sm">No price</span>');
+  let varsHtml = ''; if (item.hasVar && item.vars && item.vars.length) { const chips = item.vars.slice(0,5).map(v => { const vImg = v.image ? `<img class="variation-chip-img" src="${escAttr(v.image)}" onerror="this.style.display='none'">` : ''; return `<span class="variation-chip">${vImg}<span>${escHtml(v.name)}</span><span class="variation-chip-price">₹${escHtml(v.price)}</span></span>`; }).join(''); const more = item.vars.length > 5 ? `<span class="variation-chip text-dim">+${item.vars.length - 5} more</span>` : ''; varsHtml = `<div class="variations-section"><div class="variations-title">Variations</div><div class="variations-list">${chips}${more}</div></div>`; }
+  card.innerHTML = `<span class="item-drag-handle" title="Drag to reorder">⠿</span><div class="item-card-top"><div class="item-card-main">${STATE.bulkMode ? `<input type="checkbox" class="item-check" data-id="${escAttr(item.id||idx)}" ${checked} style="width:16px;height:16px;accent-color:var(--accent);flex-shrink:0;margin-top:4px;">` : ''}${imgHtml}<div class="item-card-info"><div class="item-card-name"><span class="type-indicator"><span class="type-dot" style="border-color:${dotColor}"><span class="type-dot-inner" style="background:${dotColor}"></span></span></span>${escHtml(item.name)}${item.category ? `<span class="badge-count fs-sm">${escHtml(item.category)}</span>` : ''}</div><div class="item-card-desc">${escHtml(item.desc||'—')} ${item.time ? `<span class="text-dim">· ⏱ ${escHtml(item.time)}</span>` : ''}</div><div class="item-card-meta">${priceInfo}</div></div></div><div class="item-card-actions"><button class="btn btn-icon btn-sm" data-action="edit-item" data-idx="${idx}" title="Edit item">✏️</button><button class="btn btn-icon btn-sm btn-danger" data-action="delete-item" data-idx="${idx}" title="Delete item">🗑</button><button class="btn btn-icon btn-sm" data-action="duplicate-item" data-idx="${idx}" title="Duplicate item">📋</button></div></div>${varsHtml}`;
+  card.addEventListener('dragstart', handleItemDragStart); card.addEventListener('dragover', handleItemDragOver); card.addEventListener('drop', handleItemDrop); card.addEventListener('dragend', handleItemDragEnd); card.addEventListener('dragleave', () => card.classList.remove('drag-over'));
+  card.addEventListener('click', e => { const btn = e.target.closest('[data-action]'); if (!btn) return; const action = btn.getAttribute('data-action'); const i = parseInt(btn.getAttribute('data-idx'), 10); if (action === 'edit-item') openItemModal(i); if (action === 'delete-item') confirmDeleteItem(i); if (action === 'duplicate-item') duplicateItem(i); });
+  const chk = card.querySelector('.item-check'); if (chk) { chk.addEventListener('change', e => { const id = chk.dataset.id; if (chk.checked) STATE.selectedItems.add(id); else STATE.selectedItems.delete(id); updateBulkBar(); }); }
   return card;
 }
-
-/* ── STATS ── */
-function updateStats() {
-  const c = countAll();
-  document.getElementById('statHeadings').textContent  = c.headings;
-  document.getElementById('statItems').textContent     = c.items;
-  document.getElementById('statVeg').textContent       = c.veg;
-  document.getElementById('statNonVeg').textContent    = c.nonveg;
-  document.getElementById('statVariations').textContent= c.vars;
-}
-
-/* ============================================================
-   14. HEADING CRUD
-============================================================ */
-function selectHeading(heading) {
-  STATE.currentHeading = heading;
-  STATE.selectedItems.clear();
-  renderAll();
-}
+function updateStats() { const c = countAll(); document.getElementById('statHeadings').textContent = c.headings; document.getElementById('statItems').textContent = c.items; document.getElementById('statVeg').textContent = c.veg; document.getElementById('statNonVeg').textContent = c.nonveg; document.getElementById('statVariations').textContent = c.vars; }
 
 let _editingHeadingName = null;
+function openNewHeadingModal(existingName = null) { _editingHeadingName = existingName; document.getElementById('headingModalTitle').textContent = existingName ? 'Rename Heading' : 'New Heading'; document.getElementById('newHeadingInput').value = existingName || ''; document.getElementById('headingEmojiInput').value = ''; openModal('headingModal'); requestAnimationFrame(() => document.getElementById('newHeadingInput').focus()); }
+function createOrRenameHeading() { const input = document.getElementById('newHeadingInput').value.trim(); const emoji = document.getElementById('headingEmojiInput').value.trim(); if (!input) { toast('Heading name is required', 'error'); return; } const displayName = emoji ? `${emoji} ${input}` : input; if (_editingHeadingName) { if (displayName !== _editingHeadingName && STATE.menu[displayName]) { toast('A heading with that name already exists', 'error'); return; } STATE.pushHistory(); const newMenu = {}; for (const k in STATE.menu) { newMenu[k === _editingHeadingName ? displayName : k] = STATE.menu[k]; } STATE.menu = newMenu; if (STATE.currentHeading === _editingHeadingName) STATE.currentHeading = displayName; toast(`Renamed to "${displayName}"`, 'success'); } else { if (STATE.menu[displayName] !== undefined) { toast('Heading already exists', 'error'); return; } STATE.pushHistory(); STATE.menu[displayName] = []; toast(`Created "${displayName}"`, 'success'); } closeModal('headingModal'); renderAll(); selectHeading(displayName); markPending(); }
+function deleteHeading(heading) { confirmAction(`Delete heading "${heading}"?`, `This will permanently remove "${heading}" and all its ${(STATE.menu[heading]||[]).length} items.`, () => { STATE.pushHistory(); delete STATE.menu[heading]; if (STATE.currentHeading === heading) { const keys = Object.keys(STATE.menu); STATE.currentHeading = keys.length ? keys[0] : null; } renderAll(); if (STATE.currentHeading) renderItems(); markPending(); toast(`Deleted "${heading}"`, 'success'); }); }
 
-function openNewHeadingModal(existingName = null) {
-  _editingHeadingName = existingName;
-  const title = document.getElementById('headingModalTitle');
-  const input = document.getElementById('newHeadingInput');
-  const emoji = document.getElementById('headingEmojiInput');
-  if (existingName) {
-    title.textContent = 'Rename Heading';
-    input.value = existingName;
-    emoji.value = '';
-  } else {
-    title.textContent = 'New Heading';
-    input.value = '';
-    emoji.value = '';
-  }
-  openModal('headingModal');
-  requestAnimationFrame(() => input.focus());
-}
+function headingActionHandler(e) { const btn = e.target.closest('[data-action]'); if (!btn) return; const action = btn.getAttribute('data-action'); const heading = btn.getAttribute('data-heading'); if (action === 'rename-heading') openNewHeadingModal(heading); if (action === 'delete-heading') deleteHeading(heading); }
 
-function createOrRenameHeading() {
-  const input = document.getElementById('newHeadingInput').value.trim();
-  const emoji = document.getElementById('headingEmojiInput').value.trim();
-  if (!input) { toast('Heading name is required', 'error'); return; }
+let _editingItemIdx = null; let _varCount = 0;
+function openItemModal(idx = null) { if (!STATE.currentHeading) { toast('Select a heading first', 'error'); return; } _editingItemIdx = idx; const title = document.getElementById('itemModalTitle'); const lbl = document.getElementById('saveItemBtnLabel'); switchTab('basicTab'); if (idx !== null) { const item = STATE.menu[STATE.currentHeading][idx]; if (!item) return; title.textContent = 'Edit Item'; lbl.textContent = 'Update Item'; document.getElementById('iName').value = item.name || ''; document.getElementById('iType').value = item.type || 'veg'; document.getElementById('iDesc').value = item.desc || ''; document.getElementById('iTime').value = item.time || ''; document.getElementById('iPrice').value = item.price || ''; document.getElementById('iCategory').value = item.category || ''; document.getElementById('iHasVar').checked = !!item.hasVar; document.getElementById('iImageUrl').value = item.image || ''; document.getElementById('iImageUrlInput').value = item.image || ''; const preview = document.getElementById('iImagePreview'); preview.innerHTML = item.image ? `<img class="img-preview-thumb" src="${escAttr(item.image)}" onerror="this.style.display='none'">` : ''; _varCount = 0; const varList = document.getElementById('varList'); varList.innerHTML = ''; if (item.vars && item.vars.length) item.vars.forEach(v => addVariationRow(v.name, v.price, v.image)); } else { title.textContent = 'Add New Item'; lbl.textContent = 'Save Item'; document.getElementById('iName').value = ''; document.getElementById('iType').value = 'veg'; document.getElementById('iDesc').value = ''; document.getElementById('iTime').value = ''; document.getElementById('iPrice').value = ''; document.getElementById('iCategory').value = ''; document.getElementById('iHasVar').checked = false; document.getElementById('iImageUrl').value = ''; document.getElementById('iImageUrlInput').value = ''; document.getElementById('iImagePreview').innerHTML = ''; document.getElementById('iImageFile').value = ''; _varCount = 0; document.getElementById('varList').innerHTML = ''; } togglePricingUI(); openModal('itemModal'); requestAnimationFrame(() => document.getElementById('iName').focus()); }
+function togglePricingUI() { const hasVar = document.getElementById('iHasVar').checked; document.getElementById('simplePriceSection').style.opacity = hasVar ? '.4' : '1'; document.getElementById('iPrice').disabled = hasVar; }
+async function saveItem() { const name = document.getElementById('iName').value.trim(); if (!name) { toast('Item name is required', 'error'); switchTab('basicTab'); document.getElementById('iName').focus(); return; } const btn = document.getElementById('saveItemBtn'); btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Saving…'; try { const hasVar = document.getElementById('iHasVar').checked; const vars = []; if (hasVar) { document.querySelectorAll('#varList .var-row').forEach(row => { const vname = row.querySelector('.var-name')?.value.trim() || ''; const vprice = row.querySelector('.var-price')?.value.trim() || ''; const vimg = row.querySelector('.var-img-url')?.value || ''; if (vname) vars.push({ name: vname, price: vprice, image: vimg }); }); } const item = { id: (_editingItemIdx !== null && STATE.menu[STATE.currentHeading][_editingItemIdx]?.id) || uid(), name, type: document.getElementById('iType').value, desc: document.getElementById('iDesc').value.trim(), time: document.getElementById('iTime').value.trim(), price: document.getElementById('iPrice').value.trim(), category: document.getElementById('iCategory').value.trim(), image: document.getElementById('iImageUrl').value.trim(), hasVar, vars }; STATE.pushHistory(); if (_editingItemIdx !== null) STATE.menu[STATE.currentHeading][_editingItemIdx] = item; else STATE.menu[STATE.currentHeading].push(item); renderAll(); closeModal('itemModal'); markPending(); } finally { btn.disabled = false; btn.innerHTML = '<span id="saveItemBtnLabel">Save Item</span>'; document.getElementById('saveItemBtnLabel').textContent = _editingItemIdx !== null ? 'Update Item' : 'Save Item'; } }
+function duplicateItem(idx) { if (!STATE.currentHeading) return; const src = STATE.menu[STATE.currentHeading][idx]; if (!src) return; STATE.pushHistory(); const copy = JSON.parse(JSON.stringify(src)); copy.id = uid(); copy.name = copy.name + ' (Copy)'; STATE.menu[STATE.currentHeading].splice(idx + 1, 0, copy); renderItems(); updateStats(); markPending(); toast(`Duplicated "${src.name}"`, 'success'); }
+function confirmDeleteItem(idx) { const item = STATE.menu[STATE.currentHeading]?.[idx]; if (!item) return; confirmAction(`Delete "${item.name}"?`, 'This action cannot be undone (but you can undo via Ctrl+Z).', () => { STATE.pushHistory(); STATE.menu[STATE.currentHeading].splice(idx, 1); renderItems(); updateStats(); markPending(); toast(`Deleted "${item.name}"`, 'success'); }); }
 
-  const displayName = emoji ? `${emoji} ${input}` : input;
+function addVariationRow(name = '', price = '', img = '') { const id = `var_${_varCount++}`; const container = document.getElementById('varList'); const div = document.createElement('div'); div.className = 'var-row'; div.innerHTML = `<div class="var-row-fields"><div><div class="form-label" style="font-size:11px;">Name</div><input type="text" class="form-input var-name" value="${escAttr(name)}" placeholder="e.g. Half / Full"></div><div><div class="form-label" style="font-size:11px;">Price ₹</div><input type="number" class="form-input var-price" value="${escAttr(price)}" placeholder="149" min="0"></div><div><div class="form-label" style="font-size:11px;">Image (optional)</div><input type="file" class="form-file" accept="image/*" style="padding:4px 8px;font-size:12px;"><input type="hidden" class="var-img-url" value="${escAttr(img)}"></div><button class="btn btn-xs btn-danger remove-var" title="Remove" style="margin-top:18px;">✕</button></div><div class="var-row-preview">${img ? `<img class="var-img-thumb" src="${escAttr(img)}" onerror="this.style.display='none'">` : ''}<span class="var-upload-status text-dim fs-sm"></span></div>`; const fileInput = div.querySelector('input[type="file"]'); const urlHidden = div.querySelector('.var-img-url'); const preview = div.querySelector('.var-row-preview'); const status = div.querySelector('.var-upload-status'); fileInput.addEventListener('change', async e => { const file = e.target.files[0]; if (!file) return; status.textContent = 'Uploading…'; try { const url = await uploadImage(file); urlHidden.value = url; preview.innerHTML = `<img class="var-img-thumb" src="${escAttr(url)}">`; status.textContent = 'Uploaded ✓'; toast('Variation image uploaded', 'success'); } catch (err) { status.textContent = 'Upload failed'; toast('Upload failed: ' + err.message, 'error'); } }); div.querySelector('.remove-var').addEventListener('click', () => div.remove()); container.appendChild(div); }
 
-  if (_editingHeadingName) {
-    /* RENAME */
-    if (displayName !== _editingHeadingName && STATE.menu[displayName]) {
-      toast('A heading with that name already exists', 'error'); return;
-    }
-    STATE.pushHistory();
-    /* preserve insertion order by rebuilding object */
-    const newMenu = {};
-    for (const k in STATE.menu) {
-      newMenu[k === _editingHeadingName ? displayName : k] = STATE.menu[k];
-    }
-    STATE.menu = newMenu;
-    if (STATE.currentHeading === _editingHeadingName) STATE.currentHeading = displayName;
-    toast(`Renamed to "${displayName}"`, 'success');
+document.getElementById('iImageFile').addEventListener('change', async e => { const file = e.target.files[0]; if (!file) return; const preview = document.getElementById('iImagePreview'); preview.innerHTML = '<span class="text-dim fs-sm"><span class="spinner spinner-accent" style="width:14px;height:14px;"></span> Uploading…</span>'; try { const url = await uploadImage(file); document.getElementById('iImageUrl').value = url; document.getElementById('iImageUrlInput').value = url; preview.innerHTML = `<img class="img-preview-thumb" src="${escAttr(url)}">`; toast('Image uploaded ✓', 'success'); } catch (err) { preview.innerHTML = `<span class="text-danger fs-sm">Upload failed: ${escHtml(err.message)}</span>`; toast('Image upload failed', 'error'); } });
+document.getElementById('iImageUrlApply').addEventListener('click', () => { const url = document.getElementById('iImageUrlInput').value.trim(); if (!url) return; document.getElementById('iImageUrl').value = url; document.getElementById('iImagePreview').innerHTML = `<img class="img-preview-thumb" src="${escAttr(url)}" onerror="this.src='';this.alt='Invalid URL'">`; toast('Image URL applied', 'info'); });
 
-  } else {
-    /* CREATE */
-    if (STATE.menu[displayName] !== undefined) { toast('Heading already exists', 'error'); return; }
-    STATE.pushHistory();
-    STATE.menu[displayName] = [];
-    toast(`Created "${displayName}"`, 'success');
-  }
-
-  closeModal('headingModal');
-  renderAll();
-  selectHeading(displayName);
-  markPending();
-}
-
-function deleteHeading(heading) {
-  confirmAction(
-    `Delete heading "${heading}"?`,
-    `This will permanently remove "${heading}" and all its ${(STATE.menu[heading]||[]).length} items.`,
-    () => {
-      STATE.pushHistory();
-      delete STATE.menu[heading];
-      if (STATE.currentHeading === heading) {
-        const keys = Object.keys(STATE.menu);
-        STATE.currentHeading = keys.length ? keys[0] : null;
-      }
-      renderAll();
-      if (STATE.currentHeading) renderItems();
-      markPending();
-      toast(`Deleted "${heading}"`, 'success');
-    }
-  );
-}
-
-/* delegated heading action handler (attached once per render) */
-function headingActionHandler(e) {
-  const btn = e.target.closest('[data-action]');
-  if (!btn) return;
-  const action  = btn.getAttribute('data-action');
-  const heading = btn.getAttribute('data-heading');
-  if (action === 'rename-heading') openNewHeadingModal(heading);
-  if (action === 'delete-heading') deleteHeading(heading);
-}
-
-/* ============================================================
-   15. ITEM CRUD
-============================================================ */
-let _editingItemIdx = null;
-let _varCount = 0;
-
-function openItemModal(idx = null) {
-  if (!STATE.currentHeading) { toast('Select a heading first', 'error'); return; }
-  _editingItemIdx = idx;
-
-  const title = document.getElementById('itemModalTitle');
-  const lbl   = document.getElementById('saveItemBtnLabel');
-
-  /* reset all tabs to first */
-  switchTab('basicTab');
-
-  if (idx !== null) {
-    /* EDIT */
-    const item = STATE.menu[STATE.currentHeading][idx];
-    if (!item) return;
-    title.textContent = 'Edit Item';
-    lbl.textContent   = 'Update Item';
-    document.getElementById('iName').value       = item.name     || '';
-    document.getElementById('iType').value       = item.type     || 'veg';
-    document.getElementById('iDesc').value       = item.desc     || '';
-    document.getElementById('iTime').value       = item.time     || '';
-    document.getElementById('iPrice').value      = item.price    || '';
-    document.getElementById('iCategory').value   = item.category || '';
-    document.getElementById('iHasVar').checked   = !!item.hasVar;
-    document.getElementById('iImageUrl').value   = item.image    || '';
-    document.getElementById('iImageUrlInput').value = item.image || '';
-
-    /* image preview */
-    const preview = document.getElementById('iImagePreview');
-    preview.innerHTML = item.image
-      ? `<img class="img-preview-thumb" src="${escAttr(item.image)}" onerror="this.style.display='none'">`
-      : '';
-
-    /* variations */
-    _varCount = 0;
-    const varList = document.getElementById('varList');
-    varList.innerHTML = '';
-    if (item.vars && item.vars.length) {
-      item.vars.forEach(v => addVariationRow(v.name, v.price, v.image));
-    }
-
-  } else {
-    /* ADD */
-    title.textContent = 'Add New Item';
-    lbl.textContent   = 'Save Item';
-    document.getElementById('iName').value          = '';
-    document.getElementById('iType').value          = 'veg';
-    document.getElementById('iDesc').value          = '';
-    document.getElementById('iTime').value          = '';
-    document.getElementById('iPrice').value         = '';
-    document.getElementById('iCategory').value      = '';
-    document.getElementById('iHasVar').checked      = false;
-    document.getElementById('iImageUrl').value      = '';
-    document.getElementById('iImageUrlInput').value = '';
-    document.getElementById('iImagePreview').innerHTML = '';
-    document.getElementById('iImageFile').value     = '';
-    _varCount = 0;
-    document.getElementById('varList').innerHTML    = '';
-  }
-
-  togglePricingUI();
-  openModal('itemModal');
-  requestAnimationFrame(() => document.getElementById('iName').focus());
-}
-
-function togglePricingUI() {
-  const hasVar = document.getElementById('iHasVar').checked;
-  document.getElementById('simplePriceSection').style.opacity = hasVar ? '.4' : '1';
-  document.getElementById('iPrice').disabled = hasVar;
-}
-
-async function saveItem() {
-  const name = document.getElementById('iName').value.trim();
-  if (!name) { toast('Item name is required', 'error'); switchTab('basicTab'); document.getElementById('iName').focus(); return; }
-
-  const btn = document.getElementById('saveItemBtn');
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span> Saving…';
-
-  try {
-    /* collect vars */
-    const hasVar = document.getElementById('iHasVar').checked;
-    const vars   = [];
-    if (hasVar) {
-      document.querySelectorAll('#varList .var-row').forEach(row => {
-        const vname  = row.querySelector('.var-name')?.value.trim()  || '';
-        const vprice = row.querySelector('.var-price')?.value.trim() || '';
-        const vimg   = row.querySelector('.var-img-url')?.value      || '';
-        if (vname) vars.push({ name: vname, price: vprice, image: vimg });
-      });
-    }
-
-    const item = {
-      id:       (_editingItemIdx !== null && STATE.menu[STATE.currentHeading][_editingItemIdx]?.id) || uid(),
-      name,
-      type:     document.getElementById('iType').value,
-      desc:     document.getElementById('iDesc').value.trim(),
-      time:     document.getElementById('iTime').value.trim(),
-      price:    document.getElementById('iPrice').value.trim(),
-      category: document.getElementById('iCategory').value.trim(),
-      image:    document.getElementById('iImageUrl').value.trim(),
-      hasVar,
-      vars,
-    };
-
-    STATE.pushHistory();
-
-    if (_editingItemIdx !== null) {
-      STATE.menu[STATE.currentHeading][_editingItemIdx] = item;
-      toast(`"${name}" updated`, 'success');
-    } else {
-      STATE.menu[STATE.currentHeading].push(item);
-      toast(`"${name}" added`, 'success');
-    }
-
-    renderAll();
-    closeModal('itemModal');
-    markPending();
-
-  } finally {
-    btn.disabled = false;
-    btn.innerHTML = '<span id="saveItemBtnLabel">Save Item</span>';
-    document.getElementById('saveItemBtnLabel').textContent =
-      _editingItemIdx !== null ? 'Update Item' : 'Save Item';
-  }
-}
-
-function duplicateItem(idx) {
-  if (!STATE.currentHeading) return;
-  const src  = STATE.menu[STATE.currentHeading][idx];
-  if (!src) return;
-  STATE.pushHistory();
-  const copy = JSON.parse(JSON.stringify(src));
-  copy.id    = uid();
-  copy.name  = copy.name + ' (Copy)';
-  STATE.menu[STATE.currentHeading].splice(idx + 1, 0, copy);
-  renderItems();
-  updateStats();
-  markPending();
-  toast(`Duplicated "${src.name}"`, 'success');
-}
-
-function confirmDeleteItem(idx) {
-  const item = STATE.menu[STATE.currentHeading]?.[idx];
-  if (!item) return;
-  confirmAction(
-    `Delete "${item.name}"?`,
-    'This action cannot be undone (but you can undo via Ctrl+Z).',
-    () => {
-      STATE.pushHistory();
-      STATE.menu[STATE.currentHeading].splice(idx, 1);
-      renderItems();
-      updateStats();
-      markPending();
-      toast(`Deleted "${item.name}"`, 'success');
-    }
-  );
-}
-
-/* ============================================================
-   16. VARIATIONS
-============================================================ */
-function addVariationRow(name = '', price = '', img = '') {
-  const id      = `var_${_varCount++}`;
-  const container = document.getElementById('varList');
-  const div     = document.createElement('div');
-  div.className = 'var-row';
-  div.innerHTML = `
-    <div class="var-row-fields">
-      <div>
-        <div class="form-label" style="font-size:11px;">Name</div>
-        <input type="text" class="form-input var-name" value="${escAttr(name)}" placeholder="e.g. Half / Full">
-      </div>
-      <div>
-        <div class="form-label" style="font-size:11px;">Price ₹</div>
-        <input type="number" class="form-input var-price" value="${escAttr(price)}" placeholder="149" min="0">
-      </div>
-      <div>
-        <div class="form-label" style="font-size:11px;">Image (optional)</div>
-        <input type="file" class="form-file" accept="image/*" style="padding:4px 8px;font-size:12px;">
-        <input type="hidden" class="var-img-url" value="${escAttr(img)}">
-      </div>
-      <button class="btn btn-xs btn-danger remove-var" title="Remove" style="margin-top:18px;">✕</button>
-    </div>
-    <div class="var-row-preview">
-      ${img ? `<img class="var-img-thumb" src="${escAttr(img)}" onerror="this.style.display='none'">` : ''}
-      <span class="var-upload-status text-dim fs-sm"></span>
-    </div>`;
-
-  /* image upload handler */
-  const fileInput = div.querySelector('input[type="file"]');
-  const urlHidden = div.querySelector('.var-img-url');
-  const preview   = div.querySelector('.var-row-preview');
-  const status    = div.querySelector('.var-upload-status');
-
-  fileInput.addEventListener('change', async e => {
-    const file = e.target.files[0];
-    if (!file) return;
-    status.textContent = 'Uploading…';
-    try {
-      const url = await uploadImage(file);
-      urlHidden.value = url;
-      preview.innerHTML = `<img class="var-img-thumb" src="${escAttr(url)}">`;
-      status.textContent = 'Uploaded ✓';
-      toast('Variation image uploaded', 'success');
-    } catch (err) {
-      status.textContent = 'Upload failed';
-      toast('Upload failed: ' + err.message, 'error');
-    }
-  });
-
-  div.querySelector('.remove-var').addEventListener('click', () => div.remove());
-
-  container.appendChild(div);
-}
-
-/* ============================================================
-   17. IMAGE UPLOAD IN MAIN FORM
-============================================================ */
-document.getElementById('iImageFile').addEventListener('change', async e => {
-  const file = e.target.files[0];
-  if (!file) return;
-  const preview = document.getElementById('iImagePreview');
-  preview.innerHTML = '<span class="text-dim fs-sm"><span class="spinner spinner-accent" style="width:14px;height:14px;"></span> Uploading…</span>';
-  try {
-    const url = await uploadImage(file);
-    document.getElementById('iImageUrl').value      = url;
-    document.getElementById('iImageUrlInput').value = url;
-    preview.innerHTML = `<img class="img-preview-thumb" src="${escAttr(url)}">`;
-    toast('Image uploaded ✓', 'success');
-  } catch (err) {
-    preview.innerHTML = `<span class="text-danger fs-sm">Upload failed: ${escHtml(err.message)}</span>`;
-    toast('Image upload failed', 'error');
-  }
-});
-
-document.getElementById('iImageUrlApply').addEventListener('click', () => {
-  const url = document.getElementById('iImageUrlInput').value.trim();
-  if (!url) return;
-  document.getElementById('iImageUrl').value = url;
-  document.getElementById('iImagePreview').innerHTML =
-    `<img class="img-preview-thumb" src="${escAttr(url)}" onerror="this.src='';this.alt='Invalid URL'">`;
-  toast('Image URL applied', 'info');
-});
-
-/* ============================================================
-   18. DRAG & DROP — HEADINGS
-============================================================ */
 let _dragHeading = null;
+function handleHeadingDragStart(e) { _dragHeading = this.dataset.heading; this.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', _dragHeading); }
+function handleHeadingDragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; const target = this.dataset.heading; if (target !== _dragHeading) { document.querySelectorAll('.heading-item').forEach(el => el.classList.remove('drag-over')); this.classList.add('drag-over'); } }
+function handleHeadingDrop(e) { e.preventDefault(); const target = this.dataset.heading; if (!target || target === _dragHeading) return; STATE.pushHistory(); const keys = Object.keys(STATE.menu); const fromIdx = keys.indexOf(_dragHeading); const toIdx = keys.indexOf(target); if (fromIdx < 0 || toIdx < 0) return; keys.splice(fromIdx, 1); keys.splice(toIdx, 0, _dragHeading); const newMenu = {}; keys.forEach(k => (newMenu[k] = STATE.menu[k])); STATE.menu = newMenu; renderHeadings(); updateStats(); markPending(); toast('Heading reordered', 'info'); }
+function handleHeadingDragEnd() { this.classList.remove('dragging'); document.querySelectorAll('.heading-item').forEach(el => el.classList.remove('drag-over')); _dragHeading = null; }
 
-function handleHeadingDragStart(e) {
-  _dragHeading = this.dataset.heading;
-  this.classList.add('dragging');
-  e.dataTransfer.effectAllowed = 'move';
-  e.dataTransfer.setData('text/plain', _dragHeading);
-}
-
-function handleHeadingDragOver(e) {
-  e.preventDefault();
-  e.dataTransfer.dropEffect = 'move';
-  const target = this.dataset.heading;
-  if (target !== _dragHeading) {
-    document.querySelectorAll('.heading-item').forEach(el => el.classList.remove('drag-over'));
-    this.classList.add('drag-over');
-  }
-}
-
-function handleHeadingDrop(e) {
-  e.preventDefault();
-  const target = this.dataset.heading;
-  if (!target || target === _dragHeading) return;
-
-  STATE.pushHistory();
-  /* reorder keys */
-  const keys    = Object.keys(STATE.menu);
-  const fromIdx = keys.indexOf(_dragHeading);
-  const toIdx   = keys.indexOf(target);
-  if (fromIdx < 0 || toIdx < 0) return;
-
-  keys.splice(fromIdx, 1);
-  keys.splice(toIdx, 0, _dragHeading);
-
-  const newMenu = {};
-  keys.forEach(k => (newMenu[k] = STATE.menu[k]));
-  STATE.menu = newMenu;
-
-  renderHeadings();
-  updateStats();
-  markPending();
-  toast('Heading reordered', 'info');
-}
-
-function handleHeadingDragEnd() {
-  this.classList.remove('dragging');
-  document.querySelectorAll('.heading-item').forEach(el => el.classList.remove('drag-over'));
-  _dragHeading = null;
-}
-
-/* ============================================================
-   19. DRAG & DROP — ITEMS
-============================================================ */
 let _dragItemIdx = null;
+function handleItemDragStart(e) { _dragItemIdx = parseInt(this.dataset.idx, 10); this.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; }
+function handleItemDragOver(e) { e.preventDefault(); if (parseInt(this.dataset.idx, 10) !== _dragItemIdx) { document.querySelectorAll('.item-card').forEach(el => el.classList.remove('drag-over')); this.classList.add('drag-over'); } }
+function handleItemDrop(e) { e.preventDefault(); const toIdx = parseInt(this.dataset.idx, 10); if (isNaN(toIdx) || toIdx === _dragItemIdx || !STATE.currentHeading) return; STATE.pushHistory(); const arr = STATE.menu[STATE.currentHeading]; const item = arr.splice(_dragItemIdx, 1)[0]; arr.splice(toIdx, 0, item); renderItems(); markPending(); }
+function handleItemDragEnd() { this.classList.remove('dragging'); document.querySelectorAll('.item-card').forEach(el => el.classList.remove('drag-over')); _dragItemIdx = null; }
 
-function handleItemDragStart(e) {
-  _dragItemIdx = parseInt(this.dataset.idx, 10);
-  this.classList.add('dragging');
-  e.dataTransfer.effectAllowed = 'move';
-}
+function openModal(id) { const el = document.getElementById(id); if (!el) return; el.classList.add('active'); document.body.style.overflow = 'hidden'; }
+function closeModal(id) { const el = document.getElementById(id); if (!el) return; el.classList.remove('active'); document.body.style.overflow = ''; }
+document.querySelectorAll('.modal-overlay').forEach(overlay => { overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(overlay.id); }); });
+function switchTab(tabId) { document.querySelectorAll('#itemModal .tab-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tabId)); document.querySelectorAll('#itemModal .tab-pane').forEach(pane => pane.classList.toggle('active', pane.id === tabId)); }
+document.querySelectorAll('#itemModal .tab-btn').forEach(btn => btn.addEventListener('click', () => switchTab(btn.dataset.tab)));
 
-function handleItemDragOver(e) {
-  e.preventDefault();
-  if (parseInt(this.dataset.idx, 10) !== _dragItemIdx) {
-    document.querySelectorAll('.item-card').forEach(el => el.classList.remove('drag-over'));
-    this.classList.add('drag-over');
-  }
-}
-
-function handleItemDrop(e) {
-  e.preventDefault();
-  const toIdx = parseInt(this.dataset.idx, 10);
-  if (isNaN(toIdx) || toIdx === _dragItemIdx || !STATE.currentHeading) return;
-
-  STATE.pushHistory();
-  const arr  = STATE.menu[STATE.currentHeading];
-  const item = arr.splice(_dragItemIdx, 1)[0];
-  arr.splice(toIdx, 0, item);
-
-  renderItems();
-  markPending();
-}
-
-function handleItemDragEnd() {
-  this.classList.remove('dragging');
-  document.querySelectorAll('.item-card').forEach(el => el.classList.remove('drag-over'));
-  _dragItemIdx = null;
-}
-
-/* ============================================================
-   20. MODAL HELPERS
-============================================================ */
-function openModal(id) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  el.classList.add('active');
-  document.body.style.overflow = 'hidden';
-}
-
-function closeModal(id) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  el.classList.remove('active');
-  document.body.style.overflow = '';
-}
-
-/* close on overlay click */
-document.querySelectorAll('.modal-overlay').forEach(overlay => {
-  overlay.addEventListener('click', e => {
-    if (e.target === overlay) closeModal(overlay.id);
-  });
-});
-
-/* TAB SWITCHING */
-function switchTab(tabId) {
-  document.querySelectorAll('#itemModal .tab-btn').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.tab === tabId);
-  });
-  document.querySelectorAll('#itemModal .tab-pane').forEach(pane => {
-    pane.classList.toggle('active', pane.id === tabId);
-  });
-}
-
-document.querySelectorAll('#itemModal .tab-btn').forEach(btn => {
-  btn.addEventListener('click', () => switchTab(btn.dataset.tab));
-});
-
-/* ============================================================
-   21. CONFIRM DIALOG
-============================================================ */
 let _confirmCallback = null;
-
-function confirmAction(title, msg, onConfirm) {
-  document.getElementById('confirmTitle').textContent   = title;
-  document.getElementById('confirmMessage').textContent = msg;
-  _confirmCallback = onConfirm;
-  openModal('confirmModal');
-}
-
-document.getElementById('confirmOk').addEventListener('click', () => {
-  if (_confirmCallback) { _confirmCallback(); _confirmCallback = null; }
-  closeModal('confirmModal');
-});
-
-document.getElementById('confirmCancel').addEventListener('click',    () => closeModal('confirmModal'));
+function confirmAction(title, msg, onConfirm) { document.getElementById('confirmTitle').textContent = title; document.getElementById('confirmMessage').textContent = msg; _confirmCallback = onConfirm; openModal('confirmModal'); }
+document.getElementById('confirmOk').addEventListener('click', () => { if (_confirmCallback) { _confirmCallback(); _confirmCallback = null; } closeModal('confirmModal'); });
+document.getElementById('confirmCancel').addEventListener('click', () => closeModal('confirmModal'));
 document.getElementById('confirmModalClose').addEventListener('click', () => closeModal('confirmModal'));
 
-/* ============================================================
-   22. FILTER CHIPS
-============================================================ */
-document.getElementById('filterChips').addEventListener('click', e => {
-  const chip = e.target.closest('.filter-chip');
-  if (!chip) return;
-  STATE.filter = chip.dataset.filter;
-  document.querySelectorAll('.filter-chip').forEach(c => c.classList.toggle('active', c === chip));
-  renderItems();
-});
+document.getElementById('filterChips').addEventListener('click', e => { const chip = e.target.closest('.filter-chip'); if (!chip) return; STATE.filter = chip.dataset.filter; document.querySelectorAll('.filter-chip').forEach(c => c.classList.toggle('active', c === chip)); renderItems(); });
+document.getElementById('headingSearch').addEventListener('input', debounce(e => { STATE.headingSearch = e.target.value.trim(); renderHeadings(); }, 200));
+document.getElementById('itemSearch').addEventListener('input', debounce(e => { STATE.itemSearch = e.target.value.trim(); renderItems(); }, 200));
 
-/* ============================================================
-   23. SEARCH
-============================================================ */
-document.getElementById('headingSearch').addEventListener('input', debounce(e => {
-  STATE.headingSearch = e.target.value.trim();
-  renderHeadings();
-}, 200));
+function updateBulkBar() { const bar = document.getElementById('bulkBar'); const label = document.getElementById('bulkCountLabel'); const count = STATE.selectedItems.size; label.textContent = `${count} selected`; bar.classList.toggle('visible', STATE.bulkMode && count > 0); document.getElementById('selectAll').checked = count === (STATE.menu[STATE.currentHeading]||[]).length; }
+document.getElementById('selectAll').addEventListener('change', e => { const items = STATE.menu[STATE.currentHeading] || []; if (e.target.checked) items.forEach(item => STATE.selectedItems.add(item.id || item.name)); else STATE.selectedItems.clear(); renderItems(); updateBulkBar(); });
+document.getElementById('bulkDeleteBtn').addEventListener('click', () => { if (!STATE.selectedItems.size) return; confirmAction(`Delete ${STATE.selectedItems.size} items?`, 'This will permanently delete all selected items.', () => { STATE.pushHistory(); STATE.menu[STATE.currentHeading] = (STATE.menu[STATE.currentHeading] || []).filter(item => !STATE.selectedItems.has(item.id || item.name)); STATE.selectedItems.clear(); STATE.bulkMode = false; renderAll(); markPending(); toast('Items deleted', 'success'); }); });
+document.getElementById('bulkCancelBtn').addEventListener('click', () => { STATE.bulkMode = false; STATE.selectedItems.clear(); document.getElementById('bulkBar').classList.remove('visible'); renderItems(); });
+document.getElementById('bulkMoveBtn').addEventListener('click', () => { const target = document.getElementById('bulkMoveTarget'); target.innerHTML = ''; Object.keys(STATE.menu).forEach(k => { if (k !== STATE.currentHeading) { const opt = document.createElement('option'); opt.value = k; opt.textContent = k; target.appendChild(opt); } }); openModal('bulkMoveModal'); });
+document.getElementById('bulkMoveClose').addEventListener('click', () => closeModal('bulkMoveModal'));
+document.getElementById('bulkMoveCancelBtn').addEventListener('click', () => closeModal('bulkMoveModal'));
+document.getElementById('bulkMoveConfirmBtn').addEventListener('click', () => { const dest = document.getElementById('bulkMoveTarget').value; if (!dest || !STATE.menu[dest]) return; STATE.pushHistory(); const toMove = (STATE.menu[STATE.currentHeading] || []).filter(item => STATE.selectedItems.has(item.id || item.name)); STATE.menu[STATE.currentHeading] = (STATE.menu[STATE.currentHeading] || []).filter(item => !STATE.selectedItems.has(item.id || item.name)); STATE.menu[dest].push(...toMove); STATE.selectedItems.clear(); STATE.bulkMode = false; closeModal('bulkMoveModal'); renderAll(); markPending(); toast(`Moved ${toMove.length} item(s) to "${dest}"`, 'success'); });
 
-document.getElementById('itemSearch').addEventListener('input', debounce(e => {
-  STATE.itemSearch = e.target.value.trim();
-  renderItems();
-}, 200));
-
-/* ============================================================
-   24. BULK SELECTION
-============================================================ */
-function updateBulkBar() {
-  const bar   = document.getElementById('bulkBar');
-  const label = document.getElementById('bulkCountLabel');
-  const count = STATE.selectedItems.size;
-  label.textContent = `${count} selected`;
-  bar.classList.toggle('visible', STATE.bulkMode && count > 0);
-  document.getElementById('selectAll').checked = count === (STATE.menu[STATE.currentHeading]||[]).length;
-}
-
-document.getElementById('selectAll').addEventListener('change', e => {
-  const items = STATE.menu[STATE.currentHeading] || [];
-  if (e.target.checked) {
-    items.forEach(item => STATE.selectedItems.add(item.id || item.name));
-  } else {
-    STATE.selectedItems.clear();
-  }
-  renderItems();
-  updateBulkBar();
-});
-
-document.getElementById('bulkDeleteBtn').addEventListener('click', () => {
-  if (!STATE.selectedItems.size) return;
-  confirmAction(
-    `Delete ${STATE.selectedItems.size} items?`,
-    'This will permanently delete all selected items.',
-    () => {
-      STATE.pushHistory();
-      STATE.menu[STATE.currentHeading] = (STATE.menu[STATE.currentHeading] || [])
-        .filter(item => !STATE.selectedItems.has(item.id || item.name));
-      STATE.selectedItems.clear();
-      STATE.bulkMode = false;
-      renderAll();
-      markPending();
-      toast('Items deleted', 'success');
-    }
-  );
-});
-
-document.getElementById('bulkCancelBtn').addEventListener('click', () => {
-  STATE.bulkMode = false;
-  STATE.selectedItems.clear();
-  document.getElementById('bulkBar').classList.remove('visible');
-  renderItems();
-});
-
-document.getElementById('bulkMoveBtn').addEventListener('click', () => {
-  const target = document.getElementById('bulkMoveTarget');
-  target.innerHTML = '';
-  Object.keys(STATE.menu).forEach(k => {
-    if (k !== STATE.currentHeading) {
-      const opt = document.createElement('option');
-      opt.value = k;
-      opt.textContent = k;
-      target.appendChild(opt);
-    }
-  });
-  openModal('bulkMoveModal');
-});
-
-document.getElementById('bulkMoveClose').addEventListener('click',      () => closeModal('bulkMoveModal'));
-document.getElementById('bulkMoveCancelBtn').addEventListener('click',  () => closeModal('bulkMoveModal'));
-document.getElementById('bulkMoveConfirmBtn').addEventListener('click', () => {
-  const dest = document.getElementById('bulkMoveTarget').value;
-  if (!dest || !STATE.menu[dest]) return;
-  STATE.pushHistory();
-  const toMove = (STATE.menu[STATE.currentHeading] || []).filter(item =>
-    STATE.selectedItems.has(item.id || item.name)
-  );
-  STATE.menu[STATE.currentHeading] = (STATE.menu[STATE.currentHeading] || []).filter(item =>
-    !STATE.selectedItems.has(item.id || item.name)
-  );
-  STATE.menu[dest].push(...toMove);
-  STATE.selectedItems.clear();
-  STATE.bulkMode = false;
-  closeModal('bulkMoveModal');
-  renderAll();
-  markPending();
-  toast(`Moved ${toMove.length} item(s) to "${dest}"`, 'success');
-});
-
-/* ============================================================
-   25. LIVE PREVIEW
-============================================================ */
-function previewLocal() {
-  const html   = buildMenuHTML();
-  const iframe = document.getElementById('previewIframe');
-  iframe.srcdoc = html;
-  toast('Preview updated', 'info');
-}
-
-async function refreshPreview() {
-  try {
-    const res  = await netFetch(CFG.WEB_APP_URL);
-    const html = await res.text();
-    document.getElementById('previewIframe').srcdoc = html;
-    toast('Preview refreshed from Drive', 'info');
-  } catch (err) {
-    toast('Preview error: ' + err.message, 'error');
-  }
-}
-
+function previewLocal() { const html = buildMenuHTML(); document.getElementById('previewIframe').srcdoc = html; toast('Preview updated', 'info'); }
+async function refreshPreview() { try { const res = await netFetch(`${CFG.WEB_APP_URL}?action=getData`); const html = await res.text(); document.getElementById('previewIframe').srcdoc = html; toast('Preview refreshed from Drive', 'info'); } catch (err) { toast('Preview error: ' + err.message, 'error'); } }
 document.getElementById('previewLocalBtn').addEventListener('click', previewLocal);
 document.getElementById('refreshPreviewBtn').addEventListener('click', refreshPreview);
 
-/* ============================================================
-   26. LOADING OVERLAY
-============================================================ */
-function setLoadingOverlay(panelId, show) {
-  const panel   = document.getElementById(panelId);
-  const existing = panel.querySelector('.loading-overlay');
-  if (show && !existing) {
-    const ov = document.createElement('div');
-    ov.className = 'loading-overlay';
-    ov.innerHTML = `<div class="loading-block"><span class="spinner"></span> Loading from Drive…</div>`;
-    panel.style.position = 'relative';
-    panel.appendChild(ov);
-  } else if (!show && existing) {
-    existing.remove();
-  }
-}
+function setLoadingOverlay(panelId, show) { const panel = document.getElementById(panelId); const existing = panel.querySelector('.loading-overlay'); if (show && !existing) { const ov = document.createElement('div'); ov.className = 'loading-overlay'; ov.innerHTML = `<div class="loading-block"><span class="spinner"></span> Loading from Drive…</div>`; panel.style.position = 'relative'; panel.appendChild(ov); } else if (!show && existing) { existing.remove(); } }
 
-/* ============================================================
-   27. MAIN EVENT WIRING
-============================================================ */
-/* header */
-document.getElementById('loadDriveBtn').addEventListener('click',    loadFromDrive);
-document.getElementById('saveDriveBtn').addEventListener('click',    saveToDrive);
-document.getElementById('refreshBtn').addEventListener('click',      loadFromDrive);
-document.getElementById('undoBtn').addEventListener('click',         () => STATE.undo());
-document.getElementById('redoBtn').addEventListener('click',         () => STATE.redo());
-
-/* headings */
-document.getElementById('newHeadingBtn').addEventListener('click',   () => openNewHeadingModal());
-document.getElementById('headingModalClose').addEventListener('click',  () => closeModal('headingModal'));
+document.getElementById('loadDriveBtn').addEventListener('click', loadFromDrive);
+document.getElementById('saveDriveBtn').addEventListener('click', saveToDrive);
+document.getElementById('refreshBtn').addEventListener('click', loadFromDrive);
+document.getElementById('undoBtn').addEventListener('click', () => STATE.undo());
+document.getElementById('redoBtn').addEventListener('click', () => STATE.redo());
+document.getElementById('newHeadingBtn').addEventListener('click', () => openNewHeadingModal());
+document.getElementById('headingModalClose').addEventListener('click', () => closeModal('headingModal'));
 document.getElementById('headingModalCancel').addEventListener('click', () => closeModal('headingModal'));
-document.getElementById('createHeadingBtn').addEventListener('click',   createOrRenameHeading);
-document.getElementById('newHeadingInput').addEventListener('keydown', e => {
-  if (e.key === 'Enter') createOrRenameHeading();
-  if (e.key === 'Escape') closeModal('headingModal');
-});
-
-/* items */
+document.getElementById('createHeadingBtn').addEventListener('click', createOrRenameHeading);
+document.getElementById('newHeadingInput').addEventListener('keydown', e => { if (e.key === 'Enter') createOrRenameHeading(); if (e.key === 'Escape') closeModal('headingModal'); });
 document.getElementById('addItemBtn').addEventListener('click', () => openItemModal(null));
-document.getElementById('itemModalClose').addEventListener('click',   () => closeModal('itemModal'));
-document.getElementById('itemModalCancel').addEventListener('click',  () => closeModal('itemModal'));
-document.getElementById('saveItemBtn').addEventListener('click',       saveItem);
-document.getElementById('iHasVar').addEventListener('change',          togglePricingUI);
-document.getElementById('addVariationBtn').addEventListener('click',   () => addVariationRow());
+document.getElementById('itemModalClose').addEventListener('click', () => closeModal('itemModal'));
+document.getElementById('itemModalCancel').addEventListener('click', () => closeModal('itemModal'));
+document.getElementById('saveItemBtn').addEventListener('click', saveItem);
+document.getElementById('iHasVar').addEventListener('change', togglePricingUI);
+document.getElementById('addVariationBtn').addEventListener('click', () => addVariationRow());
+document.getElementById('iName').addEventListener('keydown', e => { if (e.key === 'Enter') saveItem(); });
 
-/* item form — enter to save */
-document.getElementById('iName').addEventListener('keydown', e => {
-  if (e.key === 'Enter') saveItem();
-});
+document.addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) { e.preventDefault(); STATE.undo(); } if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) { e.preventDefault(); STATE.redo(); } if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); saveToDrive(); } if (e.key === 'Escape') { ['itemModal','headingModal','confirmModal','bulkMoveModal'].forEach(id => closeModal(id)); } if (e.key === 'n' && !e.ctrlKey && !e.metaKey) { const anyOpen = document.querySelector('.modal-overlay.active'); if (!anyOpen && STATE.currentHeading && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') { e.preventDefault(); openItemModal(null); } } });
+window.addEventListener('beforeunload', e => { if (STATE.pendingChanges) { e.preventDefault(); e.returnValue = 'You have unsaved changes. Save to Drive before leaving.'; } });
+setInterval(() => { if (STATE.pendingChanges) saveLocal(); }, 10000);
 
-/* ============================================================
-   28. KEYBOARD SHORTCUTS
-============================================================ */
-document.addEventListener('keydown', e => {
-  /* Ctrl/Cmd + Z = Undo */
-  if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
-    e.preventDefault(); STATE.undo();
-  }
-  /* Ctrl/Cmd + Shift + Z or Ctrl+Y = Redo */
-  if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
-    e.preventDefault(); STATE.redo();
-  }
-  /* Ctrl + S = Save to Drive */
-  if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-    e.preventDefault(); saveToDrive();
-  }
-  /* Escape = close any open modal */
-  if (e.key === 'Escape') {
-    ['itemModal','headingModal','confirmModal','bulkMoveModal'].forEach(id => closeModal(id));
-  }
-  /* N = new item (when heading selected, no modal open) */
-  if (e.key === 'n' && !e.ctrlKey && !e.metaKey) {
-    const anyOpen = document.querySelector('.modal-overlay.active');
-    if (!anyOpen && STATE.currentHeading && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
-      e.preventDefault(); openItemModal(null);
-    }
-  }
-});
+// Attach persistent heading action listener (fixed)
+document.getElementById('headingsList').addEventListener('click', headingActionHandler);
 
-/* ============================================================
-   29. WINDOW BEFORE UNLOAD WARNING
-============================================================ */
-window.addEventListener('beforeunload', e => {
-  if (STATE.pendingChanges) {
-    e.preventDefault();
-    e.returnValue = 'You have unsaved changes. Save to Drive before leaving.';
-  }
-});
-
-/* ============================================================
-   30. AUTO-SAVE TO LOCAL STORAGE
-============================================================ */
-setInterval(() => {
-  if (STATE.pendingChanges) saveLocal();
-}, 10000);
-
-/* ============================================================
-   31. INITIALISATION
-============================================================ */
-(function init() {
-  /* try local first for instant load */
-  const gotLocal = loadLocal();
-  if (gotLocal && Object.keys(STATE.menu).length > 0) {
-    renderAll();
-    const keys = Object.keys(STATE.menu);
-    if (keys.length) selectHeading(keys[0]);
-    setSyncStatus('pending', 'Local data loaded — sync to Drive');
-    toast('Restored from local backup', 'info');
-  } else {
-    /* no local data — attempt Drive load */
-    loadFromDrive();
-  }
-  updateUndoRedoBtns();
-})();
+(function init() { const gotLocal = loadLocal(); if (gotLocal && Object.keys(STATE.menu).length > 0) { renderAll(); const keys = Object.keys(STATE.menu); if (keys.length) selectHeading(keys[0]); setSyncStatus('pending', 'Local data loaded — sync to Drive'); toast('Restored from local backup', 'info'); } else { loadFromDrive(); } updateUndoRedoBtns(); })();
 </script>
 </body>
 </html>
