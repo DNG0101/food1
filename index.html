@@ -3,789 +3,2260 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Menu Manager – Full CRUD + Image Upload</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <title>Menu Manager Pro — Full CRUD</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
+    /* ============================================================
+       RESET & ROOT
+    ============================================================ */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg:          #080b12;
+      --bg2:         #0d1117;
+      --surface:     #111827;
+      --surface2:    #161d2b;
+      --surface3:    #1c2336;
+      --border:      #252d3f;
+      --border2:     #2e3954;
+      --accent:      #6c5ce7;
+      --accent2:     #a29bfe;
+      --accent3:     #4834d4;
+      --success:     #00b894;
+      --warning:     #fdcb6e;
+      --danger:      #e17055;
+      --info:        #74b9ff;
+      --text:        #e8edf5;
+      --text2:       #9aa5b8;
+      --text3:       #5f6b80;
+      --veg:         #00b894;
+      --nonveg:      #e17055;
+      --radius:      12px;
+      --radius-sm:   8px;
+      --radius-lg:   18px;
+      --radius-xl:   24px;
+      --shadow:      0 4px 24px rgba(0,0,0,.4);
+      --shadow-lg:   0 8px 48px rgba(0,0,0,.5);
+      --transition:  0.18s cubic-bezier(.4,0,.2,1);
     }
+    html { font-size: 15px; }
     body {
-      font-family: 'Inter', sans-serif;
-      background: #0a0c10;
-      color: #eef2ff;
-      padding: 24px;
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
     }
-    .app {
-      max-width: 1600px;
-      margin: 0 auto;
+    /* ============================================================
+       SCROLLBAR
+    ============================================================ */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg2); }
+    ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 99px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+    /* ============================================================
+       LAYOUT
+    ============================================================ */
+    .app-wrapper { max-width: 1640px; margin: 0 auto; padding: 20px 20px 60px; }
+    .app-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 18px 28px; background: var(--surface);
+      border: 1px solid var(--border); border-radius: var(--radius-lg);
+      margin-bottom: 22px; gap: 16px; flex-wrap: wrap;
     }
-    h1 {
-      font-size: 28px;
-      margin-bottom: 24px;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    .grid {
+    .app-title { font-size: 22px; font-weight: 800; letter-spacing: -.4px; display: flex; align-items: center; gap: 10px; }
+    .app-title-icon { font-size: 26px; }
+    .app-subtitle { font-size: 12px; color: var(--text3); font-weight: 400; margin-top: 1px; }
+    .header-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .main-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 24px;
+      grid-template-columns: 360px 1fr;
+      gap: 20px;
+      align-items: start;
     }
-    @media (max-width: 900px) {
-      .grid { grid-template-columns: 1fr; }
-    }
+    @media (max-width: 1000px) { .main-grid { grid-template-columns: 1fr; } }
+    /* ============================================================
+       PANELS
+    ============================================================ */
     .panel {
-      background: #11161f;
-      border-radius: 20px;
-      border: 1px solid #2a2f3a;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
       overflow: hidden;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+      box-shadow: var(--shadow);
     }
     .panel-header {
-      padding: 18px 24px;
-      background: #0f131c;
-      border-bottom: 1px solid #2a2f3a;
-      font-weight: 600;
-      font-size: 18px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 12px;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 20px; border-bottom: 1px solid var(--border);
+      background: var(--surface2); gap: 12px; flex-wrap: wrap; min-height: 56px;
     }
-    .panel-body {
-      padding: 24px;
+    .panel-title { font-weight: 700; font-size: 14px; display: flex; align-items: center; gap: 8px; color: var(--text); }
+    .panel-title-icon { font-size: 16px; }
+    .panel-body { padding: 18px 20px; }
+    .panel-body.no-pad { padding: 0; }
+    /* ============================================================
+       BUTTONS
+    ============================================================ */
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 16px; border-radius: var(--radius-sm);
+      font-size: 13px; font-weight: 600; cursor: pointer;
+      border: 1px solid transparent; transition: all var(--transition);
+      white-space: nowrap; line-height: 1; text-decoration: none;
+      background: var(--surface3); color: var(--text); border-color: var(--border2);
     }
-    button, .button {
-      background: #2d3748;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 10px;
-      color: white;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.2s;
-      font-size: 14px;
+    .btn:hover { background: var(--surface2); border-color: var(--accent); transform: translateY(-1px); }
+    .btn:active { transform: translateY(0) scale(.98); }
+    .btn:disabled { opacity: .45; cursor: not-allowed; transform: none !important; }
+    .btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .btn-primary:hover { background: var(--accent3); border-color: var(--accent3); }
+    .btn-danger { background: rgba(225,112,85,.15); color: var(--danger); border-color: rgba(225,112,85,.3); }
+    .btn-danger:hover { background: rgba(225,112,85,.25); border-color: var(--danger); }
+    .btn-success { background: rgba(0,184,148,.15); color: var(--success); border-color: rgba(0,184,148,.3); }
+    .btn-success:hover { background: rgba(0,184,148,.25); border-color: var(--success); }
+    .btn-sm { padding: 5px 10px; font-size: 12px; }
+    .btn-xs { padding: 3px 8px; font-size: 11px; border-radius: 6px; }
+    .btn-icon { padding: 7px; border-radius: var(--radius-sm); font-size: 14px; }
+    .btn-full { width: 100%; justify-content: center; }
+    /* ============================================================
+       FORM ELEMENTS
+    ============================================================ */
+    .form-group { margin-bottom: 14px; }
+    .form-label {
+      display: block; font-size: 12px; font-weight: 600;
+      color: var(--text2); margin-bottom: 6px; letter-spacing: .3px;
+      text-transform: uppercase;
     }
-    button.primary {
-      background: #6c5ce7;
+    .form-input, .form-select, .form-textarea {
+      width: 100%; background: var(--bg2); border: 1px solid var(--border2);
+      border-radius: var(--radius-sm); padding: 9px 13px; color: var(--text);
+      font-size: 14px; outline: none; transition: border-color var(--transition);
+      font-family: inherit;
     }
-    button.primary:hover {
-      background: #5b4bc4;
-      transform: translateY(-1px);
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      border-color: var(--accent); box-shadow: 0 0 0 3px rgba(108,92,231,.15);
     }
-    button.danger {
-      background: #e74c3c;
+    .form-input::placeholder, .form-textarea::placeholder { color: var(--text3); }
+    .form-textarea { resize: vertical; min-height: 72px; }
+    .form-select option { background: var(--surface2); }
+    .form-file {
+      width: 100%; background: var(--bg2); border: 1.5px dashed var(--border2);
+      border-radius: var(--radius-sm); padding: 10px 13px; color: var(--text2);
+      font-size: 13px; cursor: pointer; transition: all var(--transition);
     }
-    button.danger:hover {
-      background: #c0392b;
+    .form-file:hover { border-color: var(--accent); color: var(--accent2); }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+    .checkbox-label {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 13px; color: var(--text2); cursor: pointer; user-select: none;
     }
-    button.secondary {
-      background: #2c3e50;
+    .checkbox-label input[type="checkbox"] {
+      width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer;
     }
-    button.small {
-      padding: 4px 10px;
-      font-size: 12px;
+    /* ============================================================
+       BADGE / PILL / TAG
+    ============================================================ */
+    .badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 9px; border-radius: 99px; font-size: 11px; font-weight: 600;
     }
-    input, textarea, select {
-      width: 100%;
-      background: #0f131c;
-      border: 1px solid #2a2f3a;
-      border-radius: 10px;
-      padding: 10px 14px;
-      color: #eef2ff;
-      font-size: 14px;
-      outline: none;
+    .badge-veg   { background: rgba(0,184,148,.15); color: var(--veg); border: 1px solid rgba(0,184,148,.3); }
+    .badge-nonveg{ background: rgba(225,112,85,.15); color: var(--nonveg); border: 1px solid rgba(225,112,85,.3); }
+    .badge-count { background: var(--surface3); color: var(--text2); border: 1px solid var(--border); font-size: 11px; padding: 2px 8px; border-radius: 99px; }
+    .vdot {
+      display: inline-block; width: 12px; height: 12px; border-radius: 3px;
+      border: 2px solid; flex-shrink: 0;
     }
-    input:focus, textarea:focus, select:focus {
-      border-color: #6c5ce7;
-    }
-    .form-group {
-      margin-bottom: 16px;
-    }
-    .form-group label {
-      display: block;
-      margin-bottom: 6px;
-      font-size: 13px;
-      color: #9ca3af;
-    }
-    .row {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-    .heading-list {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      margin-bottom: 20px;
-      max-height: 250px;
-      overflow-y: auto;
-    }
+    .vdot-inner { display: block; width: 6px; height: 6px; border-radius: 50%; margin: 1px auto 0; }
+    /* ============================================================
+       HEADING LIST (LEFT PANEL)
+    ============================================================ */
+    .headings-list { display: flex; flex-direction: column; gap: 6px; max-height: 440px; overflow-y: auto; padding-right: 2px; }
     .heading-item {
-      background: #0f131c;
-      border-radius: 12px;
-      padding: 12px 16px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-left: 3px solid #6c5ce7;
-      cursor: pointer;
-      transition: 0.1s;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 11px 14px; border-radius: var(--radius-sm);
+      background: var(--surface2); border: 1px solid var(--border);
+      cursor: pointer; transition: all var(--transition); gap: 10px;
     }
-    .heading-item.active {
-      background: #1a1f2c;
-      border-left-color: #f1c40f;
+    .heading-item:hover { background: var(--surface3); border-color: var(--border2); }
+    .heading-item.active { background: rgba(108,92,231,.12); border-color: rgba(108,92,231,.5); }
+    .heading-item.active .heading-item-name { color: var(--accent2); }
+    .heading-item-left { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .heading-drag-handle {
+      color: var(--text3); cursor: grab; font-size: 14px;
+      padding: 2px 3px; border-radius: 4px; flex-shrink: 0;
+      transition: color var(--transition);
     }
-    .heading-item:hover {
-      background: #161c26;
-    }
+    .heading-drag-handle:hover { color: var(--accent2); }
+    .heading-item-name { font-weight: 600; font-size: 13.5px; truncate; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+    .heading-item-actions { display: flex; gap: 4px; flex-shrink: 0; opacity: 0; transition: opacity var(--transition); }
+    .heading-item:hover .heading-item-actions { opacity: 1; }
+    .heading-item.dragging { opacity: .4; border-style: dashed; }
+    .heading-item.drag-over { border-color: var(--accent); background: rgba(108,92,231,.1); }
+    /* ============================================================
+       ITEMS LIST (RIGHT PANEL)
+    ============================================================ */
+    .items-grid { display: flex; flex-direction: column; gap: 10px; }
     .item-card {
-      background: #0f131c;
-      border-radius: 14px;
-      padding: 16px;
-      margin-bottom: 12px;
-      border: 1px solid #2a2f3a;
-      position: relative;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 14px 16px;
+      transition: all var(--transition); position: relative;
     }
-    .item-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 10px;
+    .item-card:hover { border-color: var(--border2); background: var(--surface3); }
+    .item-card.dragging { opacity: .4; border-style: dashed; }
+    .item-card.drag-over { border-color: var(--accent); }
+    .item-card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+    .item-card-main { display: flex; gap: 12px; flex: 1; min-width: 0; }
+    .item-card-img {
+      width: 68px; height: 68px; border-radius: var(--radius-sm); object-fit: cover;
+      background: var(--surface3); flex-shrink: 0; border: 1px solid var(--border);
+      overflow: hidden;
     }
-    .item-name {
-      font-weight: 600;
-      font-size: 16px;
+    .item-card-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .item-card-img-placeholder {
+      width: 68px; height: 68px; border-radius: var(--radius-sm);
+      background: var(--surface3); border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text3); font-size: 22px; flex-shrink: 0;
     }
-    .item-details {
-      font-size: 13px;
-      color: #9ca3af;
-      margin-bottom: 8px;
+    .item-card-info { flex: 1; min-width: 0; }
+    .item-card-name { font-weight: 700; font-size: 14.5px; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .item-card-desc { font-size: 12.5px; color: var(--text2); margin-bottom: 6px; line-height: 1.4; }
+    .item-card-meta { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; font-size: 12px; color: var(--text3); }
+    .item-card-price { font-size: 15px; font-weight: 700; color: var(--accent2); }
+    .item-card-actions { display: flex; gap: 6px; flex-shrink: 0; }
+    .variations-section { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+    .variations-title { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 6px; }
+    .variations-list { display: flex; flex-wrap: wrap; gap: 6px; }
+    .variation-chip {
+      display: flex; align-items: center; gap: 6px;
+      background: var(--surface3); border: 1px solid var(--border);
+      padding: 5px 10px; border-radius: var(--radius-sm); font-size: 12px;
     }
-    .item-actions {
-      display: flex;
-      gap: 8px;
-      margin-top: 12px;
+    .variation-chip-img { width: 22px; height: 22px; border-radius: 4px; object-fit: cover; }
+    .variation-chip-price { color: var(--accent2); font-weight: 600; }
+    /* ============================================================
+       DRAG HANDLE FOR ITEMS
+    ============================================================ */
+    .item-drag-handle {
+      position: absolute; left: -4px; top: 50%; transform: translateY(-50%);
+      color: var(--text3); font-size: 16px; cursor: grab; opacity: 0;
+      transition: opacity var(--transition); padding: 4px;
     }
-    .variation-badge {
-      background: #2a2f3a;
-      border-radius: 20px;
-      padding: 4px 10px;
-      font-size: 11px;
-      display: inline-block;
-      margin-right: 6px;
+    .item-card:hover .item-drag-handle { opacity: 1; }
+    /* ============================================================
+       SEARCH BAR
+    ============================================================ */
+    .search-wrapper { position: relative; }
+    .search-icon { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--text3); font-size: 14px; pointer-events: none; }
+    .search-input { padding-left: 34px !important; }
+    /* ============================================================
+       TOOLBAR
+    ============================================================ */
+    .toolbar {
+      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+      padding: 14px 20px; border-bottom: 1px solid var(--border); background: var(--surface2);
     }
-    .image-preview {
-      max-width: 80px;
-      max-height: 80px;
-      border-radius: 10px;
-      margin-top: 8px;
+    .toolbar-title { font-weight: 700; font-size: 15px; flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+    .toolbar-accent { color: var(--accent2); }
+    /* ============================================================
+       EMPTY STATE
+    ============================================================ */
+    .empty-state {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 52px 24px; text-align: center; color: var(--text3); gap: 12px;
     }
-    .toast {
-      position: fixed;
-      bottom: 30px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #1e2a3a;
-      backdrop-filter: blur(10px);
-      padding: 12px 24px;
-      border-radius: 40px;
-      font-size: 14px;
-      z-index: 1000;
-      transition: 0.2s;
-      opacity: 0;
-      pointer-events: none;
-      border: 1px solid #6c5ce7;
+    .empty-icon { font-size: 42px; opacity: .4; }
+    .empty-title { font-size: 15px; font-weight: 600; color: var(--text2); }
+    .empty-desc { font-size: 13px; max-width: 280px; line-height: 1.5; }
+    /* ============================================================
+       MODAL
+    ============================================================ */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,.75);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 9000; padding: 20px; backdrop-filter: blur(6px);
+      opacity: 0; pointer-events: none; transition: opacity .2s;
     }
-    .toast.show {
-      opacity: 1;
-      transform: translateX(-50%) translateY(-10px);
+    .modal-overlay.active { opacity: 1; pointer-events: all; }
+    .modal-box {
+      background: var(--surface); border: 1px solid var(--border2);
+      border-radius: var(--radius-xl); padding: 28px;
+      max-width: 640px; width: 100%; max-height: 90vh; overflow-y: auto;
+      transform: scale(.95) translateY(10px);
+      transition: transform .2s;
+      box-shadow: var(--shadow-lg);
     }
-    iframe {
-      width: 100%;
-      height: 600px;
-      border: none;
-      border-radius: 16px;
-      background: white;
+    .modal-overlay.active .modal-box { transform: scale(1) translateY(0); }
+    .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; }
+    .modal-title { font-size: 18px; font-weight: 700; }
+    .modal-close { background: none; border: none; color: var(--text3); font-size: 22px; cursor: pointer; padding: 4px; border-radius: 6px; line-height: 1; transition: color var(--transition); }
+    .modal-close:hover { color: var(--text); }
+    .modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border); }
+    /* ============================================================
+       TOAST NOTIFICATIONS
+    ============================================================ */
+    #toast-container {
+      position: fixed; bottom: 28px; right: 28px;
+      display: flex; flex-direction: column; gap: 10px;
+      z-index: 99999; pointer-events: none;
     }
-    hr {
-      border-color: #2a2f3a;
-      margin: 20px 0;
+    .toast-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 18px; border-radius: 12px;
+      font-size: 13.5px; font-weight: 500;
+      border: 1px solid; min-width: 220px; max-width: 380px;
+      pointer-events: all;
+      animation: toastIn .25s cubic-bezier(.4,0,.2,1) forwards;
+      box-shadow: var(--shadow);
     }
-    .flex-between {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+    .toast-item.removing { animation: toastOut .25s cubic-bezier(.4,0,.2,1) forwards; }
+    .toast-success { background: rgba(0,184,148,.12); border-color: rgba(0,184,148,.4); color: #00dba8; }
+    .toast-error   { background: rgba(225,112,85,.12); border-color: rgba(225,112,85,.4); color: #ff8c78; }
+    .toast-info    { background: rgba(116,185,255,.12); border-color: rgba(116,185,255,.4); color: #93c9ff; }
+    .toast-warning { background: rgba(253,203,110,.12); border-color: rgba(253,203,110,.4); color: #fdd575; }
+    @keyframes toastIn  { from { opacity:0; transform:translateY(12px) scale(.95); } to { opacity:1; transform:none; } }
+    @keyframes toastOut { from { opacity:1; transform:none; } to { opacity:0; transform:translateY(12px) scale(.95); } }
+    /* ============================================================
+       LOADING / SPINNER
+    ============================================================ */
+    .spinner {
+      display: inline-block; width: 16px; height: 16px; border-radius: 50%;
+      border: 2.5px solid rgba(255,255,255,.2); border-top-color: #fff;
+      animation: spin .65s linear infinite; flex-shrink: 0;
     }
-    .gap-2 { gap: 8px; }
-    .mt-4 { margin-top: 16px; }
-    .mb-2 { margin-bottom: 8px; }
-    .text-accent { color: #6c5ce7; }
+    .spinner-accent { border-color: rgba(108,92,231,.2); border-top-color: var(--accent); }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-overlay {
+      position: absolute; inset: 0; background: rgba(13,17,23,.75);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 100; border-radius: inherit;
+    }
+    .loading-block { display: flex; align-items: center; gap: 12px; padding: 20px 28px; background: var(--surface2); border: 1px solid var(--border2); border-radius: var(--radius); font-size: 13.5px; color: var(--text2); }
+    /* ============================================================
+       VARIATION ROW IN MODAL
+    ============================================================ */
+    .var-row {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); padding: 12px; margin-bottom: 10px;
+    }
+    .var-row-fields { display: grid; grid-template-columns: 1fr 90px 1fr auto; gap: 8px; align-items: end; }
+    .var-row-preview { margin-top: 8px; display: flex; gap: 8px; align-items: center; }
+    .var-img-thumb { width: 40px; height: 40px; border-radius: 6px; object-fit: cover; border: 1px solid var(--border); }
+    /* ============================================================
+       PREVIEW SECTION
+    ============================================================ */
+    .preview-panel { margin-top: 20px; }
+    #previewIframe { width: 100%; height: 600px; border: none; border-radius: var(--radius); background: white; display: block; }
+    /* ============================================================
+       STATS ROW
+    ============================================================ */
+    .stats-row { display: grid; grid-template-columns: repeat(auto-fit,minmax(120px,1fr)); gap: 10px; margin-bottom: 18px; }
+    .stat-card {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); padding: 12px 14px; text-align: center;
+    }
+    .stat-value { font-size: 22px; font-weight: 800; color: var(--accent2); }
+    .stat-label { font-size: 11px; color: var(--text3); margin-top: 2px; font-weight: 600; text-transform: uppercase; letter-spacing: .4px; }
+    /* ============================================================
+       SYNC STATUS BAR
+    ============================================================ */
+    .sync-bar {
+      display: flex; align-items: center; gap: 8px; padding: 8px 14px;
+      border-radius: var(--radius-sm); font-size: 12px; font-weight: 500;
+      border: 1px solid var(--border); transition: all var(--transition);
+    }
+    .sync-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .sync-bar.synced { color: var(--success); border-color: rgba(0,184,148,.3); background: rgba(0,184,148,.08); }
+    .sync-bar.synced .sync-dot { background: var(--success); box-shadow: 0 0 6px var(--success); }
+    .sync-bar.pending { color: var(--warning); border-color: rgba(253,203,110,.3); background: rgba(253,203,110,.08); }
+    .sync-bar.pending .sync-dot { background: var(--warning); animation: pulse 1.2s infinite; }
+    .sync-bar.error { color: var(--danger); border-color: rgba(225,112,85,.3); background: rgba(225,112,85,.08); }
+    .sync-bar.error .sync-dot { background: var(--danger); }
+    @keyframes pulse { 0%,100%{opacity:1}50%{opacity:.3} }
+    /* ============================================================
+       UNDO/REDO BAR
+    ============================================================ */
+    .history-bar { display: flex; gap: 4px; }
+    /* ============================================================
+       FILTER BAR
+    ============================================================ */
+    .filter-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+    .filter-chip {
+      padding: 4px 12px; border-radius: 99px; font-size: 12px; font-weight: 500;
+      border: 1px solid var(--border2); background: var(--surface2); color: var(--text2);
+      cursor: pointer; transition: all var(--transition);
+    }
+    .filter-chip.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+    /* ============================================================
+       IMAGE PREVIEW THUMB IN FORM
+    ============================================================ */
+    .img-preview-thumb {
+      margin-top: 8px; width: 80px; height: 80px; border-radius: var(--radius-sm);
+      object-fit: cover; border: 1px solid var(--border); display: block;
+    }
+    /* ============================================================
+       CONFIRM DIALOG
+    ============================================================ */
+    .confirm-dialog .modal-box { max-width: 400px; }
+    .confirm-msg { font-size: 14px; color: var(--text2); line-height: 1.6; margin-bottom: 6px; }
+    /* ============================================================
+       HEADING MODAL
+    ============================================================ */
+    .heading-modal .modal-box { max-width: 420px; }
+    /* ============================================================
+       TOOLTIP
+    ============================================================ */
+    [data-tip] { position: relative; }
+    [data-tip]::after {
+      content: attr(data-tip); position: absolute; bottom: calc(100% + 6px); left: 50%;
+      transform: translateX(-50%); background: var(--surface3); color: var(--text);
+      font-size: 11px; padding: 4px 8px; border-radius: 6px; border: 1px solid var(--border2);
+      white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity .15s; z-index: 1000;
+    }
+    [data-tip]:hover::after { opacity: 1; }
+    /* ============================================================
+       DIVIDER
+    ============================================================ */
+    .divider { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+    /* ============================================================
+       TABS (for modal sections)
+    ============================================================ */
+    .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 18px; }
+    .tab-btn {
+      padding: 8px 16px; font-size: 13px; font-weight: 600; cursor: pointer;
+      background: none; border: none; color: var(--text3); border-bottom: 2px solid transparent;
+      transition: all var(--transition); margin-bottom: -1px;
+    }
+    .tab-btn.active { color: var(--accent2); border-bottom-color: var(--accent); }
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
+    /* ============================================================
+       COUNTER BADGE
+    ============================================================ */
+    .counter-badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-width: 18px; height: 18px; border-radius: 99px; font-size: 10px;
+      font-weight: 700; background: var(--accent); color: #fff; padding: 0 4px;
+    }
+    /* ============================================================
+       SCROLLABLE ITEMS AREA
+    ============================================================ */
+    .items-scroll { max-height: 600px; overflow-y: auto; padding-right: 4px; }
+    /* ============================================================
+       BULK ACTIONS
+    ============================================================ */
+    .bulk-bar {
+      display: none; align-items: center; gap: 10px;
+      padding: 10px 20px; background: rgba(108,92,231,.1);
+      border-bottom: 1px solid rgba(108,92,231,.3); font-size: 13px;
+    }
+    .bulk-bar.visible { display: flex; }
+    /* ============================================================
+       TYPE INDICATOR DOT
+    ============================================================ */
+    .type-indicator {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 11.5px; font-weight: 600;
+    }
+    .type-dot {
+      width: 13px; height: 13px; border-radius: 3px; border: 2px solid;
+      display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .type-dot-inner { width: 6px; height: 6px; border-radius: 50%; display: block; }
+    /* ============================================================
+       MISC
+    ============================================================ */
+    .text-muted { color: var(--text2); }
+    .text-dim   { color: var(--text3); }
+    .text-accent{ color: var(--accent2); }
+    .text-success{ color: var(--success); }
+    .text-danger { color: var(--danger); }
+    .fw-bold   { font-weight: 700; }
+    .fs-sm     { font-size: 12px; }
+    .flex      { display: flex; }
+    .flex-center { display: flex; align-items: center; justify-content: center; }
+    .gap-6     { gap: 6px; }
+    .gap-8     { gap: 8px; }
+    .gap-10    { gap: 10px; }
+    .mt-8      { margin-top: 8px; }
+    .mt-12     { margin-top: 12px; }
+    .mt-16     { margin-top: 16px; }
+    .w-full    { width: 100%; }
+    .relative  { position: relative; }
   </style>
 </head>
 <body>
-<div class="app">
-  <h1>🍽️ Menu Manager <span style="font-size:14px; font-weight:normal;">(Full CRUD + Image Upload)</span></h1>
 
-  <div class="grid">
-    <!-- LEFT PANEL: HEADINGS & ITEMS MANAGEMENT -->
-    <div class="panel">
+<!-- ============================================================
+     TOAST CONTAINER
+============================================================ -->
+<div id="toast-container"></div>
+
+<!-- ============================================================
+     APP WRAPPER
+============================================================ -->
+<div class="app-wrapper">
+
+  <!-- APP HEADER -->
+  <div class="app-header">
+    <div>
+      <div class="app-title">
+        <span class="app-title-icon">🍽️</span>
+        Menu Manager Pro
+      </div>
+      <div class="app-subtitle">Full CRUD · Live Preview · Google Drive Sync · Variations</div>
+    </div>
+    <div class="header-actions">
+      <div id="syncStatusBar" class="sync-bar synced"><div class="sync-dot"></div><span id="syncStatusText">Saved</span></div>
+      <div class="history-bar">
+        <button class="btn btn-sm btn-icon" id="undoBtn" title="Undo (Ctrl+Z)" data-tip="Undo" disabled>↩</button>
+        <button class="btn btn-sm btn-icon" id="redoBtn" title="Redo (Ctrl+Y)" data-tip="Redo" disabled>↪</button>
+      </div>
+      <button class="btn btn-sm" id="loadDriveBtn">📂 Load Drive</button>
+      <button class="btn btn-sm btn-success" id="saveDriveBtn">💾 Save to Drive</button>
+    </div>
+  </div>
+
+  <!-- STATS ROW -->
+  <div class="stats-row" id="statsRow">
+    <div class="stat-card"><div class="stat-value" id="statHeadings">0</div><div class="stat-label">Headings</div></div>
+    <div class="stat-card"><div class="stat-value" id="statItems">0</div><div class="stat-label">Total Items</div></div>
+    <div class="stat-card"><div class="stat-value" id="statVeg">0</div><div class="stat-label">Veg Items</div></div>
+    <div class="stat-card"><div class="stat-value" id="statNonVeg">0</div><div class="stat-label">Non-Veg</div></div>
+    <div class="stat-card"><div class="stat-value" id="statVariations">0</div><div class="stat-label">Variations</div></div>
+  </div>
+
+  <!-- MAIN GRID -->
+  <div class="main-grid">
+
+    <!-- ── LEFT PANEL: HEADINGS ── -->
+    <div class="panel" id="headingsPanel">
       <div class="panel-header">
-        <span>📌 Headings (Supersets)</span>
-        <div class="row gap-2">
-          <button id="newHeadingBtn" class="primary small">+ New Heading</button>
-          <button id="refreshBtn" class="secondary small">⟳ Refresh</button>
+        <div class="panel-title"><span class="panel-title-icon">📌</span> Headings <span class="counter-badge" id="headingCount">0</span></div>
+        <div class="flex gap-8">
+          <button class="btn btn-sm btn-icon" id="refreshBtn" data-tip="Reload from Drive">⟳</button>
+          <button class="btn btn-sm btn-primary" id="newHeadingBtn">+ New</button>
+        </div>
+      </div>
+      <!-- HEADING SEARCH -->
+      <div style="padding: 12px 16px; border-bottom: 1px solid var(--border);">
+        <div class="search-wrapper">
+          <span class="search-icon">🔍</span>
+          <input type="text" class="form-input search-input" id="headingSearch" placeholder="Search headings…">
         </div>
       </div>
       <div class="panel-body">
-        <div id="headingsContainer" class="heading-list">
-          <div style="color:#6b7280; text-align:center;">Click "Load from Drive" first</div>
-        </div>
-        <div class="row gap-2" style="margin-top:16px;">
-          <button id="loadDriveBtn" class="primary" style="flex:1;">📂 Load from Drive</button>
-          <button id="saveDriveBtn" class="secondary" style="flex:1;">💾 Save to Drive (Merge)</button>
+        <div class="headings-list" id="headingsList">
+          <div class="empty-state">
+            <div class="empty-icon">📂</div>
+            <div class="empty-title">No headings yet</div>
+            <div class="empty-desc">Click "Load Drive" to fetch your menu, or "+ New" to create a heading.</div>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- RIGHT PANEL: ITEM EDITOR / PREVIEW -->
-    <div class="panel">
-      <div class="panel-header">
-        <span>✏️ Edit Items under <span id="selectedHeadingName" class="text-accent">—</span></span>
-        <button id="addItemBtn" class="primary small">+ Add Item</button>
+    <!-- ── RIGHT PANEL: ITEMS ── -->
+    <div class="panel" id="itemsPanel">
+      <!-- TOOLBAR -->
+      <div class="toolbar">
+        <div class="toolbar-title">
+          <span class="text-dim">Editing: </span>
+          <span id="selectedHeadingLabel" class="toolbar-accent">— Select a heading —</span>
+        </div>
+        <div class="flex gap-8">
+          <!-- Filter chips -->
+          <div class="filter-chips" id="filterChips" style="margin:0;">
+            <span class="filter-chip active" data-filter="all">All</span>
+            <span class="filter-chip" data-filter="veg">🌿 Veg</span>
+            <span class="filter-chip" data-filter="nonveg">🍗 Non-Veg</span>
+          </div>
+          <div class="search-wrapper" style="min-width:160px;">
+            <span class="search-icon">🔍</span>
+            <input type="text" class="form-input search-input" id="itemSearch" placeholder="Search items…" style="padding-top:6px;padding-bottom:6px;">
+          </div>
+          <button class="btn btn-sm btn-primary" id="addItemBtn" disabled>+ Add Item</button>
+        </div>
       </div>
-      <div class="panel-body" id="itemsListContainer">
-        <div style="color:#6b7280; text-align:center;">Select a heading to see its items</div>
+      <!-- BULK BAR -->
+      <div class="bulk-bar" id="bulkBar">
+        <input type="checkbox" id="selectAll" style="width:16px;height:16px;accent-color:var(--accent);">
+        <span id="bulkCountLabel">0 selected</span>
+        <button class="btn btn-xs btn-danger" id="bulkDeleteBtn">🗑️ Delete Selected</button>
+        <button class="btn btn-xs" id="bulkMoveBtn">📦 Move to…</button>
+        <button class="btn btn-xs" style="margin-left:auto;" id="bulkCancelBtn">Cancel</button>
+      </div>
+      <!-- ITEMS BODY -->
+      <div class="panel-body">
+        <div class="items-scroll">
+          <div class="items-grid" id="itemsGrid">
+            <div class="empty-state">
+              <div class="empty-icon">🧩</div>
+              <div class="empty-title">Select a heading</div>
+              <div class="empty-desc">Choose a heading on the left to manage its menu items.</div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- LIVE PREVIEW SECTION -->
-  <div class="panel" style="margin-top: 24px;">
+  <!-- PREVIEW PANEL -->
+  <div class="panel preview-panel">
     <div class="panel-header">
-      <span>🔍 Live Preview (rendered HTML from Drive)</span>
-      <button id="refreshPreviewBtn" class="secondary small">⟳ Refresh Preview</button>
-    </div>
-    <div class="panel-body" style="padding:0;">
-      <iframe id="previewIframe" srcdoc="<div style='padding:20px; text-align:center;'>Click 'Refresh Preview'</div>"></iframe>
-    </div>
-  </div>
-</div>
-
-<div id="toast" class="toast">Message</div>
-
-<!-- MODAL FOR ITEM FORM (create/edit) -->
-<div id="itemModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); align-items:center; justify-content:center; z-index:1000;">
-  <div style="background:#11161f; max-width:600px; width:90%; border-radius:24px; padding:24px; border:1px solid #2a2f3a; max-height:90vh; overflow:auto;">
-    <h3 id="itemModalTitle" style="margin-bottom:16px;">Add / Edit Item</h3>
-    <div class="form-group">
-      <label>Item Name *</label>
-      <input type="text" id="itemName" placeholder="e.g., Margherita Pizza">
-    </div>
-    <div class="form-group">
-      <label>Type</label>
-      <select id="itemType">
-        <option value="veg">🌿 Veg</option>
-        <option value="nonveg">🍗 Non-Veg</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label>Description</label>
-      <input type="text" id="itemDesc" placeholder="Classic cheese & tomato">
-    </div>
-    <div class="form-group">
-      <label>Preparation Time</label>
-      <input type="text" id="itemTime" placeholder="15-20 min">
-    </div>
-    <div class="form-group">
-      <label>Item Image (upload)</label>
-      <input type="file" id="itemImageFile" accept="image/*">
-      <div id="itemImagePreview"></div>
-      <input type="hidden" id="itemImageUrl">
-    </div>
-    <div class="form-group">
-      <label>Price (if no variations)</label>
-      <input type="number" id="itemPrice" placeholder="199">
-    </div>
-    <div class="form-group">
-      <label><input type="checkbox" id="hasVariations"> This item has variations</label>
-    </div>
-    <div id="variationsContainer" style="display:none;">
-      <label>Variations</label>
-      <div id="varList"></div>
-      <button type="button" class="secondary small" id="addVariationBtn" style="margin-top:8px;">+ Add Variation</button>
-    </div>
-    <div class="row gap-2" style="margin-top:24px; justify-content:flex-end;">
-      <button id="closeItemModalBtn" class="secondary">Cancel</button>
-      <button id="saveItemBtn" class="primary">Save Item</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL FOR NEW HEADING -->
-<div id="headingModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); align-items:center; justify-content:center; z-index:1000;">
-  <div style="background:#11161f; max-width:400px; width:90%; border-radius:24px; padding:24px;">
-    <h3>New Heading</h3>
-    <input type="text" id="newHeadingInput" placeholder="e.g., Lunch Specials" style="margin:16px 0;">
-    <div class="row gap-2" style="justify-content:flex-end;">
-      <button id="closeHeadingModalBtn" class="secondary">Cancel</button>
-      <button id="createHeadingBtn" class="primary">Create</button>
-    </div>
-  </div>
-</div>
-
-<script>
-// ==================== CONFIGURATION ====================
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxcUYLRI5BpRwR4JS9mRF-khA5PnfhXbR0v0uJ8kGVlJ0rpT8RLKKtOLZ1m81CYrtBFSA/exec"; // 🔁 REPLACE WITH YOUR ACTUAL APPS SCRIPT URL
-
-// ==================== GLOBAL STATE ====================
-let menuData = {};          // { "Heading1": [items], "Heading2": [items] }
-let currentHeading = null;  // currently selected heading
-let editingItemIndex = null; // index of item being edited, null for new
-let variationCounter = 0;
-
-// ==================== UTILITIES ====================
-function showToast(msg, isError = false) {
-  const toast = document.getElementById('toast');
-  toast.textContent = msg;
-  toast.style.background = isError ? '#c0392b' : '#1e2a3a';
-  toast.classList.add('show');
-  setTimeout(() => toast.classList.remove('show'), 3000);
-}
-
-async function uploadImage(file) {
-  const formData = new FormData();
-  formData.append('action', 'uploadImage');
-  formData.append('imageBlob', file);
-  formData.append('fileName', file.name);
-  const res = await fetch(WEB_APP_URL, { method: 'POST', body: formData });
-  const json = await res.json();
-  if (json.success) return json.url;
-  else throw new Error(json.error);
-}
-
-// ==================== LOAD FROM DRIVE (PARSE HTML) ====================
-async function loadFromDrive() {
-  showToast("Loading from Drive...");
-  try {
-    const response = await fetch(WEB_APP_URL);
-    const html = await response.text();
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(html, 'text/html');
-    const headings = doc.querySelectorAll('h1');
-    const newData = {};
-    for (let h1 of headings) {
-      let headingName = h1.textContent.trim();
-      let items = [];
-      let next = h1.nextElementSibling;
-      while (next && next.classList && next.classList.contains('mcard')) {
-        // Extract item details
-        const nameEl = next.querySelector('.mcard-name');
-        let name = nameEl ? nameEl.textContent.replace(/[^\w\s]/g, '').trim() : '';
-        const typeEl = nameEl ? (nameEl.querySelector('.vdot') ? (nameEl.querySelector('.vdot').style.borderColor === 'rgb(34, 197, 94)' ? 'veg' : 'nonveg') : 'veg') : 'veg';
-        const descEl = next.querySelector('.mcard-desc');
-        let desc = descEl ? descEl.textContent.trim() : '';
-        const priceEl = next.querySelector('.mcard-price');
-        let price = priceEl ? priceEl.textContent.replace('₹', '').trim() : '';
-        const imgEl = next.querySelector('.mcard-img img');
-        let image = imgEl ? imgEl.src : '';
-        // Variations are not stored in the simple card, we'll keep an empty array
-        items.push({
-          name, type: typeEl, desc, time: '', image, price,
-          hasVar: false, vars: []
-        });
-        next = next.nextElementSibling;
-      }
-      newData[headingName] = items;
-    }
-    menuData = newData;
-    renderHeadingsList();
-    if (Object.keys(menuData).length === 0) {
-      showToast("No headings found in Drive file. Add one.");
-    } else {
-      showToast(`Loaded ${Object.keys(menuData).length} headings`);
-      // Auto-select first heading
-      const firstHeading = Object.keys(menuData)[0];
-      if (firstHeading) selectHeading(firstHeading);
-    }
-  } catch (err) {
-    showToast("Error loading: " + err.message, true);
-  }
-}
-
-// ==================== RENDER HEADINGS LIST ====================
-function renderHeadingsList() {
-  const container = document.getElementById('headingsContainer');
-  if (Object.keys(menuData).length === 0) {
-    container.innerHTML = '<div style="color:#6b7280; text-align:center;">No headings. Create one.</div>';
-    return;
-  }
-  container.innerHTML = '';
-  for (let heading in menuData) {
-    const div = document.createElement('div');
-    div.className = 'heading-item' + (currentHeading === heading ? ' active' : '');
-    div.innerHTML = `
-      <span style="font-weight:500;">${escapeHtml(heading)} (${menuData[heading].length} items)</span>
-      <div style="display:flex; gap:6px;">
-        <button class="small edit-heading" data-heading="${escapeHtml(heading)}" style="background:#2c3e50;">✏️</button>
-        <button class="small danger delete-heading" data-heading="${escapeHtml(heading)}">🗑️</button>
+      <div class="panel-title"><span class="panel-title-icon">🔍</span> Live Preview</div>
+      <div class="flex gap-8">
+        <button class="btn btn-sm" id="refreshPreviewBtn">⟳ Refresh Preview</button>
+        <button class="btn btn-sm" id="previewLocalBtn">👁 Preview Local</button>
       </div>
-    `;
-    div.addEventListener('click', (e) => {
-      if (!e.target.classList.contains('edit-heading') && !e.target.classList.contains('delete-heading')) {
-        selectHeading(heading);
-      }
-    });
-    container.appendChild(div);
-  }
-  // attach events after render
-  document.querySelectorAll('.edit-heading').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const oldName = btn.getAttribute('data-heading');
-      const newName = prompt("Edit heading name:", oldName);
-      if (newName && newName !== oldName) {
-        menuData[newName] = menuData[oldName];
-        delete menuData[oldName];
-        if (currentHeading === oldName) currentHeading = newName;
-        renderHeadingsList();
-        if (currentHeading) renderItemsList();
-        showToast(`Heading renamed to "${newName}"`);
-      }
-    });
-  });
-  document.querySelectorAll('.delete-heading').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const heading = btn.getAttribute('data-heading');
-      if (confirm(`Delete heading "${heading}" and all its items?`)) {
-        delete menuData[heading];
-        if (currentHeading === heading) {
-          currentHeading = null;
-          document.getElementById('itemsListContainer').innerHTML = '<div style="color:#6b7280;">Select a heading</div>';
-          document.getElementById('selectedHeadingName').innerText = '—';
-        }
-        renderHeadingsList();
-        showToast(`Heading "${heading}" deleted`);
-      }
-    });
-  });
-}
+    </div>
+    <div class="panel-body no-pad" style="position:relative;">
+      <iframe id="previewIframe" srcdoc="<div style='padding:40px;text-align:center;font-family:sans-serif;color:#888'>Click &ldquo;Preview Local&rdquo; or &ldquo;Refresh Preview&rdquo;</div>"></iframe>
+    </div>
+  </div>
 
-// ==================== SELECT HEADING ====================
-function selectHeading(heading) {
-  currentHeading = heading;
-  document.getElementById('selectedHeadingName').innerText = heading;
-  renderItemsList();
-  renderHeadingsList(); // to update active class
-}
+</div><!-- /app-wrapper -->
 
-// ==================== RENDER ITEMS LIST ====================
-function renderItemsList() {
-  const container = document.getElementById('itemsListContainer');
-  if (!currentHeading || !menuData[currentHeading] || menuData[currentHeading].length === 0) {
-    container.innerHTML = '<div style="color:#6b7280; text-align:center;">No items under this heading. Click "Add Item".</div>';
-    return;
-  }
-  container.innerHTML = '';
-  menuData[currentHeading].forEach((item, idx) => {
-    const card = document.createElement('div');
-    card.className = 'item-card';
-    card.innerHTML = `
-      <div class="item-header">
-        <span class="item-name">${escapeHtml(item.name)} <span class="variation-badge">${item.type === 'veg' ? '🌿 Veg' : '🍗 Non-Veg'}</span></span>
-        <div style="display:flex; gap:6px;">
-          <button class="small edit-item" data-index="${idx}">✏️</button>
-          <button class="small danger delete-item" data-index="${idx}">🗑️</button>
+<!-- ============================================================
+     MODAL: ADD / EDIT ITEM
+============================================================ -->
+<div class="modal-overlay" id="itemModal" role="dialog" aria-modal="true" aria-labelledby="itemModalTitle">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2 class="modal-title" id="itemModalTitle">Add Item</h2>
+      <button class="modal-close" id="itemModalClose" aria-label="Close">×</button>
+    </div>
+
+    <!-- TABS -->
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="basicTab">Basic Info</button>
+      <button class="tab-btn" data-tab="imageTab">Image</button>
+      <button class="tab-btn" data-tab="variationsTab">Variations</button>
+    </div>
+
+    <!-- TAB: BASIC INFO -->
+    <div class="tab-pane active" id="basicTab">
+      <div class="form-group">
+        <label class="form-label" for="iName">Item Name *</label>
+        <input type="text" class="form-input" id="iName" placeholder="e.g. Paneer Butter Masala" autocomplete="off">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="iType">Type</label>
+          <select class="form-select" id="iType">
+            <option value="veg">🌿 Vegetarian</option>
+            <option value="nonveg">🍗 Non-Vegetarian</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="iTime">Prep Time</label>
+          <input type="text" class="form-input" id="iTime" placeholder="15-20 min">
         </div>
       </div>
-      <div class="item-details">${escapeHtml(item.desc)} ${item.time ? '⏱️ ' + escapeHtml(item.time) : ''}</div>
-      ${item.image ? `<img src="${item.image}" class="image-preview" onerror="this.style.display='none'">` : ''}
-      <div>${item.hasVar ? `<span class="variation-badge">${item.vars.length} variation(s)</span>` : (item.price ? `💰 ₹${item.price}` : '')}</div>
-    `;
-    container.appendChild(card);
-  });
-  // attach events
-  document.querySelectorAll('.edit-item').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      const idx = parseInt(btn.getAttribute('data-index'));
-      openItemModal(idx);
+      <div class="form-group">
+        <label class="form-label" for="iDesc">Description</label>
+        <textarea class="form-textarea" id="iDesc" placeholder="A brief description of the item…" rows="2"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="iCategory">Sub-Category (optional)</label>
+        <input type="text" class="form-input" id="iCategory" placeholder="e.g. Starter, Main Course…">
+      </div>
+      <div class="form-group">
+        <label class="checkbox-label">
+          <input type="checkbox" id="iHasVar">
+          This item has size/portion variations
+        </label>
+      </div>
+      <div id="simplePriceSection" class="form-group">
+        <label class="form-label" for="iPrice">Price (₹)</label>
+        <input type="number" class="form-input" id="iPrice" placeholder="e.g. 249" min="0">
+      </div>
+    </div>
+
+    <!-- TAB: IMAGE -->
+    <div class="tab-pane" id="imageTab">
+      <div class="form-group">
+        <label class="form-label">Upload Image</label>
+        <input type="file" class="form-file" id="iImageFile" accept="image/*">
+        <input type="hidden" id="iImageUrl">
+        <div id="iImagePreview"></div>
+        <p class="fs-sm text-dim mt-8">Supported: JPG, PNG, WEBP, GIF. Max 5 MB. Image will be uploaded to Drive.</p>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Or paste an image URL</label>
+        <input type="url" class="form-input" id="iImageUrlInput" placeholder="https://…">
+        <button class="btn btn-sm mt-8" id="iImageUrlApply">Apply URL</button>
+      </div>
+    </div>
+
+    <!-- TAB: VARIATIONS -->
+    <div class="tab-pane" id="variationsTab">
+      <p class="text-dim fs-sm" style="margin-bottom:14px;">Add size, portion, or combo variations with individual prices.</p>
+      <div id="varList"></div>
+      <button class="btn btn-sm mt-8" id="addVariationBtn">+ Add Variation</button>
+      <p class="fs-sm text-dim mt-8">💡 Enable "has variations" on the Basic tab to activate variation pricing.</p>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn" id="itemModalCancel">Cancel</button>
+      <button class="btn btn-primary" id="saveItemBtn"><span id="saveItemBtnLabel">Save Item</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL: NEW / EDIT HEADING
+============================================================ -->
+<div class="modal-overlay heading-modal" id="headingModal" role="dialog" aria-modal="true">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2 class="modal-title" id="headingModalTitle">New Heading</h2>
+      <button class="modal-close" id="headingModalClose" aria-label="Close">×</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="newHeadingInput">Heading Name *</label>
+      <input type="text" class="form-input" id="newHeadingInput" placeholder="e.g. Lunch Specials" autocomplete="off">
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="headingEmojiInput">Emoji / Icon (optional)</label>
+      <input type="text" class="form-input" id="headingEmojiInput" placeholder="🍕" maxlength="4">
+    </div>
+    <div class="modal-footer">
+      <button class="btn" id="headingModalCancel">Cancel</button>
+      <button class="btn btn-primary" id="createHeadingBtn">Create Heading</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL: CONFIRM DELETE
+============================================================ -->
+<div class="modal-overlay confirm-dialog" id="confirmModal" role="dialog" aria-modal="true">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2 class="modal-title" id="confirmTitle">Confirm Delete</h2>
+      <button class="modal-close" id="confirmModalClose">×</button>
+    </div>
+    <p class="confirm-msg" id="confirmMessage">Are you sure?</p>
+    <div class="modal-footer">
+      <button class="btn" id="confirmCancel">Cancel</button>
+      <button class="btn btn-danger" id="confirmOk">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL: BULK MOVE
+============================================================ -->
+<div class="modal-overlay" id="bulkMoveModal" role="dialog" aria-modal="true">
+  <div class="modal-box" style="max-width:380px;">
+    <div class="modal-header">
+      <h2 class="modal-title">Move Items To…</h2>
+      <button class="modal-close" id="bulkMoveClose">×</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Target Heading</label>
+      <select class="form-select" id="bulkMoveTarget"></select>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" id="bulkMoveCancelBtn">Cancel</button>
+      <button class="btn btn-primary" id="bulkMoveConfirmBtn">Move</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     JAVASCRIPT — FULL CRUD ENGINE
+============================================================ -->
+<script>
+/* ============================================================
+   0. CONFIGURATION
+============================================================ */
+const CFG = {
+  WEB_APP_URL: 'https://script.google.com/macros/s/AKfycbxcUYLRI5BpRwR4JS9mRF-khA5PnfhXbR0v0uJ8kGVlJ0rpT8RLKKtOLZ1m81CYrtBFSA/exec',
+  LOCAL_KEY:    'menuManagerData_v3',
+  HISTORY_LIMIT: 50,
+  AUTO_SAVE_DELAY: 2000,
+  MAX_RETRIES: 3,
+  RETRY_DELAY: 1200,
+};
+
+/* ============================================================
+   1. STATE MANAGER
+============================================================ */
+const STATE = {
+  menu:           {},      // { "Heading": [items…] }
+  currentHeading: null,
+  filter:         'all',
+  itemSearch:     '',
+  headingSearch:  '',
+  selectedItems:  new Set(),
+  bulkMode:       false,
+  isSyncing:      false,
+  isDriveLoaded:  false,
+  lastSaveTime:   null,
+  pendingChanges: false,
+
+  /* undo/redo history */
+  _history:   [],
+  _future:    [],
+
+  /** deep clone of menu for snapshot */
+  snapshot() {
+    return JSON.parse(JSON.stringify(this.menu));
+  },
+
+  /** push current state to history before mutation */
+  pushHistory() {
+    this._history.push(this.snapshot());
+    if (this._history.length > CFG.HISTORY_LIMIT) this._history.shift();
+    this._future = [];
+    updateUndoRedoBtns();
+  },
+
+  undo() {
+    if (!this._history.length) return;
+    this._future.push(this.snapshot());
+    this.menu = this._history.pop();
+    updateUndoRedoBtns();
+    renderAll();
+    toast('Undo', 'info');
+    markPending();
+  },
+
+  redo() {
+    if (!this._future.length) return;
+    this._history.push(this.snapshot());
+    this.menu = this._future.pop();
+    updateUndoRedoBtns();
+    renderAll();
+    toast('Redo', 'info');
+    markPending();
+  },
+};
+
+/* ============================================================
+   2. UTILS
+============================================================ */
+function escHtml(s) {
+  if (s == null) return '';
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;');
+}
+
+function escAttr(s) { return escHtml(s); }
+
+function debounce(fn, ms) {
+  let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); };
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+function uid() { return Math.random().toString(36).slice(2, 10); }
+
+function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+function countAll() {
+  let items = 0, veg = 0, nonveg = 0, vars = 0;
+  for (const k in STATE.menu) {
+    const arr = STATE.menu[k] || [];
+    items += arr.length;
+    veg    += arr.filter(i => i.type === 'veg').length;
+    nonveg += arr.filter(i => i.type !== 'veg').length;
+    vars   += arr.reduce((s, i) => s + (i.vars ? i.vars.length : 0), 0);
+  }
+  return { headings: Object.keys(STATE.menu).length, items, veg, nonveg, vars };
+}
+
+/* ============================================================
+   3. TOAST SYSTEM
+============================================================ */
+function toast(msg, type = 'success', duration = 3200) {
+  const container = document.getElementById('toast-container');
+  const icons = { success: '✓', error: '✕', info: 'ℹ', warning: '⚠' };
+  const el = document.createElement('div');
+  el.className = `toast-item toast-${type}`;
+  el.innerHTML = `<span style="font-size:15px;">${icons[type]||'•'}</span><span>${escHtml(msg)}</span>`;
+  container.appendChild(el);
+
+  /* auto-remove */
+  setTimeout(() => {
+    el.classList.add('removing');
+    setTimeout(() => el.remove(), 260);
+  }, duration);
+}
+
+/* ============================================================
+   4. SYNC STATUS
+============================================================ */
+function setSyncStatus(state, text) {
+  const bar  = document.getElementById('syncStatusBar');
+  const txt  = document.getElementById('syncStatusText');
+  bar.className = `sync-bar ${state}`;
+  txt.textContent = text;
+}
+
+function markPending() {
+  STATE.pendingChanges = true;
+  setSyncStatus('pending', 'Unsaved changes');
+  debouncedLocalSave();
+}
+
+function markSynced() {
+  STATE.pendingChanges = false;
+  STATE.lastSaveTime = new Date();
+  const t = STATE.lastSaveTime;
+  setSyncStatus('synced', `Saved ${t.getHours().toString().padStart(2,'0')}:${t.getMinutes().toString().padStart(2,'0')}`);
+}
+
+/* ============================================================
+   5. LOCAL STORAGE BACKUP
+============================================================ */
+function saveLocal() {
+  try {
+    localStorage.setItem(CFG.LOCAL_KEY, JSON.stringify({
+      menu: STATE.menu,
+      ts: Date.now(),
+    }));
+  } catch (e) { /* storage full – silently ignore */ }
+}
+
+function loadLocal() {
+  try {
+    const raw = localStorage.getItem(CFG.LOCAL_KEY);
+    if (!raw) return false;
+    const obj = JSON.parse(raw);
+    if (obj && obj.menu && typeof obj.menu === 'object') {
+      STATE.menu = obj.menu;
+      return true;
+    }
+  } catch (e) {}
+  return false;
+}
+
+const debouncedLocalSave = debounce(saveLocal, 800);
+
+/* ============================================================
+   6. UNDO / REDO BUTTON STATE
+============================================================ */
+function updateUndoRedoBtns() {
+  document.getElementById('undoBtn').disabled = STATE._history.length === 0;
+  document.getElementById('redoBtn').disabled = STATE._future.length === 0;
+}
+
+/* ============================================================
+   7. NETWORK LAYER — fetch with retry
+============================================================ */
+async function netFetch(url, options = {}, retries = CFG.MAX_RETRIES) {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const res = await fetch(url, options);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return res;
+    } catch (err) {
+      if (attempt === retries) throw err;
+      await sleep(CFG.RETRY_DELAY * attempt);
+    }
+  }
+}
+
+/* ============================================================
+   8. IMAGE UPLOAD
+============================================================ */
+async function uploadImage(file) {
+  if (!file) return null;
+  if (file.size > 5 * 1024 * 1024) throw new Error('File too large (max 5 MB)');
+
+  const form = new FormData();
+  form.append('action',    'uploadImage');
+  form.append('imageBlob', file);
+  form.append('fileName',  file.name);
+
+  const res  = await netFetch(CFG.WEB_APP_URL, { method: 'POST', body: form });
+  const text = await res.text();
+  let json;
+  try { json = JSON.parse(text); } catch (e) { throw new Error('Bad response from server'); }
+  if (!json.success) throw new Error(json.error || 'Upload failed');
+  return json.url;
+}
+
+/* ============================================================
+   9. DRIVE LOAD — parse raw HTML into STATE.menu
+============================================================ */
+async function loadFromDrive() {
+  if (STATE.isSyncing) return;
+  STATE.isSyncing = true;
+  setSyncStatus('pending', 'Loading…');
+  setLoadingOverlay('headingsPanel', true);
+
+  try {
+    const res  = await netFetch(CFG.WEB_APP_URL);
+    const html = await res.text();
+    const parsed = parseMenuHTML(html);
+
+    if (Object.keys(parsed).length === 0) {
+      /* Drive file may be blank or new — keep current local data */
+      toast('Drive file is empty — showing local data', 'warning');
+    } else {
+      STATE.pushHistory();
+      STATE.menu = parsed;
+      STATE.isDriveLoaded = true;
+      saveLocal();
+      toast(`Loaded ${Object.keys(parsed).length} headings from Drive`, 'success');
+    }
+
+    renderAll();
+    /* auto-select first heading */
+    const keys = Object.keys(STATE.menu);
+    if (keys.length && !STATE.currentHeading) selectHeading(keys[0]);
+    markSynced();
+
+  } catch (err) {
+    setSyncStatus('error', 'Load failed');
+    toast('Failed to load from Drive: ' + err.message, 'error', 6000);
+  } finally {
+    STATE.isSyncing = false;
+    setLoadingOverlay('headingsPanel', false);
+  }
+}
+
+/* ============================================================
+   10. HTML PARSER — robust DOM parsing of generated menu HTML
+============================================================ */
+function parseMenuHTML(html) {
+  const parser = new DOMParser();
+  const doc    = parser.parseFromString(html, 'text/html');
+  const result = {};
+
+  /* Support both h1-based sections and data-heading attributes */
+  const h1s = doc.querySelectorAll('h1');
+
+  if (h1s.length === 0) {
+    /* Try data-heading fallback */
+    const sections = doc.querySelectorAll('[data-heading]');
+    sections.forEach(sec => {
+      const hName = sec.getAttribute('data-heading') || 'Unnamed';
+      result[hName] = [];
+      sec.querySelectorAll('[data-item]').forEach(card => {
+        result[hName].push(parseItemFromDataAttrs(card));
+      });
     });
-  });
-  document.querySelectorAll('.delete-item').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      const idx = parseInt(btn.getAttribute('data-index'));
-      if (confirm(`Delete item "${menuData[currentHeading][idx].name}"?`)) {
-        menuData[currentHeading].splice(idx, 1);
-        renderItemsList();
-        showToast("Item deleted");
+    return result;
+  }
+
+  h1s.forEach(h1 => {
+    const headingText = h1.textContent.trim();
+    if (!headingText) return;
+    const items = [];
+    let next = h1.nextElementSibling;
+
+    while (next && !['H1','H2'].includes(next.tagName)) {
+      if (next.classList.contains('mcard') || next.hasAttribute('data-item')) {
+        items.push(parseItemFromCard(next));
       }
+      next = next.nextElementSibling;
+    }
+    result[headingText] = items;
+  });
+
+  return result;
+}
+
+function parseItemFromCard(el) {
+  /* name */
+  const nameEl = el.querySelector('.mcard-name, [data-name]');
+  let name = '';
+  if (nameEl) {
+    /* strip inner elements (vdot etc.) and get text */
+    const clone = nameEl.cloneNode(true);
+    clone.querySelectorAll('.vdot, span.badge').forEach(n => n.remove());
+    name = clone.textContent.trim();
+  }
+  if (!name) name = el.getAttribute('data-name') || 'Unnamed Item';
+
+  /* type — read data-type first, then attempt color heuristic */
+  let type = el.getAttribute('data-type') || 'veg';
+  if (!el.hasAttribute('data-type')) {
+    const vdot = el.querySelector('.vdot');
+    if (vdot) {
+      /* We cannot read computed borderColor from DOMParser (no CSSOM),
+         so we check inline style directly */
+      const inlineStyle = vdot.getAttribute('style') || '';
+      if (inlineStyle.includes('#ef4444') || inlineStyle.includes('rgb(239') || inlineStyle.includes('nonveg')) {
+        type = 'nonveg';
+      }
+    }
+  }
+
+  /* desc */
+  const descEl = el.querySelector('.mcard-desc, [data-desc]');
+  let desc = descEl ? descEl.textContent.replace(/⏱.*$/, '').trim() : '';
+
+  /* time */
+  let time = el.getAttribute('data-time') || '';
+  if (!time && descEl) {
+    const m = descEl.textContent.match(/⏱[️\s]*([\w\s\-]+)/);
+    if (m) time = m[1].trim();
+  }
+
+  /* price */
+  const priceEl = el.querySelector('.mcard-price, [data-price]');
+  let price = '';
+  if (priceEl) price = priceEl.textContent.replace(/[₹\s]/g, '').trim();
+  if (!price) price = el.getAttribute('data-price') || '';
+
+  /* image */
+  const imgEl = el.querySelector('.mcard-img img, [data-img]');
+  let image = imgEl ? (imgEl.getAttribute('src') || '') : '';
+  if (!image) image = el.getAttribute('data-img') || '';
+
+  /* variations */
+  let vars = [];
+  let hasVar = false;
+  try {
+    const varsAttr = el.getAttribute('data-vars');
+    if (varsAttr) {
+      vars   = JSON.parse(varsAttr);
+      hasVar = vars.length > 0;
+    }
+  } catch (e) {}
+
+  /* category */
+  const category = el.getAttribute('data-category') || '';
+
+  return { id: uid(), name, type, desc, time, image, price, hasVar, vars, category };
+}
+
+function parseItemFromDataAttrs(el) {
+  return {
+    id:       el.getAttribute('data-id') || uid(),
+    name:     el.getAttribute('data-name') || 'Unnamed',
+    type:     el.getAttribute('data-type') || 'veg',
+    desc:     el.getAttribute('data-desc') || '',
+    time:     el.getAttribute('data-time') || '',
+    image:    el.getAttribute('data-img')  || '',
+    price:    el.getAttribute('data-price')|| '',
+    hasVar:   el.getAttribute('data-hasvar') === 'true',
+    vars:     JSON.parse(el.getAttribute('data-vars') || '[]'),
+    category: el.getAttribute('data-category') || '',
+  };
+}
+
+/* ============================================================
+   11. DRIVE SAVE — rebuild full HTML and POST to Apps Script
+============================================================ */
+async function saveToDrive() {
+  if (STATE.isSyncing) { toast('Already syncing…', 'info'); return; }
+  if (Object.keys(STATE.menu).length === 0) { toast('Nothing to save', 'warning'); return; }
+
+  STATE.isSyncing = true;
+  setSyncStatus('pending', 'Saving…');
+
+  const btn = document.getElementById('saveDriveBtn');
+  const origLabel = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Saving…';
+
+  try {
+    const fullHtml = buildMenuHTML();
+    const res = await netFetch(CFG.WEB_APP_URL, {
+      method:  'POST',
+      body:    fullHtml,
+      headers: { 'Content-Type': 'text/plain' },
     });
+    const text = await res.text();
+    /* Accept any 2xx + optional JSON confirmation */
+    markSynced();
+    saveLocal();
+    toast('Saved to Drive ✓', 'success');
+
+  } catch (err) {
+    setSyncStatus('error', 'Save failed');
+    toast('Save failed: ' + err.message, 'error', 7000);
+  } finally {
+    STATE.isSyncing = false;
+    btn.disabled = false;
+    btn.innerHTML = origLabel;
+  }
+}
+
+/* ============================================================
+   12. HTML GENERATOR — rich, data-attribute-annotated output
+============================================================ */
+function buildMenuHTML() {
+  const STYLE = `
+:root{--bg:#0f1117;--surf:#1a1e2e;--surf2:#222638;--brd:#2e3350;--acc:#7c5cbf;--text:#e2e8f0;--mut:#8892a4}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);padding:24px 16px;max-width:700px;margin:0 auto}
+h1{font-size:20px;font-weight:800;color:#fff;margin:32px 0 12px;letter-spacing:-.3px;display:flex;align-items:center;gap:8px}
+h1:first-child{margin-top:0}
+.mcard{background:var(--surf);border:1px solid var(--brd);border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:14px;margin-bottom:10px;transition:.15s}
+.mcard:hover{border-color:var(--acc);background:var(--surf2)}
+.mcard-img{width:72px;height:72px;border-radius:10px;background:var(--surf2);overflow:hidden;flex-shrink:0;border:1px solid var(--brd)}
+.mcard-img img{width:100%;height:100%;object-fit:cover;display:block}
+.mcard-body{flex:1;min-width:0}
+.mcard-name{font-size:14.5px;font-weight:700;display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap}
+.vdot{width:14px;height:14px;border-radius:3px;border:2px solid;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+.vdot span{width:6px;height:6px;border-radius:50%;display:block}
+.mcard-desc{font-size:12.5px;color:var(--mut);margin-bottom:6px;line-height:1.4}
+.mcard-price{font-size:14px;font-weight:700;color:#a29bfe}
+.vars-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.vchip{background:var(--surf2);border:1px solid var(--brd);border-radius:8px;padding:5px 10px;font-size:12px;display:flex;align-items:center;gap:6px}
+.vchip-price{color:#a29bfe;font-weight:600}
+.vchip-img{width:20px;height:20px;border-radius:4px;object-fit:cover}
+.addbtn{background:var(--acc);color:#fff;border:none;border-radius:10px;padding:9px 18px;cursor:pointer;font-weight:600;font-size:13px;flex-shrink:0;transition:.15s}
+.addbtn:hover{filter:brightness(1.15)}
+@media(max-width:480px){.mcard{flex-wrap:wrap}.mcard-img{width:56px;height:56px}.addbtn{width:100%;margin-top:8px;text-align:center}}
+  `.trim();
+
+  let body = '';
+  for (const heading in STATE.menu) {
+    const items = STATE.menu[heading] || [];
+    body += `\n<h1>${escHtml(heading)}</h1>\n`;
+    for (const item of items) {
+      body += buildItemCard(item);
+    }
+  }
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Menu</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>${STYLE}</style>
+</head>
+<body>${body}
+</body>
+</html>`;
+}
+
+function buildItemCard(item) {
+  const dotColor  = item.type === 'veg' ? '#22c55e' : '#ef4444';
+  const imgInner  = item.image
+    ? `<img src="${escAttr(item.image)}" alt="${escAttr(item.name)}" loading="lazy" onerror="this.parentElement.innerHTML='📷'">`
+    : '📷';
+  const priceHtml = (!item.hasVar && item.price)
+    ? `<div class="mcard-price">₹${escHtml(item.price)}</div>`
+    : '';
+  const timeHtml  = item.time ? ` · ⏱ ${escHtml(item.time)}` : '';
+  const catHtml   = item.category ? `<span style="font-size:11px;opacity:.6;">[${escHtml(item.category)}]</span>` : '';
+
+  let varsHtml = '';
+  if (item.hasVar && item.vars && item.vars.length) {
+    const chips = item.vars.map(v => {
+      const vImg = v.image ? `<img class="vchip-img" src="${escAttr(v.image)}" alt="${escAttr(v.name)}" onerror="this.style.display='none'">` : '';
+      return `<span class="vchip">${vImg}<span>${escHtml(v.name)}</span><span class="vchip-price">₹${escHtml(v.price)}</span></span>`;
+    }).join('');
+    varsHtml = `<div class="vars-row">${chips}</div>`;
+  }
+
+  /* Store raw data in data-attrs for re-parsing */
+  const dataVars = escAttr(JSON.stringify(item.vars || []));
+
+  return `<div class="mcard"
+  data-item="1"
+  data-id="${escAttr(item.id||uid())}"
+  data-name="${escAttr(item.name)}"
+  data-type="${escAttr(item.type)}"
+  data-desc="${escAttr(item.desc||'')}"
+  data-time="${escAttr(item.time||'')}"
+  data-price="${escAttr(item.price||'')}"
+  data-img="${escAttr(item.image||'')}"
+  data-hasvar="${item.hasVar?'true':'false'}"
+  data-vars="${dataVars}"
+  data-category="${escAttr(item.category||'')}">
+  <div class="mcard-img">${imgInner}</div>
+  <div class="mcard-body">
+    <div class="mcard-name">
+      <span class="vdot" style="border-color:${dotColor}"><span style="background:${dotColor}"></span></span>
+      ${escHtml(item.name)} ${catHtml}
+    </div>
+    <div class="mcard-desc">${escHtml(item.desc||'')}${timeHtml}</div>
+    ${priceHtml}
+    ${varsHtml}
+  </div>
+  <button class="addbtn" onclick="this.textContent='✓ Added';setTimeout(()=>this.textContent='Add',1800)">Add</button>
+</div>`;
+}
+
+/* ============================================================
+   13. RENDER ENGINE
+============================================================ */
+function renderAll() {
+  renderHeadings();
+  renderItems();
+  updateStats();
+}
+
+/* ── HEADINGS LIST ── */
+function renderHeadings() {
+  const container = document.getElementById('headingsList');
+  const search    = STATE.headingSearch.toLowerCase();
+  const keys      = Object.keys(STATE.menu).filter(k => k.toLowerCase().includes(search));
+
+  document.getElementById('headingCount').textContent = Object.keys(STATE.menu).length;
+
+  if (keys.length === 0) {
+    container.innerHTML = `<div class="empty-state">
+      <div class="empty-icon">${search ? '🔍' : '📂'}</div>
+      <div class="empty-title">${search ? 'No match' : 'No headings yet'}</div>
+      <div class="empty-desc">${search ? 'Try a different search.' : 'Click "+ New" or "Load Drive".'}</div>
+    </div>`;
+    return;
+  }
+
+  container.innerHTML = '';
+  keys.forEach(heading => {
+    const items  = STATE.menu[heading] || [];
+    const isActive = STATE.currentHeading === heading;
+    const div = document.createElement('div');
+    div.className = `heading-item${isActive ? ' active' : ''}`;
+    div.setAttribute('draggable', 'true');
+    div.dataset.heading = heading;
+
+    div.innerHTML = `
+      <div class="heading-item-left">
+        <span class="heading-drag-handle" title="Drag to reorder">⠿</span>
+        <span class="heading-item-name" title="${escAttr(heading)}">${escHtml(heading)}</span>
+        <span class="badge-count">${items.length}</span>
+      </div>
+      <div class="heading-item-actions">
+        <button class="btn btn-xs" data-action="rename-heading" data-heading="${escAttr(heading)}" title="Rename">✏️</button>
+        <button class="btn btn-xs btn-danger" data-action="delete-heading" data-heading="${escAttr(heading)}" title="Delete">🗑</button>
+      </div>`;
+
+    /* click = select */
+    div.addEventListener('click', e => {
+      if (e.target.closest('[data-action]')) return;
+      selectHeading(heading);
+    });
+
+    /* drag & drop */
+    div.addEventListener('dragstart', handleHeadingDragStart);
+    div.addEventListener('dragover',  handleHeadingDragOver);
+    div.addEventListener('drop',      handleHeadingDrop);
+    div.addEventListener('dragend',   handleHeadingDragEnd);
+    div.addEventListener('dragleave', e => div.classList.remove('drag-over'));
+
+    container.appendChild(div);
+  });
+
+  /* delegated action buttons */
+  container.addEventListener('click', headingActionHandler, { once: true });
+}
+
+/* ── ITEMS GRID ── */
+function renderItems() {
+  const grid = document.getElementById('itemsGrid');
+  const addBtn = document.getElementById('addItemBtn');
+  const label  = document.getElementById('selectedHeadingLabel');
+
+  if (!STATE.currentHeading || !STATE.menu[STATE.currentHeading]) {
+    label.textContent = '— Select a heading —';
+    addBtn.disabled = true;
+    grid.innerHTML = `<div class="empty-state">
+      <div class="empty-icon">🧩</div>
+      <div class="empty-title">Select a heading</div>
+      <div class="empty-desc">Choose a heading on the left to manage its items.</div>
+    </div>`;
+    return;
+  }
+
+  label.textContent = STATE.currentHeading;
+  addBtn.disabled = false;
+
+  let items = [...(STATE.menu[STATE.currentHeading] || [])];
+
+  /* filter */
+  if (STATE.filter !== 'all') {
+    items = items.filter(i => i.type === STATE.filter);
+  }
+
+  /* search */
+  if (STATE.itemSearch) {
+    const q = STATE.itemSearch.toLowerCase();
+    items = items.filter(i =>
+      (i.name || '').toLowerCase().includes(q) ||
+      (i.desc || '').toLowerCase().includes(q) ||
+      (i.category || '').toLowerCase().includes(q)
+    );
+  }
+
+  if (items.length === 0) {
+    grid.innerHTML = `<div class="empty-state">
+      <div class="empty-icon">${STATE.itemSearch || STATE.filter !== 'all' ? '🔍' : '🍽️'}</div>
+      <div class="empty-title">${STATE.itemSearch || STATE.filter !== 'all' ? 'No match' : 'No items yet'}</div>
+      <div class="empty-desc">Click "+ Add Item" to add the first item under "${escHtml(STATE.currentHeading)}".</div>
+    </div>`;
+    return;
+  }
+
+  grid.innerHTML = '';
+
+  /* Find original indices for filtered items */
+  const sourceItems = STATE.menu[STATE.currentHeading] || [];
+
+  items.forEach(item => {
+    const realIdx = sourceItems.findIndex(s => s === item || (s.id && s.id === item.id));
+    const card    = buildItemCardEl(item, realIdx);
+    grid.appendChild(card);
   });
 }
 
-// ==================== ITEM MODAL (CREATE/EDIT) ====================
-function openItemModal(index = null) {
-  editingItemIndex = index;
-  const modal = document.getElementById('itemModal');
+/* ── BUILD ITEM CARD ELEMENT ── */
+function buildItemCardEl(item, idx) {
+  const card = document.createElement('div');
+  card.className = 'item-card';
+  card.setAttribute('draggable', 'true');
+  card.dataset.idx = idx;
+
+  const dotColor = item.type === 'veg' ? '#22c55e' : '#ef4444';
+  const typeLabel = item.type === 'veg' ? 'Veg' : 'Non-Veg';
+  const checked   = STATE.selectedItems.has(item.id || idx) ? 'checked' : '';
+
+  /* image area */
+  const imgHtml = item.image
+    ? `<div class="item-card-img"><img src="${escAttr(item.image)}" alt="${escAttr(item.name)}" onerror="this.parentElement.innerHTML='<div style=height:100%;display:flex;align-items:center;justify-content:center;font-size:24px;>📷</div>'"></div>`
+    : `<div class="item-card-img-placeholder">🍽️</div>`;
+
+  /* price / variation info */
+  const priceInfo = item.hasVar
+    ? `<span class="text-muted fs-sm">${(item.vars||[]).length} variation(s)</span>`
+    : (item.price ? `<span class="item-card-price">₹${escHtml(item.price)}</span>` : '<span class="text-dim fs-sm">No price</span>');
+
+  /* variations chips */
+  let varsHtml = '';
+  if (item.hasVar && item.vars && item.vars.length) {
+    const chips = item.vars.slice(0, 5).map(v => {
+      const vImg = v.image
+        ? `<img class="variation-chip-img" src="${escAttr(v.image)}" onerror="this.style.display='none'">`
+        : '';
+      return `<span class="variation-chip">${vImg}<span>${escHtml(v.name)}</span><span class="variation-chip-price">₹${escHtml(v.price)}</span></span>`;
+    }).join('');
+    const more = item.vars.length > 5 ? `<span class="variation-chip text-dim">+${item.vars.length - 5} more</span>` : '';
+    varsHtml = `<div class="variations-section">
+      <div class="variations-title">Variations</div>
+      <div class="variations-list">${chips}${more}</div>
+    </div>`;
+  }
+
+  card.innerHTML = `
+    <span class="item-drag-handle" title="Drag to reorder">⠿</span>
+    <div class="item-card-top">
+      <div class="item-card-main">
+        ${STATE.bulkMode ? `<input type="checkbox" class="item-check" data-id="${escAttr(item.id||idx)}" ${checked} style="width:16px;height:16px;accent-color:var(--accent);flex-shrink:0;margin-top:4px;">` : ''}
+        ${imgHtml}
+        <div class="item-card-info">
+          <div class="item-card-name">
+            <span class="type-indicator">
+              <span class="type-dot" style="border-color:${dotColor}">
+                <span class="type-dot-inner" style="background:${dotColor}"></span>
+              </span>
+            </span>
+            ${escHtml(item.name)}
+            ${item.category ? `<span class="badge-count fs-sm">${escHtml(item.category)}</span>` : ''}
+          </div>
+          <div class="item-card-desc">${escHtml(item.desc||'—')} ${item.time ? `<span class="text-dim">· ⏱ ${escHtml(item.time)}</span>` : ''}</div>
+          <div class="item-card-meta">${priceInfo}</div>
+        </div>
+      </div>
+      <div class="item-card-actions">
+        <button class="btn btn-icon btn-sm" data-action="edit-item" data-idx="${idx}" title="Edit item">✏️</button>
+        <button class="btn btn-icon btn-sm btn-danger" data-action="delete-item" data-idx="${idx}" title="Delete item">🗑</button>
+        <button class="btn btn-icon btn-sm" data-action="duplicate-item" data-idx="${idx}" title="Duplicate item">📋</button>
+      </div>
+    </div>
+    ${varsHtml}`;
+
+  /* drag events */
+  card.addEventListener('dragstart', handleItemDragStart);
+  card.addEventListener('dragover',  handleItemDragOver);
+  card.addEventListener('drop',      handleItemDrop);
+  card.addEventListener('dragend',   handleItemDragEnd);
+  card.addEventListener('dragleave', () => card.classList.remove('drag-over'));
+
+  /* action button clicks */
+  card.addEventListener('click', e => {
+    const btn = e.target.closest('[data-action]');
+    if (!btn) return;
+    const action = btn.getAttribute('data-action');
+    const i      = parseInt(btn.getAttribute('data-idx'), 10);
+    if (action === 'edit-item')      openItemModal(i);
+    if (action === 'delete-item')    confirmDeleteItem(i);
+    if (action === 'duplicate-item') duplicateItem(i);
+  });
+
+  /* bulk checkbox */
+  const chk = card.querySelector('.item-check');
+  if (chk) {
+    chk.addEventListener('change', e => {
+      const id = chk.dataset.id;
+      if (chk.checked) STATE.selectedItems.add(id);
+      else             STATE.selectedItems.delete(id);
+      updateBulkBar();
+    });
+  }
+
+  return card;
+}
+
+/* ── STATS ── */
+function updateStats() {
+  const c = countAll();
+  document.getElementById('statHeadings').textContent  = c.headings;
+  document.getElementById('statItems').textContent     = c.items;
+  document.getElementById('statVeg').textContent       = c.veg;
+  document.getElementById('statNonVeg').textContent    = c.nonveg;
+  document.getElementById('statVariations').textContent= c.vars;
+}
+
+/* ============================================================
+   14. HEADING CRUD
+============================================================ */
+function selectHeading(heading) {
+  STATE.currentHeading = heading;
+  STATE.selectedItems.clear();
+  renderAll();
+}
+
+let _editingHeadingName = null;
+
+function openNewHeadingModal(existingName = null) {
+  _editingHeadingName = existingName;
+  const title = document.getElementById('headingModalTitle');
+  const input = document.getElementById('newHeadingInput');
+  const emoji = document.getElementById('headingEmojiInput');
+  if (existingName) {
+    title.textContent = 'Rename Heading';
+    input.value = existingName;
+    emoji.value = '';
+  } else {
+    title.textContent = 'New Heading';
+    input.value = '';
+    emoji.value = '';
+  }
+  openModal('headingModal');
+  requestAnimationFrame(() => input.focus());
+}
+
+function createOrRenameHeading() {
+  const input = document.getElementById('newHeadingInput').value.trim();
+  const emoji = document.getElementById('headingEmojiInput').value.trim();
+  if (!input) { toast('Heading name is required', 'error'); return; }
+
+  const displayName = emoji ? `${emoji} ${input}` : input;
+
+  if (_editingHeadingName) {
+    /* RENAME */
+    if (displayName !== _editingHeadingName && STATE.menu[displayName]) {
+      toast('A heading with that name already exists', 'error'); return;
+    }
+    STATE.pushHistory();
+    /* preserve insertion order by rebuilding object */
+    const newMenu = {};
+    for (const k in STATE.menu) {
+      newMenu[k === _editingHeadingName ? displayName : k] = STATE.menu[k];
+    }
+    STATE.menu = newMenu;
+    if (STATE.currentHeading === _editingHeadingName) STATE.currentHeading = displayName;
+    toast(`Renamed to "${displayName}"`, 'success');
+
+  } else {
+    /* CREATE */
+    if (STATE.menu[displayName] !== undefined) { toast('Heading already exists', 'error'); return; }
+    STATE.pushHistory();
+    STATE.menu[displayName] = [];
+    toast(`Created "${displayName}"`, 'success');
+  }
+
+  closeModal('headingModal');
+  renderAll();
+  selectHeading(displayName);
+  markPending();
+}
+
+function deleteHeading(heading) {
+  confirmAction(
+    `Delete heading "${heading}"?`,
+    `This will permanently remove "${heading}" and all its ${(STATE.menu[heading]||[]).length} items.`,
+    () => {
+      STATE.pushHistory();
+      delete STATE.menu[heading];
+      if (STATE.currentHeading === heading) {
+        const keys = Object.keys(STATE.menu);
+        STATE.currentHeading = keys.length ? keys[0] : null;
+      }
+      renderAll();
+      if (STATE.currentHeading) renderItems();
+      markPending();
+      toast(`Deleted "${heading}"`, 'success');
+    }
+  );
+}
+
+/* delegated heading action handler (attached once per render) */
+function headingActionHandler(e) {
+  const btn = e.target.closest('[data-action]');
+  if (!btn) return;
+  const action  = btn.getAttribute('data-action');
+  const heading = btn.getAttribute('data-heading');
+  if (action === 'rename-heading') openNewHeadingModal(heading);
+  if (action === 'delete-heading') deleteHeading(heading);
+}
+
+/* ============================================================
+   15. ITEM CRUD
+============================================================ */
+let _editingItemIdx = null;
+let _varCount = 0;
+
+function openItemModal(idx = null) {
+  if (!STATE.currentHeading) { toast('Select a heading first', 'error'); return; }
+  _editingItemIdx = idx;
+
   const title = document.getElementById('itemModalTitle');
-  if (index !== null) {
-    title.innerText = "Edit Item";
-    const item = menuData[currentHeading][index];
-    document.getElementById('itemName').value = item.name;
-    document.getElementById('itemType').value = item.type;
-    document.getElementById('itemDesc').value = item.desc || '';
-    document.getElementById('itemTime').value = item.time || '';
-    document.getElementById('itemPrice').value = item.price || '';
-    document.getElementById('itemImageUrl').value = item.image || '';
-    document.getElementById('hasVariations').checked = item.hasVar;
-    document.getElementById('itemImagePreview').innerHTML = item.image ? `<img src="${item.image}" class="image-preview">` : '';
-    // load variations
-    variationCounter = 0;
-    const varContainer = document.getElementById('varList');
-    varContainer.innerHTML = '';
-    if (item.hasVar && item.vars) {
-      item.vars.forEach((v, i) => {
-        addVariationRow(v.name, v.price, v.image, i);
+  const lbl   = document.getElementById('saveItemBtnLabel');
+
+  /* reset all tabs to first */
+  switchTab('basicTab');
+
+  if (idx !== null) {
+    /* EDIT */
+    const item = STATE.menu[STATE.currentHeading][idx];
+    if (!item) return;
+    title.textContent = 'Edit Item';
+    lbl.textContent   = 'Update Item';
+    document.getElementById('iName').value       = item.name     || '';
+    document.getElementById('iType').value       = item.type     || 'veg';
+    document.getElementById('iDesc').value       = item.desc     || '';
+    document.getElementById('iTime').value       = item.time     || '';
+    document.getElementById('iPrice').value      = item.price    || '';
+    document.getElementById('iCategory').value   = item.category || '';
+    document.getElementById('iHasVar').checked   = !!item.hasVar;
+    document.getElementById('iImageUrl').value   = item.image    || '';
+    document.getElementById('iImageUrlInput').value = item.image || '';
+
+    /* image preview */
+    const preview = document.getElementById('iImagePreview');
+    preview.innerHTML = item.image
+      ? `<img class="img-preview-thumb" src="${escAttr(item.image)}" onerror="this.style.display='none'">`
+      : '';
+
+    /* variations */
+    _varCount = 0;
+    const varList = document.getElementById('varList');
+    varList.innerHTML = '';
+    if (item.vars && item.vars.length) {
+      item.vars.forEach(v => addVariationRow(v.name, v.price, v.image));
+    }
+
+  } else {
+    /* ADD */
+    title.textContent = 'Add New Item';
+    lbl.textContent   = 'Save Item';
+    document.getElementById('iName').value          = '';
+    document.getElementById('iType').value          = 'veg';
+    document.getElementById('iDesc').value          = '';
+    document.getElementById('iTime').value          = '';
+    document.getElementById('iPrice').value         = '';
+    document.getElementById('iCategory').value      = '';
+    document.getElementById('iHasVar').checked      = false;
+    document.getElementById('iImageUrl').value      = '';
+    document.getElementById('iImageUrlInput').value = '';
+    document.getElementById('iImagePreview').innerHTML = '';
+    document.getElementById('iImageFile').value     = '';
+    _varCount = 0;
+    document.getElementById('varList').innerHTML    = '';
+  }
+
+  togglePricingUI();
+  openModal('itemModal');
+  requestAnimationFrame(() => document.getElementById('iName').focus());
+}
+
+function togglePricingUI() {
+  const hasVar = document.getElementById('iHasVar').checked;
+  document.getElementById('simplePriceSection').style.opacity = hasVar ? '.4' : '1';
+  document.getElementById('iPrice').disabled = hasVar;
+}
+
+async function saveItem() {
+  const name = document.getElementById('iName').value.trim();
+  if (!name) { toast('Item name is required', 'error'); switchTab('basicTab'); document.getElementById('iName').focus(); return; }
+
+  const btn = document.getElementById('saveItemBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Saving…';
+
+  try {
+    /* collect vars */
+    const hasVar = document.getElementById('iHasVar').checked;
+    const vars   = [];
+    if (hasVar) {
+      document.querySelectorAll('#varList .var-row').forEach(row => {
+        const vname  = row.querySelector('.var-name')?.value.trim()  || '';
+        const vprice = row.querySelector('.var-price')?.value.trim() || '';
+        const vimg   = row.querySelector('.var-img-url')?.value      || '';
+        if (vname) vars.push({ name: vname, price: vprice, image: vimg });
       });
     }
-  } else {
-    title.innerText = "Add New Item";
-    document.getElementById('itemName').value = '';
-    document.getElementById('itemType').value = 'veg';
-    document.getElementById('itemDesc').value = '';
-    document.getElementById('itemTime').value = '';
-    document.getElementById('itemPrice').value = '';
-    document.getElementById('itemImageUrl').value = '';
-    document.getElementById('hasVariations').checked = false;
-    document.getElementById('itemImagePreview').innerHTML = '';
-    document.getElementById('varList').innerHTML = '';
-    variationCounter = 0;
+
+    const item = {
+      id:       (_editingItemIdx !== null && STATE.menu[STATE.currentHeading][_editingItemIdx]?.id) || uid(),
+      name,
+      type:     document.getElementById('iType').value,
+      desc:     document.getElementById('iDesc').value.trim(),
+      time:     document.getElementById('iTime').value.trim(),
+      price:    document.getElementById('iPrice').value.trim(),
+      category: document.getElementById('iCategory').value.trim(),
+      image:    document.getElementById('iImageUrl').value.trim(),
+      hasVar,
+      vars,
+    };
+
+    STATE.pushHistory();
+
+    if (_editingItemIdx !== null) {
+      STATE.menu[STATE.currentHeading][_editingItemIdx] = item;
+      toast(`"${name}" updated`, 'success');
+    } else {
+      STATE.menu[STATE.currentHeading].push(item);
+      toast(`"${name}" added`, 'success');
+    }
+
+    renderAll();
+    closeModal('itemModal');
+    markPending();
+
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<span id="saveItemBtnLabel">Save Item</span>';
+    document.getElementById('saveItemBtnLabel').textContent =
+      _editingItemIdx !== null ? 'Update Item' : 'Save Item';
   }
-  toggleVariationsUI();
-  modal.style.display = 'flex';
 }
 
-function closeItemModal() {
-  document.getElementById('itemModal').style.display = 'none';
-  editingItemIndex = null;
+function duplicateItem(idx) {
+  if (!STATE.currentHeading) return;
+  const src  = STATE.menu[STATE.currentHeading][idx];
+  if (!src) return;
+  STATE.pushHistory();
+  const copy = JSON.parse(JSON.stringify(src));
+  copy.id    = uid();
+  copy.name  = copy.name + ' (Copy)';
+  STATE.menu[STATE.currentHeading].splice(idx + 1, 0, copy);
+  renderItems();
+  updateStats();
+  markPending();
+  toast(`Duplicated "${src.name}"`, 'success');
 }
 
-function toggleVariationsUI() {
-  const hasVar = document.getElementById('hasVariations').checked;
-  document.getElementById('variationsContainer').style.display = hasVar ? 'block' : 'none';
-  document.getElementById('itemPrice').disabled = hasVar;
+function confirmDeleteItem(idx) {
+  const item = STATE.menu[STATE.currentHeading]?.[idx];
+  if (!item) return;
+  confirmAction(
+    `Delete "${item.name}"?`,
+    'This action cannot be undone (but you can undo via Ctrl+Z).',
+    () => {
+      STATE.pushHistory();
+      STATE.menu[STATE.currentHeading].splice(idx, 1);
+      renderItems();
+      updateStats();
+      markPending();
+      toast(`Deleted "${item.name}"`, 'success');
+    }
+  );
 }
 
-function addVariationRow(name = '', price = '', img = '', idOverride = null) {
-  const id = idOverride !== null ? idOverride : variationCounter++;
+/* ============================================================
+   16. VARIATIONS
+============================================================ */
+function addVariationRow(name = '', price = '', img = '') {
+  const id      = `var_${_varCount++}`;
   const container = document.getElementById('varList');
-  const div = document.createElement('div');
-  div.className = 'variation-row';
-  div.style.marginBottom = '12px';
-  div.style.background = '#0f131c';
-  div.style.padding = '12px';
-  div.style.borderRadius = '12px';
+  const div     = document.createElement('div');
+  div.className = 'var-row';
   div.innerHTML = `
-    <div class="row gap-2" style="flex-wrap:wrap;">
-      <input type="text" placeholder="Variation name" class="var-name" value="${escapeHtml(name)}" style="flex:2;">
-      <input type="number" placeholder="Price ₹" class="var-price" value="${escapeHtml(price)}" style="flex:1;">
-      <input type="file" accept="image/*" class="var-image-file" style="flex:2;">
-      <input type="hidden" class="var-image-url" value="${escapeHtml(img)}">
-      <button class="small danger remove-var">✕</button>
+    <div class="var-row-fields">
+      <div>
+        <div class="form-label" style="font-size:11px;">Name</div>
+        <input type="text" class="form-input var-name" value="${escAttr(name)}" placeholder="e.g. Half / Full">
+      </div>
+      <div>
+        <div class="form-label" style="font-size:11px;">Price ₹</div>
+        <input type="number" class="form-input var-price" value="${escAttr(price)}" placeholder="149" min="0">
+      </div>
+      <div>
+        <div class="form-label" style="font-size:11px;">Image (optional)</div>
+        <input type="file" class="form-file" accept="image/*" style="padding:4px 8px;font-size:12px;">
+        <input type="hidden" class="var-img-url" value="${escAttr(img)}">
+      </div>
+      <button class="btn btn-xs btn-danger remove-var" title="Remove" style="margin-top:18px;">✕</button>
     </div>
-    <div class="var-preview" style="margin-top:5px;">${img ? `<img src="${img}" class="image-preview" style="max-width:60px;">` : ''}</div>
-  `;
-  const fileInput = div.querySelector('.var-image-file');
-  const previewDiv = div.querySelector('.var-preview');
-  const urlHidden = div.querySelector('.var-image-url');
-  fileInput.addEventListener('change', async (e) => {
-    if (e.target.files[0]) {
-      try {
-        const url = await uploadImage(e.target.files[0]);
-        urlHidden.value = url;
-        previewDiv.innerHTML = `<img src="${url}" class="image-preview" style="max-width:60px;">`;
-        showToast("Variation image uploaded");
-      } catch(err) { showToast("Upload failed", true); }
+    <div class="var-row-preview">
+      ${img ? `<img class="var-img-thumb" src="${escAttr(img)}" onerror="this.style.display='none'">` : ''}
+      <span class="var-upload-status text-dim fs-sm"></span>
+    </div>`;
+
+  /* image upload handler */
+  const fileInput = div.querySelector('input[type="file"]');
+  const urlHidden = div.querySelector('.var-img-url');
+  const preview   = div.querySelector('.var-row-preview');
+  const status    = div.querySelector('.var-upload-status');
+
+  fileInput.addEventListener('change', async e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    status.textContent = 'Uploading…';
+    try {
+      const url = await uploadImage(file);
+      urlHidden.value = url;
+      preview.innerHTML = `<img class="var-img-thumb" src="${escAttr(url)}">`;
+      status.textContent = 'Uploaded ✓';
+      toast('Variation image uploaded', 'success');
+    } catch (err) {
+      status.textContent = 'Upload failed';
+      toast('Upload failed: ' + err.message, 'error');
     }
   });
+
   div.querySelector('.remove-var').addEventListener('click', () => div.remove());
+
   container.appendChild(div);
 }
 
-async function saveCurrentItem() {
-  if (!currentHeading) { showToast("Select a heading first", true); return; }
-  const name = document.getElementById('itemName').value.trim();
-  if (!name) { showToast("Item name required", true); return; }
-  const type = document.getElementById('itemType').value;
-  const desc = document.getElementById('itemDesc').value;
-  const time = document.getElementById('itemTime').value;
-  const price = document.getElementById('itemPrice').value;
-  const image = document.getElementById('itemImageUrl').value;
-  const hasVar = document.getElementById('hasVariations').checked;
-  let vars = [];
-  if (hasVar) {
-    const rows = document.querySelectorAll('.variation-row');
-    for (let row of rows) {
-      const vname = row.querySelector('.var-name')?.value.trim();
-      const vprice = row.querySelector('.var-price')?.value.trim();
-      const vimg = row.querySelector('.var-image-url')?.value;
-      if (vname) vars.push({ name: vname, price: vprice, image: vimg });
-    }
-  }
-  const newItem = { name, type, desc, time, image, price, hasVar, vars };
-  if (editingItemIndex !== null) {
-    menuData[currentHeading][editingItemIndex] = newItem;
-    showToast("Item updated");
-  } else {
-    menuData[currentHeading].push(newItem);
-    showToast("Item added");
-  }
-  renderItemsList();
-  closeItemModal();
-}
-
-// ==================== SAVE TO DRIVE (OVERWRITE WITH CURRENT DATA) ====================
-function buildFullHTML() {
-  let html = `<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Menu</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
-<style>
-:root{--bg:#0f1117;--surface:#1a1e2e;--surface2:#222638;--border:#2e3350;--accent:#7c5cbf;--text:#e2e8f0;--muted:#8892a4}
-body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);padding:32px 20px;max-width:680px;margin:0 auto}
-h1{font-family:'Syne';font-size:22px;font-weight:800;color:#fff;margin-top:32px;}
-.mcard{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;display:flex;align-items:center;gap:14px;margin-bottom:12px}
-.mcard-img{width:64px;height:64px;border-radius:8px;background:var(--surface2);overflow:hidden}
-.mcard-img img{width:100%;height:100%;object-fit:cover}
-.mcard-body{flex:1}
-.mcard-name{font-family:'Syne';font-size:14px;font-weight:700;display:flex;align-items:center;gap:7px}
-.vdot{width:14px;height:14px;border-radius:3px;border:2px solid;display:inline-flex;align-items:center;justify-content:center}
-.vdot span{width:6px;height:6px;border-radius:50%;display:block}
-.mcard-desc{font-size:12px;color:var(--muted)}
-.mcard-price{font-size:13px;font-weight:600;color:var(--text);margin-top:3px}
-.addbtn{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:8px 16px;cursor:pointer}
-</style>
-</head>
-<body>`;
-  for (let heading in menuData) {
-    html += `<h1>${escapeHtml(heading)}</h1>`;
-    for (let item of menuData[heading]) {
-      const dotColor = item.type === 'veg' ? '#22c55e' : '#ef4444';
-      const imgTag = item.image ? `<img src="${item.image}" onerror="this.style.display='none'">` : '';
-      const priceHtml = (!item.hasVar && item.price) ? `<div class="mcard-price">₹${escapeHtml(item.price)}</div>` : '';
-      html += `
-      <div class="mcard">
-        <div class="mcard-img">${imgTag}</div>
-        <div class="mcard-body">
-          <div class="mcard-name"><span class="vdot" style="border-color:${dotColor}"><span style="background:${dotColor}"></span></span>${escapeHtml(item.name)}</div>
-          <div class="mcard-desc">${escapeHtml(item.desc)} ${item.time ? '⏱️ '+escapeHtml(item.time) : ''}</div>
-          ${priceHtml}
-        </div>
-        <button class="addbtn" onclick="alert('Added ${escapeHtml(item.name)}')">Add</button>
-      </div>`;
-    }
-  }
-  html += `</body></html>`;
-  return html;
-}
-
-async function saveToDrive() {
-  if (Object.keys(menuData).length === 0) {
-    showToast("Nothing to save. Add a heading first.", true);
-    return;
-  }
-  const fullHtml = buildFullHTML();
+/* ============================================================
+   17. IMAGE UPLOAD IN MAIN FORM
+============================================================ */
+document.getElementById('iImageFile').addEventListener('change', async e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const preview = document.getElementById('iImagePreview');
+  preview.innerHTML = '<span class="text-dim fs-sm"><span class="spinner spinner-accent" style="width:14px;height:14px;"></span> Uploading…</span>';
   try {
-    const res = await fetch(WEB_APP_URL, {
-      method: 'POST',
-      body: fullHtml,
-      headers: { 'Content-Type': 'text/plain' }
-    });
-    if (res.ok) {
-      showToast("✅ Saved to Drive successfully!");
-      refreshPreview();
-    } else {
-      showToast("Save failed", true);
-    }
+    const url = await uploadImage(file);
+    document.getElementById('iImageUrl').value      = url;
+    document.getElementById('iImageUrlInput').value = url;
+    preview.innerHTML = `<img class="img-preview-thumb" src="${escAttr(url)}">`;
+    toast('Image uploaded ✓', 'success');
   } catch (err) {
-    showToast("Error: " + err.message, true);
+    preview.innerHTML = `<span class="text-danger fs-sm">Upload failed: ${escHtml(err.message)}</span>`;
+    toast('Image upload failed', 'error');
+  }
+});
+
+document.getElementById('iImageUrlApply').addEventListener('click', () => {
+  const url = document.getElementById('iImageUrlInput').value.trim();
+  if (!url) return;
+  document.getElementById('iImageUrl').value = url;
+  document.getElementById('iImagePreview').innerHTML =
+    `<img class="img-preview-thumb" src="${escAttr(url)}" onerror="this.src='';this.alt='Invalid URL'">`;
+  toast('Image URL applied', 'info');
+});
+
+/* ============================================================
+   18. DRAG & DROP — HEADINGS
+============================================================ */
+let _dragHeading = null;
+
+function handleHeadingDragStart(e) {
+  _dragHeading = this.dataset.heading;
+  this.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.setData('text/plain', _dragHeading);
+}
+
+function handleHeadingDragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  const target = this.dataset.heading;
+  if (target !== _dragHeading) {
+    document.querySelectorAll('.heading-item').forEach(el => el.classList.remove('drag-over'));
+    this.classList.add('drag-over');
   }
 }
 
-// ==================== PREVIEW ====================
-async function refreshPreview() {
-  try {
-    const res = await fetch(WEB_APP_URL);
-    const html = await res.text();
-    const iframe = document.getElementById('previewIframe');
-    iframe.srcdoc = html;
-  } catch (err) {
-    showToast("Preview error", true);
+function handleHeadingDrop(e) {
+  e.preventDefault();
+  const target = this.dataset.heading;
+  if (!target || target === _dragHeading) return;
+
+  STATE.pushHistory();
+  /* reorder keys */
+  const keys    = Object.keys(STATE.menu);
+  const fromIdx = keys.indexOf(_dragHeading);
+  const toIdx   = keys.indexOf(target);
+  if (fromIdx < 0 || toIdx < 0) return;
+
+  keys.splice(fromIdx, 1);
+  keys.splice(toIdx, 0, _dragHeading);
+
+  const newMenu = {};
+  keys.forEach(k => (newMenu[k] = STATE.menu[k]));
+  STATE.menu = newMenu;
+
+  renderHeadings();
+  updateStats();
+  markPending();
+  toast('Heading reordered', 'info');
+}
+
+function handleHeadingDragEnd() {
+  this.classList.remove('dragging');
+  document.querySelectorAll('.heading-item').forEach(el => el.classList.remove('drag-over'));
+  _dragHeading = null;
+}
+
+/* ============================================================
+   19. DRAG & DROP — ITEMS
+============================================================ */
+let _dragItemIdx = null;
+
+function handleItemDragStart(e) {
+  _dragItemIdx = parseInt(this.dataset.idx, 10);
+  this.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+}
+
+function handleItemDragOver(e) {
+  e.preventDefault();
+  if (parseInt(this.dataset.idx, 10) !== _dragItemIdx) {
+    document.querySelectorAll('.item-card').forEach(el => el.classList.remove('drag-over'));
+    this.classList.add('drag-over');
   }
 }
 
-// ==================== EVENT LISTENERS & INIT ====================
-document.getElementById('loadDriveBtn').addEventListener('click', loadFromDrive);
-document.getElementById('saveDriveBtn').addEventListener('click', saveToDrive);
-document.getElementById('refreshPreviewBtn').addEventListener('click', refreshPreview);
-document.getElementById('newHeadingBtn').addEventListener('click', () => {
-  document.getElementById('headingModal').style.display = 'flex';
-});
-document.getElementById('closeHeadingModalBtn').addEventListener('click', () => {
-  document.getElementById('headingModal').style.display = 'none';
-});
-document.getElementById('createHeadingBtn').addEventListener('click', () => {
-  const newHeading = document.getElementById('newHeadingInput').value.trim();
-  if (!newHeading) { showToast("Heading name required", true); return; }
-  if (menuData[newHeading]) { showToast("Heading already exists", true); return; }
-  menuData[newHeading] = [];
-  renderHeadingsList();
-  selectHeading(newHeading);
-  document.getElementById('headingModal').style.display = 'none';
-  document.getElementById('newHeadingInput').value = '';
-  showToast(`Heading "${newHeading}" created`);
-});
-document.getElementById('addItemBtn').addEventListener('click', () => {
-  if (!currentHeading) { showToast("Select a heading first", true); return; }
-  openItemModal(null);
-});
-document.getElementById('closeItemModalBtn').addEventListener('click', closeItemModal);
-document.getElementById('saveItemBtn').addEventListener('click', saveCurrentItem);
-document.getElementById('hasVariations').addEventListener('change', toggleVariationsUI);
-document.getElementById('addVariationBtn').addEventListener('click', () => addVariationRow());
-document.getElementById('itemImageFile').addEventListener('change', async (e) => {
-  if (e.target.files[0]) {
-    try {
-      const url = await uploadImage(e.target.files[0]);
-      document.getElementById('itemImageUrl').value = url;
-      document.getElementById('itemImagePreview').innerHTML = `<img src="${url}" class="image-preview">`;
-      showToast("Item image uploaded");
-    } catch(err) { showToast("Upload failed", true); }
-  }
-});
-document.getElementById('refreshBtn').addEventListener('click', loadFromDrive);
+function handleItemDrop(e) {
+  e.preventDefault();
+  const toIdx = parseInt(this.dataset.idx, 10);
+  if (isNaN(toIdx) || toIdx === _dragItemIdx || !STATE.currentHeading) return;
 
-function escapeHtml(str) {
-  if (!str) return '';
-  return String(str).replace(/[&<>]/g, function(m) {
-    if (m === '&') return '&amp;';
-    if (m === '<') return '&lt;';
-    if (m === '>') return '&gt;';
-    return m;
+  STATE.pushHistory();
+  const arr  = STATE.menu[STATE.currentHeading];
+  const item = arr.splice(_dragItemIdx, 1)[0];
+  arr.splice(toIdx, 0, item);
+
+  renderItems();
+  markPending();
+}
+
+function handleItemDragEnd() {
+  this.classList.remove('dragging');
+  document.querySelectorAll('.item-card').forEach(el => el.classList.remove('drag-over'));
+  _dragItemIdx = null;
+}
+
+/* ============================================================
+   20. MODAL HELPERS
+============================================================ */
+function openModal(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+/* close on overlay click */
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) closeModal(overlay.id);
+  });
+});
+
+/* TAB SWITCHING */
+function switchTab(tabId) {
+  document.querySelectorAll('#itemModal .tab-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.tab === tabId);
+  });
+  document.querySelectorAll('#itemModal .tab-pane').forEach(pane => {
+    pane.classList.toggle('active', pane.id === tabId);
   });
 }
 
-// initial load
-loadFromDrive();
+document.querySelectorAll('#itemModal .tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+});
+
+/* ============================================================
+   21. CONFIRM DIALOG
+============================================================ */
+let _confirmCallback = null;
+
+function confirmAction(title, msg, onConfirm) {
+  document.getElementById('confirmTitle').textContent   = title;
+  document.getElementById('confirmMessage').textContent = msg;
+  _confirmCallback = onConfirm;
+  openModal('confirmModal');
+}
+
+document.getElementById('confirmOk').addEventListener('click', () => {
+  if (_confirmCallback) { _confirmCallback(); _confirmCallback = null; }
+  closeModal('confirmModal');
+});
+
+document.getElementById('confirmCancel').addEventListener('click',    () => closeModal('confirmModal'));
+document.getElementById('confirmModalClose').addEventListener('click', () => closeModal('confirmModal'));
+
+/* ============================================================
+   22. FILTER CHIPS
+============================================================ */
+document.getElementById('filterChips').addEventListener('click', e => {
+  const chip = e.target.closest('.filter-chip');
+  if (!chip) return;
+  STATE.filter = chip.dataset.filter;
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.toggle('active', c === chip));
+  renderItems();
+});
+
+/* ============================================================
+   23. SEARCH
+============================================================ */
+document.getElementById('headingSearch').addEventListener('input', debounce(e => {
+  STATE.headingSearch = e.target.value.trim();
+  renderHeadings();
+}, 200));
+
+document.getElementById('itemSearch').addEventListener('input', debounce(e => {
+  STATE.itemSearch = e.target.value.trim();
+  renderItems();
+}, 200));
+
+/* ============================================================
+   24. BULK SELECTION
+============================================================ */
+function updateBulkBar() {
+  const bar   = document.getElementById('bulkBar');
+  const label = document.getElementById('bulkCountLabel');
+  const count = STATE.selectedItems.size;
+  label.textContent = `${count} selected`;
+  bar.classList.toggle('visible', STATE.bulkMode && count > 0);
+  document.getElementById('selectAll').checked = count === (STATE.menu[STATE.currentHeading]||[]).length;
+}
+
+document.getElementById('selectAll').addEventListener('change', e => {
+  const items = STATE.menu[STATE.currentHeading] || [];
+  if (e.target.checked) {
+    items.forEach(item => STATE.selectedItems.add(item.id || item.name));
+  } else {
+    STATE.selectedItems.clear();
+  }
+  renderItems();
+  updateBulkBar();
+});
+
+document.getElementById('bulkDeleteBtn').addEventListener('click', () => {
+  if (!STATE.selectedItems.size) return;
+  confirmAction(
+    `Delete ${STATE.selectedItems.size} items?`,
+    'This will permanently delete all selected items.',
+    () => {
+      STATE.pushHistory();
+      STATE.menu[STATE.currentHeading] = (STATE.menu[STATE.currentHeading] || [])
+        .filter(item => !STATE.selectedItems.has(item.id || item.name));
+      STATE.selectedItems.clear();
+      STATE.bulkMode = false;
+      renderAll();
+      markPending();
+      toast('Items deleted', 'success');
+    }
+  );
+});
+
+document.getElementById('bulkCancelBtn').addEventListener('click', () => {
+  STATE.bulkMode = false;
+  STATE.selectedItems.clear();
+  document.getElementById('bulkBar').classList.remove('visible');
+  renderItems();
+});
+
+document.getElementById('bulkMoveBtn').addEventListener('click', () => {
+  const target = document.getElementById('bulkMoveTarget');
+  target.innerHTML = '';
+  Object.keys(STATE.menu).forEach(k => {
+    if (k !== STATE.currentHeading) {
+      const opt = document.createElement('option');
+      opt.value = k;
+      opt.textContent = k;
+      target.appendChild(opt);
+    }
+  });
+  openModal('bulkMoveModal');
+});
+
+document.getElementById('bulkMoveClose').addEventListener('click',      () => closeModal('bulkMoveModal'));
+document.getElementById('bulkMoveCancelBtn').addEventListener('click',  () => closeModal('bulkMoveModal'));
+document.getElementById('bulkMoveConfirmBtn').addEventListener('click', () => {
+  const dest = document.getElementById('bulkMoveTarget').value;
+  if (!dest || !STATE.menu[dest]) return;
+  STATE.pushHistory();
+  const toMove = (STATE.menu[STATE.currentHeading] || []).filter(item =>
+    STATE.selectedItems.has(item.id || item.name)
+  );
+  STATE.menu[STATE.currentHeading] = (STATE.menu[STATE.currentHeading] || []).filter(item =>
+    !STATE.selectedItems.has(item.id || item.name)
+  );
+  STATE.menu[dest].push(...toMove);
+  STATE.selectedItems.clear();
+  STATE.bulkMode = false;
+  closeModal('bulkMoveModal');
+  renderAll();
+  markPending();
+  toast(`Moved ${toMove.length} item(s) to "${dest}"`, 'success');
+});
+
+/* ============================================================
+   25. LIVE PREVIEW
+============================================================ */
+function previewLocal() {
+  const html   = buildMenuHTML();
+  const iframe = document.getElementById('previewIframe');
+  iframe.srcdoc = html;
+  toast('Preview updated', 'info');
+}
+
+async function refreshPreview() {
+  try {
+    const res  = await netFetch(CFG.WEB_APP_URL);
+    const html = await res.text();
+    document.getElementById('previewIframe').srcdoc = html;
+    toast('Preview refreshed from Drive', 'info');
+  } catch (err) {
+    toast('Preview error: ' + err.message, 'error');
+  }
+}
+
+document.getElementById('previewLocalBtn').addEventListener('click', previewLocal);
+document.getElementById('refreshPreviewBtn').addEventListener('click', refreshPreview);
+
+/* ============================================================
+   26. LOADING OVERLAY
+============================================================ */
+function setLoadingOverlay(panelId, show) {
+  const panel   = document.getElementById(panelId);
+  const existing = panel.querySelector('.loading-overlay');
+  if (show && !existing) {
+    const ov = document.createElement('div');
+    ov.className = 'loading-overlay';
+    ov.innerHTML = `<div class="loading-block"><span class="spinner"></span> Loading from Drive…</div>`;
+    panel.style.position = 'relative';
+    panel.appendChild(ov);
+  } else if (!show && existing) {
+    existing.remove();
+  }
+}
+
+/* ============================================================
+   27. MAIN EVENT WIRING
+============================================================ */
+/* header */
+document.getElementById('loadDriveBtn').addEventListener('click',    loadFromDrive);
+document.getElementById('saveDriveBtn').addEventListener('click',    saveToDrive);
+document.getElementById('refreshBtn').addEventListener('click',      loadFromDrive);
+document.getElementById('undoBtn').addEventListener('click',         () => STATE.undo());
+document.getElementById('redoBtn').addEventListener('click',         () => STATE.redo());
+
+/* headings */
+document.getElementById('newHeadingBtn').addEventListener('click',   () => openNewHeadingModal());
+document.getElementById('headingModalClose').addEventListener('click',  () => closeModal('headingModal'));
+document.getElementById('headingModalCancel').addEventListener('click', () => closeModal('headingModal'));
+document.getElementById('createHeadingBtn').addEventListener('click',   createOrRenameHeading);
+document.getElementById('newHeadingInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') createOrRenameHeading();
+  if (e.key === 'Escape') closeModal('headingModal');
+});
+
+/* items */
+document.getElementById('addItemBtn').addEventListener('click', () => openItemModal(null));
+document.getElementById('itemModalClose').addEventListener('click',   () => closeModal('itemModal'));
+document.getElementById('itemModalCancel').addEventListener('click',  () => closeModal('itemModal'));
+document.getElementById('saveItemBtn').addEventListener('click',       saveItem);
+document.getElementById('iHasVar').addEventListener('change',          togglePricingUI);
+document.getElementById('addVariationBtn').addEventListener('click',   () => addVariationRow());
+
+/* item form — enter to save */
+document.getElementById('iName').addEventListener('keydown', e => {
+  if (e.key === 'Enter') saveItem();
+});
+
+/* ============================================================
+   28. KEYBOARD SHORTCUTS
+============================================================ */
+document.addEventListener('keydown', e => {
+  /* Ctrl/Cmd + Z = Undo */
+  if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+    e.preventDefault(); STATE.undo();
+  }
+  /* Ctrl/Cmd + Shift + Z or Ctrl+Y = Redo */
+  if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
+    e.preventDefault(); STATE.redo();
+  }
+  /* Ctrl + S = Save to Drive */
+  if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+    e.preventDefault(); saveToDrive();
+  }
+  /* Escape = close any open modal */
+  if (e.key === 'Escape') {
+    ['itemModal','headingModal','confirmModal','bulkMoveModal'].forEach(id => closeModal(id));
+  }
+  /* N = new item (when heading selected, no modal open) */
+  if (e.key === 'n' && !e.ctrlKey && !e.metaKey) {
+    const anyOpen = document.querySelector('.modal-overlay.active');
+    if (!anyOpen && STATE.currentHeading && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+      e.preventDefault(); openItemModal(null);
+    }
+  }
+});
+
+/* ============================================================
+   29. WINDOW BEFORE UNLOAD WARNING
+============================================================ */
+window.addEventListener('beforeunload', e => {
+  if (STATE.pendingChanges) {
+    e.preventDefault();
+    e.returnValue = 'You have unsaved changes. Save to Drive before leaving.';
+  }
+});
+
+/* ============================================================
+   30. AUTO-SAVE TO LOCAL STORAGE
+============================================================ */
+setInterval(() => {
+  if (STATE.pendingChanges) saveLocal();
+}, 10000);
+
+/* ============================================================
+   31. INITIALISATION
+============================================================ */
+(function init() {
+  /* try local first for instant load */
+  const gotLocal = loadLocal();
+  if (gotLocal && Object.keys(STATE.menu).length > 0) {
+    renderAll();
+    const keys = Object.keys(STATE.menu);
+    if (keys.length) selectHeading(keys[0]);
+    setSyncStatus('pending', 'Local data loaded — sync to Drive');
+    toast('Restored from local backup', 'info');
+  } else {
+    /* no local data — attempt Drive load */
+    loadFromDrive();
+  }
+  updateUndoRedoBtns();
+})();
 </script>
 </body>
 </html>
