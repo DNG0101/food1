@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Pizza Menu Builder</title>
+<title>Menu Builder – Multi‑Heading with Images</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
 <style>
 :root{
@@ -12,745 +12,420 @@
   --veg:#22c55e;--nonveg:#ef4444;
   --text:#e2e8f0;--muted:#8892a4;--card-bg:#181c2a;
 }
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+*{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
 .app{display:grid;grid-template-columns:1fr 1fr;min-height:100vh}
 @media(max-width:860px){.app{grid-template-columns:1fr}}
-
-/* Builder */
-.builder{padding:32px 28px;border-right:1px solid var(--border);overflow-y:auto;background:var(--bg)}
-.pane-head{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:#fff;margin-bottom:24px;display:flex;align-items:center;gap:10px}
+.builder{padding:32px 28px;border-right:1px solid var(--border);overflow-y:auto}
+.pane-head{font-family:'Syne';font-size:20px;font-weight:800;display:flex;align-items:center;gap:10px;margin-bottom:24px}
 .pane-head .dot{width:9px;height:9px;border-radius:50%;background:var(--accent)}
 .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:16px}
-.slabel{font-family:'Syne',sans-serif;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent);margin-bottom:14px}
+.slabel{font-family:'Syne';font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent);margin-bottom:14px}
 .f{margin-bottom:12px}
-.f label{display:block;font-size:12px;font-weight:500;color:var(--muted);margin-bottom:5px}
-.f input,.f textarea{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 13px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);outline:none;transition:border-color .2s;resize:vertical}
+.f label{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}
+.f input,.f textarea{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 13px;font-size:13px;color:var(--text);outline:none}
 .f input:focus,.f textarea:focus{border-color:var(--accent)}
-.f input::placeholder,.f textarea::placeholder{color:var(--muted);opacity:.55}
-.img-preview{width:100%;height:120px;border-radius:8px;object-fit:cover;background:var(--surface2);border:1px solid var(--border);display:none;margin-top:8px}
-.img-preview.shown{display:block}
-.img-err{font-size:11px;color:var(--nonveg);margin-top:4px;display:none}
-
-/* veg toggle */
 .veg-row{display:flex;gap:8px}
-.vbtn{flex:1;padding:9px;border-radius:8px;border:2px solid var(--border);background:var(--surface2);color:var(--muted);font-family:'Syne',sans-serif;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;transition:all .2s}
-.vbtn .sq{width:12px;height:12px;border-radius:3px}
+.vbtn{flex:1;padding:9px;border-radius:8px;border:2px solid var(--border);background:var(--surface2);color:var(--muted);font-family:'Syne';font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px}
 .vbtn.av{border-color:var(--veg);color:var(--veg);background:rgba(34,197,94,.08)}
 .vbtn.an{border-color:var(--nonveg);color:var(--nonveg);background:rgba(239,68,68,.08)}
-
-/* toggle switch */
 .trow{display:flex;align-items:center;gap:10px;margin-bottom:12px}
 .tswitch{position:relative;width:42px;height:22px}
 .tswitch input{opacity:0;width:0;height:0}
-.tslider{position:absolute;cursor:pointer;inset:0;background:var(--surface2);border-radius:22px;transition:.3s;border:1px solid var(--border)}
+.tslider{position:absolute;cursor:pointer;inset:0;background:var(--surface2);border-radius:22px;border:1px solid var(--border);transition:.3s}
 .tslider::before{content:'';position:absolute;width:14px;height:14px;border-radius:50%;background:var(--muted);bottom:3px;left:3px;transition:.3s}
 .tswitch input:checked+.tslider{background:var(--accent);border-color:var(--accent)}
 .tswitch input:checked+.tslider::before{transform:translateX(20px);background:#fff}
-.tlabel{font-size:13px;color:var(--text)}
-
-/* variations */
 #vblock{display:none}
 .vtable{width:100%;border-collapse:collapse;margin-bottom:10px}
-.vtable th{text-align:left;font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);padding:7px 8px;border-bottom:1px solid var(--border)}
+.vtable th{text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;color:var(--muted);padding:7px 8px;border-bottom:1px solid var(--border)}
 .vrow td{padding:6px 5px}
-.vrow td input{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:7px 9px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);width:100%;outline:none}
-.vrow td input:focus{border-color:var(--accent)}
-.delbtn{background:none;border:none;color:var(--nonveg);cursor:pointer;font-size:17px;padding:3px 7px;border-radius:5px;transition:background .2s}
-.delbtn:hover{background:rgba(239,68,68,.1)}
-.addvarbtn{background:none;border:1px dashed var(--border);color:var(--muted);font-family:'DM Sans',sans-serif;font-size:13px;padding:8px 14px;border-radius:8px;cursor:pointer;width:100%;transition:all .2s}
-.addvarbtn:hover{border-color:var(--accent);color:var(--accent)}
-
-/* action btns */
+.vrow td input{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:7px 9px;width:100%}
+.delbtn{background:none;border:none;color:var(--nonveg);cursor:pointer;font-size:17px}
+.addvarbtn{background:none;border:1px dashed var(--border);color:var(--muted);padding:8px 14px;border-radius:8px;cursor:pointer;width:100%}
 .btnrow{display:flex;gap:10px;margin-top:6px}
-.btn{flex:1;padding:11px 18px;border-radius:10px;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;cursor:pointer;border:none;transition:all .2s;letter-spacing:.2px}
+.btn{flex:1;padding:11px 18px;border-radius:10px;font-family:'Syne';font-size:13px;font-weight:700;cursor:pointer;border:none}
 .btn-pre{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
-.btn-pre:hover{border-color:var(--accent);color:var(--accent)}
 .btn-sub{background:var(--accent);color:#fff}
-.btn-sub:hover{background:var(--accent-h);transform:translateY(-1px);box-shadow:0 5px 18px rgba(124,92,191,.35)}
-.btn-clr{background:none;color:var(--muted);border:1px solid var(--border);flex:0 0 auto;padding:11px 14px}
-.btn-clr:hover{color:var(--nonveg);border-color:var(--nonveg)}
-
-/* items list */
+.btn-clr{background:none;color:var(--muted);border:1px solid var(--border);flex:0 0 auto}
 #ilistwrap{display:none}
-.sep{border:none;border-top:1px solid var(--border);margin:20px 0 14px}
-.ichip{display:flex;align-items:center;justify-content:space-between;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;margin-bottom:7px;font-size:13px}
-.ichip .cn{font-weight:600;color:var(--text)}
-.ichip .cm{font-size:11px;color:var(--muted)}
-.cdel{background:none;border:none;color:var(--muted);cursor:pointer;font-size:15px;padding:2px 6px;border-radius:4px;transition:color .2s}
-.cdel:hover{color:var(--nonveg)}
-
-/* Output */
-.output{padding:32px 28px;display:flex;flex-direction:column;overflow-y:auto;background:var(--bg)}
+.ichip{display:flex;justify-content:space-between;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;margin-bottom:7px}
+.cdel{background:none;border:none;color:var(--muted);cursor:pointer}
+.output{padding:32px 28px;display:flex;flex-direction:column;overflow-y:auto}
 .tabs{display:flex;margin-bottom:18px;border-bottom:1px solid var(--border)}
-.tbtn{padding:9px 18px;background:none;border:none;font-family:'Syne',sans-serif;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .2s}
+.tbtn{padding:9px 18px;background:none;border:none;font-family:'Syne';font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent}
 .tbtn.on{color:var(--accent);border-bottom-color:var(--accent)}
-.prevwrap{background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:24px;min-height:300px;flex:1}
-.prev-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;min-height:250px;color:var(--muted);gap:10px}
-.prev-empty p{font-size:13px}
-.codewrap{background:var(--surface);border:1px solid var(--border);border-radius:14px;flex:1;display:flex;flex-direction:column;overflow:hidden}
-.codetbar{display:flex;align-items:center;justify-content:space-between;padding:9px 14px;border-bottom:1px solid var(--border);background:var(--surface2);border-radius:14px 14px 0 0}
-.codetbar span{font-size:11px;color:var(--muted);font-weight:500;letter-spacing:.5px}
-.codetbar-btns{display:flex;gap:6px}
-.copybtn{background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:'DM Sans',sans-serif;font-size:12px;padding:4px 11px;border-radius:6px;cursor:pointer;transition:all .2s}
-.copybtn:hover{border-color:var(--accent);color:var(--accent)}
-#gcode{flex:1;background:transparent;border:none;padding:14px;font-family:'Courier New',monospace;font-size:11.5px;color:#a5b4fc;resize:none;outline:none;min-height:360px;line-height:1.65}
-
-/* Preview card styles */
-.msec-title{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:#fff;margin-bottom:14px}
+.prevwrap{background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:24px;min-height:300px;overflow:auto}
 .mcard{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;display:flex;align-items:center;gap:14px;margin-bottom:10px}
-.mcard-img{width:64px;height:64px;border-radius:8px;background:var(--surface2);flex-shrink:0;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.mcard-img{width:64px;height:64px;border-radius:8px;background:var(--surface2);flex-shrink:0;overflow:hidden}
 .mcard-img img{width:100%;height:100%;object-fit:cover}
 .mcard-body{flex:1;cursor:pointer}
-.mcard-body:hover .mcard-name{color:var(--accent-h)}
-.mcard-name{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:#fff;display:flex;align-items:center;gap:7px;margin-bottom:3px;transition:color .15s}
-.vdot{width:14px;height:14px;border-radius:3px;border:2px solid;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+.mcard-name{font-family:'Syne';font-size:14px;font-weight:700;display:flex;align-items:center;gap:7px}
+.vdot{width:14px;height:14px;border-radius:3px;border:2px solid;display:inline-flex;align-items:center;justify-content:center}
 .vdot::after{content:'';width:6px;height:6px;border-radius:50%}
-.vdot.veg{border-color:var(--veg)}
-.vdot.veg::after{background:var(--veg)}
-.vdot.nonveg{border-color:var(--nonveg)}
-.vdot.nonveg::after{background:var(--nonveg)}
-.mcard-desc{font-size:12px;color:var(--muted)}
-.mcard-price{font-size:13px;font-weight:600;color:var(--text);margin-top:3px}
-.addbtn{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;cursor:pointer;flex-shrink:0;transition:background .2s}
-.addbtn:hover{background:var(--accent-h)}
-
-/* Modals */
-.overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;z-index:200;padding:20px;opacity:0;pointer-events:none;transition:opacity .22s;backdrop-filter:blur(5px)}
+.vdot.veg{border-color:var(--veg)}.vdot.veg::after{background:var(--veg)}
+.vdot.nonveg{border-color:var(--nonveg)}.vdot.nonveg::after{background:var(--nonveg)}
+.addbtn{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:8px 16px;cursor:pointer}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;z-index:200;opacity:0;pointer-events:none;transition:opacity .22s}
 .overlay.vis{opacity:1;pointer-events:all}
-.mbox{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:26px;max-width:400px;width:100%;transform:translateY(18px);transition:transform .22s;max-height:90vh;overflow-y:auto}
-.overlay.vis .mbox{transform:translateY(0)}
-.mtitle{font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:#fff;margin-bottom:18px}
-.mitemrow{display:flex;align-items:flex-start;gap:14px;margin-bottom:18px}
-.mimg{width:80px;height:80px;border-radius:10px;background:var(--surface2);flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center}
-.mimg img{width:100%;height:100%;object-fit:cover}
-.miname{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:#fff;display:flex;align-items:center;gap:7px;margin-bottom:3px}
-.midesc{font-size:12px;color:var(--muted)}
-.miprep{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:5px;margin-top:5px}
-.mvtable{width:100%;border-collapse:collapse;margin-bottom:16px}
-.mvtable th{text-align:left;font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);padding:7px 8px;border-bottom:1px solid var(--border)}
-.mvtable td{padding:11px 8px;border-bottom:1px solid rgba(46,51,80,.45);font-size:13px;color:var(--text);font-weight:500}
-.selBtn{background:var(--accent);color:#fff;border:none;border-radius:7px;padding:7px 13px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:background .2s}
-.selBtn:hover{background:var(--accent-h)}
-.mcancelrow{display:flex;justify-content:flex-end;margin-top:4px}
-.mcancel{background:#2a2e42;color:var(--text);border:none;border-radius:8px;padding:9px 20px;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;cursor:pointer}
-.mcancel:hover{background:var(--surface2)}
-
-/* Toast */
-.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(56px);background:var(--accent);color:#fff;padding:11px 22px;border-radius:10px;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;z-index:999;transition:transform .3s,opacity .3s;opacity:0;white-space:nowrap}
+.mbox{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:26px;max-width:600px;width:90%;max-height:80vh;overflow:auto}
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(56px);background:var(--accent);color:#fff;padding:11px 22px;border-radius:10px;transition:transform .3s;opacity:0}
 .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
-::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.img-preview{max-width:100px;max-height:100px;border-radius:8px;margin-top:5px}
 </style>
 </head>
 <body>
 <div class="app">
+  <div class="builder">
+    <div class="pane-head"><span class="dot"></span>Menu Builder</div>
 
-<!-- ══ LEFT: BUILDER ══ -->
-<div class="builder">
-  <div class="pane-head"><span class="dot"></span>Menu Builder</div>
-
-  <div class="card">
-    <div class="slabel">📌 Page Heading</div>
-    <div class="f">
-      <label>Main Heading</label>
-      <input id="heading" type="text" placeholder="Pizza Combos" value="Pizza Combos"/>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="slabel">🍕 Item Details</div>
-    <div class="f">
-      <label>Item Name</label>
-      <input id="iname" type="text" placeholder="Meal For 1"/>
-    </div>
-    <div class="f">
-      <label>Type</label>
-      <div class="veg-row">
-        <button class="vbtn av" id="bv" onclick="setType('veg')">
-          <span class="sq" style="background:var(--veg)"></span>Veg
-        </button>
-        <button class="vbtn" id="bn" onclick="setType('nonveg')">
-          <span class="sq" style="background:var(--nonveg)"></span>Non-Veg
-        </button>
-      </div>
-    </div>
-    <div class="f">
-      <label>Description / Details</label>
-      <input id="idesc" type="text" placeholder="Regular Pizza 8'' (4 slices)"/>
-    </div>
-    <div class="f">
-      <label>Preparation Time</label>
-      <input id="itime" type="text" placeholder="20-25 mins"/>
-    </div>
-    <div class="f">
-      <label>Image (Google Drive share link or direct URL)</label>
-      <input id="iimage" type="text" placeholder="https://drive.google.com/file/d/..." oninput="previewInputImage(this.value)"/>
-      <img id="imgprev" class="img-preview" alt="preview" onerror="imgLoadErr()"/>
-      <div class="img-err" id="imgerr">⚠ Image could not load — check the link or make it publicly shared</div>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="slabel">💰 Pricing &amp; Variations</div>
-    <div class="trow">
-      <label class="tswitch">
-        <input type="checkbox" id="hasvar" onchange="toggleVar()"/>
-        <span class="tslider"></span>
-      </label>
-      <span class="tlabel">This item has variations / combo options</span>
-    </div>
-    <div id="dprice">
+    <!-- Heading selection / creation -->
+    <div class="card">
+      <div class="slabel">📌 Main Heading (Superset)</div>
       <div class="f">
-        <label>Price (₹)</label>
-        <input id="iprice" type="number" placeholder="149"/>
+        <label>Select existing heading from Drive</label>
+        <select id="headingSelect" onchange="selectHeading()">
+          <option value="">-- Load from Drive --</option>
+        </select>
       </div>
-    </div>
-    <div id="vblock">
-      <table class="vtable">
-        <thead><tr><th>Variation Name</th><th>Price (₹)</th><th></th></tr></thead>
-        <tbody id="vtbody"></tbody>
-      </table>
-      <button class="addvarbtn" onclick="addVarRow()">+ Add Variation</button>
-    </div>
-  </div>
-
-  <div class="btnrow">
-    <button class="btn btn-pre" onclick="previewItem()">👁 Preview</button>
-    <button class="btn btn-sub" onclick="submitItem()">✅ Add to Menu</button>
-    <button class="btn btn-clr" onclick="clearForm()" title="Clear">✕</button>
-  </div>
-
-  <div id="ilistwrap">
-    <hr class="sep"/>
-    <div class="slabel">📋 Menu Items Added</div>
-    <div id="ilist"></div>
-    <div class="btnrow" style="margin-top:8px;gap:8px">
-      <button class="btn btn-sub" onclick="generateBodyOnly()" style="flex:1">⬇ Generate & Update Drive</button>
-      <button class="btn btn-pre" onclick="copyBodyToClipboard()" style="flex:0 0 auto;padding:11px 14px;font-size:12px">📋 Copy Body</button>
-      <button class="btn btn-pre" onclick="showDriveContent()" style="flex:0 0 auto;padding:11px 14px;font-size:12px">📄 Show Drive HTML</button>
-    </div>
-  </div>
-</div>
-
-<!-- ══ RIGHT: OUTPUT ══ -->
-<div class="output">
-  <div class="pane-head" style="margin-bottom:14px"><span class="dot" style="background:#22c55e"></span>Output</div>
-  <div class="tabs">
-    <button class="tbtn on" id="t-prev" onclick="switchTab('prev')">Preview</button>
-    <button class="tbtn" id="t-code" onclick="switchTab('code')">Body HTML</button>
-  </div>
-
-  <div id="tab-prev" style="flex:1;display:flex;flex-direction:column">
-    <div class="prevwrap" id="prevarea">
-      <div class="prev-empty" id="prevempty">
-        <svg width="52" height="52" viewBox="0 0 52 52" fill="none">
-          <rect x="6" y="6" width="40" height="40" rx="8" stroke="#8892a4" stroke-width="1.8"/>
-          <path d="M18 26h16M26 18v16" stroke="#8892a4" stroke-width="1.8" stroke-linecap="round"/>
-        </svg>
-        <p>Fill the form &amp; click <strong>Preview</strong></p>
+      <div class="f">
+        <label>Or create new heading</label>
+        <input id="newHeading" type="text" placeholder="e.g., Pizza Combos"/>
       </div>
-      <div id="prevcontent"></div>
+      <button class="btn btn-pre" onclick="loadFromDrive()" style="margin-top:5px">📂 Load Existing Menu</button>
     </div>
-  </div>
 
-  <div id="tab-code" style="flex:1;display:none;flex-direction:column">
-    <div class="codewrap" style="flex:1;display:flex;flex-direction:column">
-      <div class="codetbar">
-        <span>BODY HTML SNIPPET (paste into your Drive .txt file)</span>
-        <div class="codetbar-btns">
-          <button class="copybtn" onclick="copyBodyToClipboard()">📋 Copy Body</button>
+    <div class="card">
+      <div class="slabel">🍕 Item Details (Subset)</div>
+      <div class="f"><label>Item Name</label><input id="iname" type="text"/></div>
+      <div class="f">
+        <label>Type</label>
+        <div class="veg-row">
+          <button class="vbtn av" id="bv" onclick="setType('veg')"><span class="sq" style="background:var(--veg)"></span>Veg</button>
+          <button class="vbtn" id="bn" onclick="setType('nonveg')"><span class="sq" style="background:var(--nonveg)"></span>Non-Veg</button>
         </div>
       </div>
-      <textarea id="gcode" readonly placeholder="Body HTML will appear here after clicking 'Generate Body HTML'..."></textarea>
-      <div id="driveInfo" style="padding:8px 14px; background:var(--surface2); border-top:1px solid var(--border); font-size:12px; color:var(--muted); display:none;"></div>
-    </div>
-  </div>
-</div>
-</div>
-
-<!-- Description Modal: triggered by clicking item text/image -->
-<div class="overlay" id="mdesc">
-  <div class="mbox">
-    <div class="mtitle">Item Description</div>
-    <div class="mitemrow">
-      <div class="mimg" id="md-img"></div>
-      <div style="flex:1">
-        <div class="miname" id="md-name"></div>
-        <div class="midesc" id="md-desc"></div>
-        <div class="miprep" id="md-prep"></div>
+      <div class="f"><label>Description</label><input id="idesc" type="text"/></div>
+      <div class="f"><label>Preparation Time</label><input id="itime" type="text"/></div>
+      <div class="f">
+        <label>Item Image (upload)</label>
+        <input type="file" id="itemImageFile" accept="image/*" onchange="uploadItemImage(this.files[0])"/>
+        <div id="itemImagePreview"></div>
+        <input type="hidden" id="itemImageUrl"/>
       </div>
     </div>
-    <div class="mcancelrow"><button class="mcancel" onclick="closeM('mdesc')">Cancel</button></div>
-  </div>
-</div>
 
-<!-- Variations Modal -->
-<div class="overlay" id="mvar">
-  <div class="mbox">
-    <div class="mtitle">Item Variations</div>
-    <div class="mitemrow">
-      <div class="mimg" id="mv-img"></div>
-      <div style="flex:1">
-        <div class="miname" id="mv-name"></div>
-        <div class="midesc" id="mv-desc"></div>
+    <div class="card">
+      <div class="slabel">💰 Variations (each can have its own image)</div>
+      <div class="trow">
+        <label class="tswitch"><input type="checkbox" id="hasvar" onchange="toggleVar()"/><span class="tslider"></span></label>
+        <span>Has variations</span>
+      </div>
+      <div id="dprice"><div class="f"><label>Base Price (₹)</label><input id="iprice" type="number"/></div></div>
+      <div id="vblock">
+        <table class="vtable"><thead><tr><th>Variation Name</th><th>Price (₹)</th><th>Image</th><th></th></tr></thead><tbody id="vtbody"></tbody></table>
+        <button class="addvarbtn" onclick="addVarRow()">+ Add Variation</button>
       </div>
     </div>
-    <table class="mvtable">
-      <thead><tr><th>Item Name</th><th>Price</th><th>Action</th></tr></thead>
-      <tbody id="mv-body"></tbody>
-    </table>
-    <div class="mcancelrow"><button class="mcancel" onclick="closeM('mvar')">Cancel</button></div>
+
+    <div class="btnrow">
+      <button class="btn btn-pre" onclick="previewItem()">👁 Preview</button>
+      <button class="btn btn-sub" onclick="submitItem()">✅ Add to Menu</button>
+      <button class="btn btn-clr" onclick="clearForm()">✕ Clear</button>
+    </div>
+
+    <div id="ilistwrap">
+      <hr class="sep"/>
+      <div class="slabel">📋 Items under current heading</div>
+      <div id="ilist"></div>
+      <div class="btnrow" style="margin-top:8px">
+        <button class="btn btn-sub" onclick="saveToDrive()" style="flex:1">💾 Save to Drive (Merge)</button>
+        <button class="btn btn-pre" onclick="showLivePreview()" style="flex:0 0 auto">👁 Live Preview</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="output">
+    <div class="pane-head"><span class="dot" style="background:#22c55e"></span>Live Menu Preview</div>
+    <div class="prevwrap" id="livePreviewArea">
+      <div id="livePreviewContent">Select a heading or load from Drive</div>
+    </div>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-/* ========== CONFIGURATION ========== */
-// Your Apps Script web app URL (supports both POST to update and GET to read)
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwYzj3OC8vLJHsWhBMJP2lnFX_9xHcLKD9FTfGS_CU-99T7D2LwMpVILqFkpOxMV26NeA/exec";
+// ========== CONFIGURATION ==========
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzewI6M6VmYsbG69RNk_YqBIvHyE1VmVgO-UzNHZMmMectheDFZU6W9u4157QIPLdfD5w/exec"; // REPLACE WITH YOUR ACTUAL URL
 
-/* ── State ── */
+// ========== GLOBAL STATE ==========
 let itype = 'veg';
-let items = [];
+let currentItems = [];      // items under the selected heading
+let currentHeading = "";
 let vrc = 0;
+let allHeadingsData = {};   // { heading1: [items], heading2: [items] }
 
-/* ── Google Drive URL fixer ── */
-function fixImg(url) {
-  if (!url || !url.trim()) return '';
-  url = url.trim();
-  let m = url.match(/\/d\/([a-zA-Z0-9_-]{10,})/);
-  if (m) return 'https://lh3.googleusercontent.com/d/' + m[1];
-  m = url.match(/[?&]id=([a-zA-Z0-9_-]{10,})/);
-  if (m) return 'https://lh3.googleusercontent.com/d/' + m[1];
-  return url;
-}
-
-/* ── Builder image preview ── */
-function previewInputImage(val) {
-  const img = document.getElementById('imgprev');
-  const err = document.getElementById('imgerr');
-  const url = fixImg(val);
-  err.style.display = 'none';
-  if (!url) { img.classList.remove('shown'); img.src = ''; return; }
-  img.onload = () => { img.classList.add('shown'); err.style.display = 'none'; };
-  img.onerror = () => { img.classList.remove('shown'); err.style.display = 'block'; };
-  img.src = url;
-}
-function imgLoadErr() {
-  document.getElementById('imgprev').classList.remove('shown');
-  document.getElementById('imgerr').style.display = 'block';
+// ========== IMAGE UPLOAD ==========
+async function uploadImageToDrive(file, fileName) {
+  const formData = new FormData();
+  formData.append("action", "uploadImage");
+  formData.append("imageBlob", file);
+  formData.append("fileName", fileName);
+  const res = await fetch(APPS_SCRIPT_URL, { method: "POST", body: formData });
+  const json = await res.json();
+  if (json.success) return json.url;
+  else throw new Error(json.error);
 }
 
-/* ── Veg/nonveg ── */
-function setType(t) {
-  itype = t;
-  document.getElementById('bv').className = 'vbtn' + (t === 'veg' ? ' av' : '');
-  document.getElementById('bn').className = 'vbtn' + (t === 'nonveg' ? ' an' : '');
+async function uploadItemImage(file) {
+  if (!file) return;
+  showToast("Uploading image...");
+  try {
+    const url = await uploadImageToDrive(file, file.name);
+    document.getElementById("itemImageUrl").value = url;
+    document.getElementById("itemImagePreview").innerHTML = `<img src="${url}" class="img-preview">`;
+    showToast("✅ Image uploaded");
+  } catch(e) { showToast("❌ Upload failed"); }
 }
 
-/* ── Variations toggle ── */
-function toggleVar() {
-  const on = document.getElementById('hasvar').checked;
-  document.getElementById('dprice').style.display = on ? 'none' : 'block';
-  document.getElementById('vblock').style.display = on ? 'block' : 'none';
-  if (on && document.getElementById('vtbody').rows.length === 0) addVarRow();
+async function uploadVarImage(file, varId) {
+  if (!file) return;
+  try {
+    const url = await uploadImageToDrive(file, file.name);
+    document.getElementById(`varImg_${varId}`).value = url;
+    document.getElementById(`varImgPreview_${varId}`).innerHTML = `<img src="${url}" class="img-preview" style="max-width:50px">`;
+    showToast("✅ Variation image uploaded");
+  } catch(e) { showToast("❌ Upload failed"); }
 }
+
+// ========== VARIATIONS ==========
 function addVarRow() {
   vrc++;
   const id = vrc;
   const tr = document.createElement('tr');
-  tr.className = 'vrow'; tr.id = 'vr' + id;
-  tr.innerHTML = `<td><input type="text" placeholder="Cheese classic + fries + drink" id="vn${id}"/></td>
-    <td><input type="number" placeholder="149" id="vp${id}" style="width:90px"/></td>
-    <td><button class="delbtn" onclick="delVar(${id})">✕</button></td>`;
+  tr.className = 'vrow'; tr.id = `vr${id}`;
+  tr.innerHTML = `
+    <td><input type="text" placeholder="Name" id="vn${id}"/></td>
+    <td><input type="number" placeholder="Price" id="vp${id}"/></td>
+    <td>
+      <input type="file" accept="image/*" onchange="uploadVarImage(this.files[0], ${id})"/>
+      <input type="hidden" id="varImg_${id}"/>
+      <div id="varImgPreview_${id}"></div>
+    </td>
+    <td><button class="delbtn" onclick="delVar(${id})">✕</button></td>
+  `;
   document.getElementById('vtbody').appendChild(tr);
 }
-function delVar(id) { document.getElementById('vr' + id)?.remove(); }
+function delVar(id) { document.getElementById(`vr${id}`)?.remove(); }
 function getVars() {
   return [...document.querySelectorAll('.vrow')].map(r => {
-    const id = r.id.replace('vr', '');
+    const id = r.id.replace('vr','');
     return {
-      name: (document.getElementById('vn' + id)?.value || '').trim(),
-      price: (document.getElementById('vp' + id)?.value || '').trim()
+      name: document.getElementById(`vn${id}`)?.value.trim() || "",
+      price: document.getElementById(`vp${id}`)?.value.trim() || "",
+      image: document.getElementById(`varImg_${id}`)?.value || ""
     };
   }).filter(v => v.name);
 }
 
-/* ── Collect form ── */
-function collect() {
-  const raw = document.getElementById('iimage').value.trim();
+// ========== COLLECT FORM ==========
+function collectItem() {
   return {
-    heading: document.getElementById('heading').value.trim() || 'Pizza Combos',
     name: document.getElementById('iname').value.trim(),
     type: itype,
     desc: document.getElementById('idesc').value.trim(),
     time: document.getElementById('itime').value.trim(),
-    imageRaw: raw,
-    image: fixImg(raw),
+    image: document.getElementById('itemImageUrl').value,
     price: document.getElementById('iprice').value.trim(),
     hasVar: document.getElementById('hasvar').checked,
     vars: document.getElementById('hasvar').checked ? getVars() : []
   };
 }
 
-/* ── Clear form after Add to Menu (and keep heading unchanged) ── */
-function clearForm(keepHeading = true) {
-  if (!keepHeading) document.getElementById('heading').value = 'Pizza Combos';
+function clearForm() {
   document.getElementById('iname').value = '';
   document.getElementById('idesc').value = '';
   document.getElementById('itime').value = '';
-  document.getElementById('iimage').value = '';
   document.getElementById('iprice').value = '';
   document.getElementById('hasvar').checked = false;
   document.getElementById('vtbody').innerHTML = '';
-  vrc = 0; 
-  toggleVar(); 
+  vrc = 0;
+  toggleVar();
   setType('veg');
-  document.getElementById('imgprev').classList.remove('shown');
-  document.getElementById('imgerr').style.display = 'none';
+  document.getElementById('itemImageFile').value = '';
+  document.getElementById('itemImagePreview').innerHTML = '';
+  document.getElementById('itemImageUrl').value = '';
 }
 
-/* ── Placeholder SVG for missing image ── */
-function phSvg() {
-  return `<svg width="30" height="30" viewBox="0 0 30 30" fill="none"><rect x="2" y="2" width="26" height="26" rx="5" stroke="#8892a4" stroke-width="1.3" stroke-dasharray="3 2"/><circle cx="11" cy="11" r="3" stroke="#8892a4" stroke-width="1.1"/><path d="M2 20l7-5 5 4 4-3 9 6" stroke="#8892a4" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+function setType(t) { itype = t;
+  document.getElementById('bv').className = 'vbtn' + (t==='veg'?' av':'');
+  document.getElementById('bn').className = 'vbtn' + (t==='nonveg'?' an':'');
+}
+function toggleVar() {
+  const on = document.getElementById('hasvar').checked;
+  document.getElementById('dprice').style.display = on ? 'none' : 'block';
+  document.getElementById('vblock').style.display = on ? 'block' : 'none';
+  if(on && !document.querySelector('.vrow')) addVarRow();
 }
 
-function buildImgEl(url) {
-  if (url) {
-    return `<img src="${url}" style="width:100%;height:100%;object-fit:cover;display:block;"
-      onerror="this.style.display='none';this.insertAdjacentHTML('afterend','<div style=\\'display:flex;align-items:center;justify-content:center;width:100%;height:100%;\\'>` + phSvg().replace(/'/g,"\\'") + `</div>')" />`;
-  }
-  return `<div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;">${phSvg()}</div>`;
-}
-
-function dotHtml(type) {
-  return `<span class="vdot ${type}"></span>`;
-}
-
-/* ── Open DESCRIPTION modal ── */
-function openDesc(d) {
-  document.getElementById('md-img').innerHTML = buildImgEl(d.image);
-  document.getElementById('md-name').innerHTML = dotHtml(d.type) + esc(d.name);
-  document.getElementById('md-desc').textContent = d.desc || '';
-  document.getElementById('md-prep').innerHTML = d.time
-    ? `<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="6.5" r="5.5" stroke="#8892a4" stroke-width="1.1"/><path d="M6.5 3.5v3l1.8 1.8" stroke="#8892a4" stroke-width="1.1" stroke-linecap="round"/></svg> Preparation: ${esc(d.time)}`
-    : '';
-  openM('mdesc');
-}
-
-function openVars(d) {
-  document.getElementById('mv-img').innerHTML = buildImgEl(d.image);
-  document.getElementById('mv-name').innerHTML = dotHtml(d.type) + esc(d.name);
-  document.getElementById('mv-desc').textContent = d.desc || '';
-  document.getElementById('mv-body').innerHTML = d.vars.map(v =>
-    `<tr>
-        <td>${esc(v.name)}</td>
-        <td>₹${esc(v.price)}</td>
-        <td><button class="selBtn" onclick="showToast('✅ Added: ${esc(v.name).replace(/'/g,"\\'")}')">Select</button></td>
-      </tr>`
-  ).join('');
-  openM('mvar');
-}
-
-function handleAdd(d) {
-  if (d.hasVar && d.vars && d.vars.length) {
-    openVars(d);
-  } else {
-    showToast('✅ ' + (d.name || 'Item') + ' added!' + (d.price ? ' ₹' + d.price : ''));
-  }
-}
-
-/* ── Preview single item ── */
-function previewItem() {
-  const d = collect();
-  if (!d.name) { showToast('⚠ Enter an item name first'); return; }
-  renderPreview([d], d.heading);
-  switchTab('prev');
-  showToast('✅ Preview updated');
-}
-
-function renderPreview(arr, heading) {
-  document.getElementById('prevempty').style.display = 'none';
-  window._previewItems = arr;
-  document.getElementById('prevcontent').innerHTML = `
-    <div class="msec-title">${esc(heading)}</div>
-    ${arr.map((d, i) => {
-      const imgTag = d.image
-        ? `<img src="${d.image}" style="width:64px;height:64px;object-fit:cover;border-radius:8px;display:block;" onerror="this.style.display='none';this.parentElement.innerHTML='${phSvg().replace(/'/g,"\\'")}'">`
-        : phSvg();
-      const priceHtml = !d.hasVar && d.price ? `<div class="mcard-price">₹${esc(d.price)}</div>` : '';
-      return `
-        <div class="mcard">
-          <div class="mcard-img" style="cursor:pointer" onclick="openDesc(window._previewItems[${i}])">${imgTag}</div>
-          <div class="mcard-body" onclick="openDesc(window._previewItems[${i}])">
-            <div class="mcard-name">${dotHtml(d.type)}${esc(d.name)}</div>
-            <div class="mcard-desc">${esc(d.desc)}</div>
-            ${priceHtml}
-          </div>
-          <button class="addbtn" onclick="handleAdd(window._previewItems[${i}])">Add</button>
-        </div>`;
-    }).join('')}
-    <p style="font-size:11px;color:var(--muted);margin-top:10px">
-      💡 Click item/image → Description &nbsp;|&nbsp; Click <strong>Add</strong> → ${arr.some(d=>d.hasVar) ? 'Variations' : 'Order'}
-    </p>`;
-}
-
-/* ── Submit item to list & CLEAR FORM ── */
+// ========== SUBMIT ITEM ==========
 function submitItem() {
-  const d = collect();
-  if (!d.name) { showToast('⚠ Enter an item name'); return; }
-  items.push({ ...d });
-  renderList();
-  clearForm();  // <-- Clears all input fields after adding
-  showToast('✅ "' + d.name + '" added to menu');
+  const item = collectItem();
+  if(!item.name) { showToast("Enter item name"); return; }
+  currentItems.push(item);
+  renderItemList();
+  clearForm();
+  showToast(`✅ "${item.name}" added`);
 }
 
-function renderList() {
+function renderItemList() {
   const wrap = document.getElementById('ilistwrap');
-  if (!items.length) { wrap.style.display = 'none'; return; }
+  if(!currentItems.length) { wrap.style.display = 'none'; return; }
   wrap.style.display = 'block';
-  document.getElementById('ilist').innerHTML = items.map((it, i) => `
+  document.getElementById('ilist').innerHTML = currentItems.map((it,idx) => `
     <div class="ichip">
-      <div>
-        <div class="cn"><span class="vdot ${it.type}" style="display:inline-block;width:10px;height:10px;margin-right:6px;vertical-align:middle"></span>${esc(it.name)}</div>
-        <div class="cm">${it.hasVar ? it.vars.length + ' variation(s)' : (it.price ? '₹' + it.price : 'No price')} ${it.desc ? '· ' + it.desc : ''}</div>
+      <div><strong>${escapeHtml(it.name)}</strong> ${it.hasVar ? `(${it.vars.length} vars)` : (it.price ? `₹${it.price}` : '')}</div>
+      <button class="cdel" onclick="deleteItem(${idx})">✕</button>
+    </div>
+  `).join('');
+}
+
+function deleteItem(idx) {
+  currentItems.splice(idx,1);
+  renderItemList();
+  showToast("Item deleted");
+}
+
+// ========== PREVIEW ==========
+function previewItem() {
+  const item = collectItem();
+  if(!item.name) return;
+  renderPreview([item], "Preview");
+}
+
+function renderPreview(items, heading) {
+  const container = document.getElementById('livePreviewContent');
+  if(!items.length) { container.innerHTML = "<div>No items</div>"; return; }
+  container.innerHTML = `<h2>${escapeHtml(heading)}</h2>` + items.map(d => `
+    <div class="mcard">
+      <div class="mcard-img"><img src="${d.image||''}" onerror="this.src=''"></div>
+      <div class="mcard-body">
+        <div class="mcard-name"><span class="vdot ${d.type}"></span>${escapeHtml(d.name)}</div>
+        <div class="mcard-desc">${escapeHtml(d.desc)}</div>
+        ${!d.hasVar && d.price ? `<div class="mcard-price">₹${escapeHtml(d.price)}</div>` : ''}
       </div>
-      <button class="cdel" onclick="delItem(${i})">✕</button>
-    </div>`).join('');
+      <button class="addbtn" onclick="alert('Added ${d.name}')">Add</button>
+    </div>
+  `).join('');
 }
-function delItem(i) { items.splice(i, 1); renderList(); showToast('Removed'); }
 
-/* ── Generate ONLY BODY HTML and auto-update Drive ── */
-async function generateBodyOnly() {
-  if (!items.length) { showToast('⚠ Add at least one item first'); return; }
-  const heading = items[0].heading;
-  const bodyHtml = buildBodySnippet(items, heading);
-  document.getElementById('gcode').value = bodyHtml;
-  renderPreview(items, heading);
-  switchTab('code');
-  
+// ========== DRIVE OPERATIONS ==========
+async function loadFromDrive() {
+  showToast("Loading from Drive...");
   try {
-    const response = await fetch(APPS_SCRIPT_URL, {
-      method: 'POST',
-      body: bodyHtml,
-      headers: { 'Content-Type': 'text/plain' }
-    });
-    if (response.ok) {
-      showToast('✅ Drive file updated automatically!');
-    } else {
-      showToast('⚠ Drive update failed – check script URL');
+    const res = await fetch(APPS_SCRIPT_URL);
+    const html = await res.text();
+    // Parse the HTML to extract headings and items
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+    const h1s = doc.querySelectorAll('h1');
+    const newData = {};
+    for(let h1 of h1s) {
+      let heading = h1.textContent.trim();
+      let items = [];
+      let next = h1.nextElementSibling;
+      while(next && next.classList && next.classList.contains('mcard')) {
+        // Extract item data from the card (simplified: just name and image)
+        let nameEl = next.querySelector('.mcard-name');
+        let name = nameEl ? nameEl.textContent.replace(/[^\w\s]/g,'').trim() : '';
+        let imgEl = next.querySelector('.mcard-img img');
+        let img = imgEl ? imgEl.src : '';
+        items.push({ name, image: img }); // We only store basic info for selection
+        next = next.nextElementSibling;
+      }
+      newData[heading] = items;
     }
-  } catch (err) {
-    showToast('❌ Error: ' + err.message);
-  }
+    allHeadingsData = newData;
+    const select = document.getElementById('headingSelect');
+    select.innerHTML = '<option value="">-- Select heading --</option>';
+    for(let h in newData) {
+      select.innerHTML += `<option value="${escapeHtml(h)}">${escapeHtml(h)} (${newData[h].length} items)</option>`;
+    }
+    showToast("Loaded headings from Drive");
+  } catch(e) { showToast("Error loading: "+e.message); }
 }
 
-/* ── Show current Drive file content (HTML body) ── */
-async function showDriveContent() {
+function selectHeading() {
+  const select = document.getElementById('headingSelect');
+  const heading = select.value;
+  if(!heading) return;
+  currentHeading = heading;
+  currentItems = allHeadingsData[heading] || [];
+  renderItemList();
+  renderPreview(currentItems, currentHeading);
+  document.getElementById('newHeading').value = heading;
+}
+
+async function saveToDrive() {
+  let heading = document.getElementById('newHeading').value.trim();
+  if(!heading && currentHeading) heading = currentHeading;
+  if(!heading) { showToast("Select or enter a heading"); return; }
+  if(currentItems.length === 0) { showToast("No items to save"); return; }
+  const fullHtml = buildFullHtml(heading, currentItems);
   try {
-    const response = await fetch(APPS_SCRIPT_URL);
-    if (response.ok) {
-      const htmlContent = await response.text();
-      showInModal(htmlContent);
-    } else {
-      showToast('❌ Failed to fetch Drive content');
-    }
-  } catch (err) {
-    showToast('❌ Error: ' + err.message);
-  }
+    const res = await fetch(APPS_SCRIPT_URL, { method: 'POST', body: fullHtml, headers: {'Content-Type':'text/plain'} });
+    if(res.ok) {
+      showToast("✅ Drive updated (merged)");
+      await loadFromDrive(); // reload headings
+      selectHeading();
+    } else showToast("Update failed");
+  } catch(e) { showToast("Error: "+e.message); }
 }
 
-function showInModal(content) {
-  let modal = document.getElementById('driveHtmlModal');
-  if (!modal) {
-    modal = document.createElement('div');
-    modal.id = 'driveHtmlModal';
-    modal.className = 'overlay';
-    modal.innerHTML = `
-      <div class="mbox" style="max-width: 800px; width: 90%;">
-        <div class="mtitle">Current Drive HTML Content</div>
-        <div style="max-height: 70vh; overflow: auto; background: #0f1117; padding: 16px; border-radius: 12px; font-family: monospace; font-size: 12px; white-space: pre-wrap; word-break: break-word;" id="driveHtmlContent"></div>
-        <div class="mcancelrow" style="margin-top: 16px;">
-          <button class="mcancel" onclick="closeM('driveHtmlModal')">Close</button>
-        </div>
-      </div>
-    `;
-    document.body.appendChild(modal);
-    modal.addEventListener('click', (e) => { if (e.target === modal) closeM('driveHtmlModal'); });
-  }
-  document.getElementById('driveHtmlContent').innerText = content;
-  openM('driveHtmlModal');
-}
-
-function buildBodySnippet(arr, heading) {
-  const cardsHtml = arr.map((d, i) => {
+function buildFullHtml(heading, items) {
+  const cardsHtml = items.map(d => {
     const dotColor = d.type === 'veg' ? '#22c55e' : '#ef4444';
-    const imgTag = d.image
-      ? `<img src="${esc(d.image)}" style="width:64px;height:64px;object-fit:cover;border-radius:8px;display:block;" onerror="this.style.display='none'">`
-      : '';
-    const priceHtml = !d.hasVar && d.price ? `<div class="mcard-price">&#8377;${esc(d.price)}</div>` : '';
-    return `  <!-- ${esc(d.name)} -->
-  <div class="mcard">
-    <div class="mcard-img" style="cursor:pointer" onclick="openDesc(DATA[${i}])">${imgTag}</div>
-    <div class="mcard-body" onclick="openDesc(DATA[${i}])">
-      <div class="mcard-name">
-        <span class="vdot" style="border-color:${dotColor}"><span style="background:${dotColor}"></span></span>
-        ${esc(d.name)}
+    const imgTag = d.image ? `<img src="${d.image}" style="width:64px;height:64px;object-fit:cover;">` : '';
+    const priceHtml = !d.hasVar && d.price ? `<div class="mcard-price">₹${d.price}</div>` : '';
+    return `<div class="mcard">
+      <div class="mcard-img">${imgTag}</div>
+      <div class="mcard-body">
+        <div class="mcard-name"><span class="vdot" style="border-color:${dotColor}"><span style="background:${dotColor}"></span></span>${escapeHtml(d.name)}</div>
+        <div class="mcard-desc">${escapeHtml(d.desc)}</div>
+        ${priceHtml}
       </div>
-      <div class="mcard-desc">${esc(d.desc)}</div>
-      ${priceHtml}
-    </div>
-    <button class="addbtn" onclick="handleAdd(DATA[${i}])">Add</button>
-  </div>`;
-  }).join('\n\n');
-
-  const dataJson = JSON.stringify(arr.map(d => ({
-    name: d.name, type: d.type, desc: d.desc,
-    time: d.time, image: d.image, price: d.price,
-    hasVar: d.hasVar, vars: d.vars
-  })), null, 2);
-
-  return `<style>
-:root{--bg:#0f1117;--surface:#1a1e2e;--surface2:#222638;--border:#2e3350;--accent:#7c5cbf;--text:#e2e8f0;--muted:#8892a4}
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);padding:32px 20px;max-width:680px;margin:0 auto}
-h1{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:#fff;margin-bottom:20px}
-.mcard{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;display:flex;align-items:center;gap:14px;margin-bottom:12px}
-.mcard-img{width:64px;height:64px;border-radius:8px;background:var(--surface2);flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center}
-.mcard-body{flex:1;cursor:pointer}
-.mcard-body:hover .mcard-name{opacity:.8}
-.mcard-name{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:#fff;display:flex;align-items:center;gap:7px;margin-bottom:3px}
-.vdot{width:14px;height:14px;border-radius:3px;border:2px solid;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
-.vdot span{width:6px;height:6px;border-radius:50%;display:block}
-.mcard-desc{font-size:12px;color:var(--muted)}
-.mcard-price{font-size:13px;font-weight:600;color:var(--text);margin-top:3px}
-.addbtn{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;cursor:pointer;flex-shrink:0}
-.addbtn:hover{background:#9370d8}
-.ov{position:fixed;inset:0;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;z-index:100;padding:20px;opacity:0;pointer-events:none;transition:opacity .2s;backdrop-filter:blur(4px)}
-.ov.v{opacity:1;pointer-events:all}
-.mb{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;max-width:400px;width:100%;transform:translateY(16px);transition:transform .2s;max-height:90vh;overflow-y:auto}
-.ov.v .mb{transform:translateY(0)}
-.mt{font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:#fff;margin-bottom:16px}
-.mir{display:flex;align-items:flex-start;gap:14px;margin-bottom:16px}
-.mi-img{width:80px;height:80px;border-radius:10px;background:var(--surface2);flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center}
-.mi-img img{width:100%;height:100%;object-fit:cover}
-.min{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:#fff;display:flex;align-items:center;gap:7px;margin-bottom:3px}
-.mid{font-size:12px;color:var(--muted)}
-.mip{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:5px;margin-top:4px}
-.vt{width:100%;border-collapse:collapse;margin-bottom:14px}
-.vt th{text-align:left;font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);padding:7px 8px;border-bottom:1px solid var(--border)}
-.vt td{padding:10px 8px;border-bottom:1px solid rgba(46,51,80,.4);font-size:13px;color:var(--text)}
-.sb{background:var(--accent);color:#fff;border:none;border-radius:7px;padding:6px 12px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;cursor:pointer}
-.mcr{display:flex;justify-content:flex-end;margin-top:4px}
-.mc{background:#2a2e42;color:var(--text);border:none;border-radius:8px;padding:9px 18px;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;cursor:pointer}
-</style>
-<h1>${esc(heading)}</h1>
-
-${cardsHtml}
-
-<!-- Description Modal -->
-<div class="ov" id="od">
-  <div class="mb">
-    <div class="mt">Item Description</div>
-    <div class="mir">
-      <div class="mi-img" id="d-img"></div>
-      <div>
-        <div class="min" id="d-name"></div>
-        <div class="mid" id="d-desc"></div>
-        <div class="mip" id="d-prep"></div>
-      </div>
-    </div>
-    <div class="mcr"><button class="mc" onclick="closeM('od')">Cancel</button></div>
-  </div>
-</div>
-
-<!-- Variations Modal -->
-<div class="ov" id="ov">
-  <div class="mb">
-    <div class="mt">Item Variations</div>
-    <div class="mir">
-      <div class="mi-img" id="v-img"></div>
-      <div>
-        <div class="min" id="v-name"></div>
-        <div class="mid" id="v-desc"></div>
-      </div>
-    </div>
-    <table class="vt">
-      <thead><tr><th>Item Name</th><th>Price</th><th>Action</th></tr></thead>
-      <tbody id="v-body"></tbody>
-    </table>
-    <div class="mcr"><button class="mc" onclick="closeM('ov')">Cancel</button></div>
-  </div>
-</div>
-
-<script>
-const DATA = ${dataJson};
-
-function e(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
-function dot(t){const c=t==='veg'?'#22c55e':'#ef4444';return '<span class="vdot" style="border-color:'+c+'"><span style="background:'+c+'"></span></span>'}
-function openM(id){document.getElementById(id).classList.add('v')}
-function closeM(id){document.getElementById(id).classList.remove('v')}
-document.querySelectorAll('.ov').forEach(el=>el.addEventListener('click',ev=>{if(ev.target===el)el.classList.remove('v')}))
-
-function openDesc(d){
-  const imgEl=document.getElementById('d-img');
-  imgEl.innerHTML=d.image?'<img src="'+d.image+'" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display=\'none\'">':'';
-  document.getElementById('d-name').innerHTML=dot(d.type)+e(d.name);
-  document.getElementById('d-desc').textContent=d.desc||'';
-  document.getElementById('d-prep').innerHTML=d.time?'<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="6.5" r="5.5" stroke="#8892a4" stroke-width="1.1"/><path d="M6.5 3.5v3l1.8 1.8" stroke="#8892a4" stroke-width="1.1" stroke-linecap="round"/></svg> Preparation: '+e(d.time):'';
-  openM('od');
+      <button class="addbtn" onclick="alert('Added ${escapeHtml(d.name)}')">Add</button>
+    </div>`;
+  }).join('');
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(heading)}</title><link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet"><style>
+    :root{--bg:#0f1117;--surface:#1a1e2e;--surface2:#222638;--border:#2e3350;--accent:#7c5cbf;--text:#e2e8f0;--muted:#8892a4}
+    body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);padding:32px 20px;max-width:680px;margin:0 auto}
+    h1{font-family:'Syne';font-size:22px;font-weight:800;color:#fff}
+    .mcard{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;display:flex;align-items:center;gap:14px;margin-bottom:12px}
+    .mcard-img{width:64px;height:64px;border-radius:8px;background:var(--surface2);overflow:hidden}
+    .mcard-body{flex:1}
+    .mcard-name{font-family:'Syne';font-size:14px;font-weight:700;display:flex;align-items:center;gap:7px}
+    .vdot{width:14px;height:14px;border-radius:3px;border:2px solid;display:inline-flex;align-items:center;justify-content:center}
+    .vdot span{width:6px;height:6px;border-radius:50%;display:block}
+    .addbtn{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:8px 16px;cursor:pointer}
+  </style></head><body><h1>${escapeHtml(heading)}</h1>${cardsHtml}</body></html>`;
 }
 
-function handleAdd(d){
-  if(d.hasVar&&d.vars&&d.vars.length){
-    const imgEl=document.getElementById('v-img');
-    imgEl.innerHTML=d.image?'<img src="'+d.image+'" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display=\'none\'">':'';
-    document.getElementById('v-name').innerHTML=dot(d.type)+e(d.name);
-    document.getElementById('v-desc').textContent=d.desc||'';
-    document.getElementById('v-body').innerHTML=d.vars.map(v=>'<tr><td>'+e(v.name)+'</td><td>&#8377;'+e(v.price)+'</td><td><button class="sb" onclick="alert(\'Added: '+e(v.name)+'\')">Select</button></td></tr>').join('');
-    openM('ov');
-  }else{
-    alert('Added: '+d.name+(d.price?' — ₹'+d.price:''));
-  }
-}
-<\/script>`;
+async function showLivePreview() {
+  const res = await fetch(APPS_SCRIPT_URL);
+  const html = await res.text();
+  document.getElementById('livePreviewContent').innerHTML = `<iframe srcdoc="${escapeHtml(html).replace(/"/g, '&quot;')}" style="width:100%; height:500px; border:none; background:white;"></iframe>`;
 }
 
-function copyBodyToClipboard() {
-  const bodyHtml = document.getElementById('gcode').value;
-  if (!bodyHtml) { showToast('⚠ Generate Body HTML first'); return; }
-  navigator.clipboard.writeText(bodyHtml).then(() => {
-    showToast('✅ Body HTML copied!');
-  }).catch(() => showToast('❌ Copy failed, manually select and copy'));
-}
-
-/* ── Tab switcher ── */
-function switchTab(t) {
-  document.getElementById('tab-prev').style.display = t === 'prev' ? 'flex' : 'none';
-  document.getElementById('tab-code').style.display = t === 'code' ? 'flex' : 'none';
-  document.getElementById('t-prev').className = 'tbtn' + (t === 'prev' ? ' on' : '');
-  document.getElementById('t-code').className = 'tbtn' + (t === 'code' ? ' on' : '');
-}
-
-/* ── Modal helpers ── */
-function openM(id) { document.getElementById(id).classList.add('vis'); }
-function closeM(id) { document.getElementById(id).classList.remove('vis'); }
-document.querySelectorAll('.overlay').forEach(el =>
-  el.addEventListener('click', e => { if (e.target === el) el.classList.remove('vis'); })
-);
-
-/* ── Toast ── */
+// ========== UTILITIES ==========
 function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg; t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2600);
+  setTimeout(() => t.classList.remove('show'), 2500);
 }
-
-/* ── Escape HTML ── */
-function esc(s) {
-  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
+function escapeHtml(str) { return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function switchTab() {} // not used
 </script>
 </body>
 </html>
