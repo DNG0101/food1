@@ -308,7 +308,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 <script>
 /* ========== CONFIGURATION: SET YOUR DRIVE TXT FILE URL HERE ========== */
 // Only you (the developer) can edit this line. Replace with your actual Google Drive .txt file URL.
-const DRIVE_TXT_URL = "https://drive.google.com/file/d/1Jw9clKSGvzslC0EnTFknSeXht9OugIfp/view?usp=drivesdk";
+// const DRIVE_TXT_URL = "https://drive.google.com/file/d/1Jw9clKSGvzslC0EnTFknSeXht9OugIfp/view?usp=drivesdk";
 // ======================================================================
 
 /* ── State ── */
@@ -523,7 +523,7 @@ function renderList() {
 function delItem(i) { items.splice(i, 1); renderList(); showToast('Removed'); }
 
 /* ── Generate ONLY BODY HTML (no <html>, <head>, <body> tags) ── */
-function generateBodyOnly() {
+async function generateBodyOnly() {
   if (!items.length) { showToast('⚠ Add at least one item first'); return; }
   const heading = items[0].heading;
   const bodyHtml = buildBodySnippet(items, heading);
@@ -531,13 +531,24 @@ function generateBodyOnly() {
   renderPreview(items, heading);
   switchTab('code');
   
-  // Show Drive info with the hardcoded URL
-  const driveInfoDiv = document.getElementById('driveInfo');
-  driveInfoDiv.style.display = 'block';
-  driveInfoDiv.innerHTML = `🔗 <strong>Your Drive TXT file URL:</strong> <a href="${DRIVE_TXT_URL}" target="_blank" style="color:var(--accent)">${DRIVE_TXT_URL}</a><br>
-  📝 <strong>Next step:</strong> Copy the body HTML above, open your Drive file, select all (Ctrl+A), paste (Ctrl+V), and save. No new file is created.`;
+  // ---- AUTO-UPDATE DRIVE FILE ----
+  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyrvMDvZTbwviPnDhAsJ_7KRPy7ptbBp8QOCQ9sg2Fy-2_V17Ubln51NsqFtX_boIY6Sw/exec";
   
-  showToast('✅ Body HTML generated – copy it and update your Drive file');
+  try {
+    const response = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      body: bodyHtml,
+      headers: { 'Content-Type': 'text/plain' }
+    });
+    if (response.ok) {
+      showToast('✅ Drive file updated automatically!');
+    } else {
+      showToast('⚠ Drive update failed – check script URL');
+    }
+  } catch (err) {
+    showToast('❌ Error: ' + err.message);
+  }
+  // ---------------------------------
 }
 
 function buildBodySnippet(arr, heading) {
