@@ -225,8 +225,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
     <div class="slabel">📋 Menu Items Added</div>
     <div id="ilist"></div>
     <div class="btnrow" style="margin-top:8px;gap:8px">
-      <button class="btn btn-sub" onclick="generateBodyOnly()" style="flex:1">⬇ Generate Body HTML</button>
+      <button class="btn btn-sub" onclick="generateBodyOnly()" style="flex:1">⬇ Generate & Update Drive</button>
       <button class="btn btn-pre" onclick="copyBodyToClipboard()" style="flex:0 0 auto;padding:11px 14px;font-size:12px">📋 Copy Body</button>
+      <button class="btn btn-pre" onclick="showDriveContent()" style="flex:0 0 auto;padding:11px 14px;font-size:12px">📄 Show Drive HTML</button>
     </div>
   </div>
 </div>
@@ -258,7 +259,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
         <span>BODY HTML SNIPPET (paste into your Drive .txt file)</span>
         <div class="codetbar-btns">
           <button class="copybtn" onclick="copyBodyToClipboard()">📋 Copy Body</button>
-          <button class="copybtn" onclick="showDriveHelp()">ℹ️ Help</button>
         </div>
       </div>
       <textarea id="gcode" readonly placeholder="Body HTML will appear here after clicking 'Generate Body HTML'..."></textarea>
@@ -306,10 +306,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 <div class="toast" id="toast"></div>
 
 <script>
-/* ========== CONFIGURATION: SET YOUR DRIVE TXT FILE URL HERE ========== */
-// Only you (the developer) can edit this line. Replace with your actual Google Drive .txt file URL.
-// const DRIVE_TXT_URL = "https://drive.google.com/file/d/1Jw9clKSGvzslC0EnTFknSeXht9OugIfp/view?usp=drivesdk";
-// ======================================================================
+/* ========== CONFIGURATION ========== */
+// Your Apps Script web app URL (supports both POST to update and GET to read)
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwYzj3OC8vLJHsWhBMJP2lnFX_9xHcLKD9FTfGS_CU-99T7D2LwMpVILqFkpOxMV26NeA/exec";
 
 /* ── State ── */
 let itype = 'veg';
@@ -522,7 +521,7 @@ function renderList() {
 }
 function delItem(i) { items.splice(i, 1); renderList(); showToast('Removed'); }
 
-/* ── Generate ONLY BODY HTML (no <html>, <head>, <body> tags) ── */
+/* ── Generate ONLY BODY HTML and auto-update Drive ── */
 async function generateBodyOnly() {
   if (!items.length) { showToast('⚠ Add at least one item first'); return; }
   const heading = items[0].heading;
@@ -530,9 +529,6 @@ async function generateBodyOnly() {
   document.getElementById('gcode').value = bodyHtml;
   renderPreview(items, heading);
   switchTab('code');
-  
-  // ---- AUTO-UPDATE DRIVE FILE ----
-  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyrvMDvZTbwviPnDhAsJ_7KRPy7ptbBp8QOCQ9sg2Fy-2_V17Ubln51NsqFtX_boIY6Sw/exec";
   
   try {
     const response = await fetch(APPS_SCRIPT_URL, {
@@ -548,7 +544,43 @@ async function generateBodyOnly() {
   } catch (err) {
     showToast('❌ Error: ' + err.message);
   }
-  // ---------------------------------
+}
+
+/* ── Show current Drive file content (HTML body) ── */
+async function showDriveContent() {
+  try {
+    const response = await fetch(APPS_SCRIPT_URL);
+    if (response.ok) {
+      const htmlContent = await response.text();
+      showInModal(htmlContent);
+    } else {
+      showToast('❌ Failed to fetch Drive content');
+    }
+  } catch (err) {
+    showToast('❌ Error: ' + err.message);
+  }
+}
+
+function showInModal(content) {
+  let modal = document.getElementById('driveHtmlModal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'driveHtmlModal';
+    modal.className = 'overlay';
+    modal.innerHTML = `
+      <div class="mbox" style="max-width: 800px; width: 90%;">
+        <div class="mtitle">Current Drive HTML Content</div>
+        <div style="max-height: 70vh; overflow: auto; background: #0f1117; padding: 16px; border-radius: 12px; font-family: monospace; font-size: 12px; white-space: pre-wrap; word-break: break-word;" id="driveHtmlContent"></div>
+        <div class="mcancelrow" style="margin-top: 16px;">
+          <button class="mcancel" onclick="closeM('driveHtmlModal')">Close</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+    modal.addEventListener('click', (e) => { if (e.target === modal) closeM('driveHtmlModal'); });
+  }
+  document.getElementById('driveHtmlContent').innerText = content;
+  openM('driveHtmlModal');
 }
 
 function buildBodySnippet(arr, heading) {
@@ -579,7 +611,6 @@ function buildBodySnippet(arr, heading) {
     hasVar: d.hasVar, vars: d.vars
   })), null, 2);
 
-  // Return only what should be inside <body> (styles, scripts, and menu markup)
   return `<style>
 :root{--bg:#0f1117;--surface:#1a1e2e;--surface2:#222638;--border:#2e3350;--accent:#7c5cbf;--text:#e2e8f0;--muted:#8892a4}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -690,12 +721,8 @@ function copyBodyToClipboard() {
   const bodyHtml = document.getElementById('gcode').value;
   if (!bodyHtml) { showToast('⚠ Generate Body HTML first'); return; }
   navigator.clipboard.writeText(bodyHtml).then(() => {
-    showToast('✅ Body HTML copied! Now paste it into your Drive file.');
+    showToast('✅ Body HTML copied!');
   }).catch(() => showToast('❌ Copy failed, manually select and copy'));
-}
-
-function showDriveHelp() {
-  showToast(`Your Drive TXT URL is set to: ${DRIVE_TXT_URL}. Replace YOUR_FILE_ID_HERE in the code.`);
 }
 
 /* ── Tab switcher ── */
