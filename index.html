@@ -1,431 +1,791 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Menu Builder – Multi‑Heading with Images</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
-<style>
-:root{
-  --bg:#0f1117;--surface:#1a1e2e;--surface2:#222638;
-  --border:#2e3350;--accent:#7c5cbf;--accent-h:#9370d8;
-  --veg:#22c55e;--nonveg:#ef4444;
-  --text:#e2e8f0;--muted:#8892a4;--card-bg:#181c2a;
-}
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
-.app{display:grid;grid-template-columns:1fr 1fr;min-height:100vh}
-@media(max-width:860px){.app{grid-template-columns:1fr}}
-.builder{padding:32px 28px;border-right:1px solid var(--border);overflow-y:auto}
-.pane-head{font-family:'Syne';font-size:20px;font-weight:800;display:flex;align-items:center;gap:10px;margin-bottom:24px}
-.pane-head .dot{width:9px;height:9px;border-radius:50%;background:var(--accent)}
-.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:16px}
-.slabel{font-family:'Syne';font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent);margin-bottom:14px}
-.f{margin-bottom:12px}
-.f label{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}
-.f input,.f textarea{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 13px;font-size:13px;color:var(--text);outline:none}
-.f input:focus,.f textarea:focus{border-color:var(--accent)}
-.veg-row{display:flex;gap:8px}
-.vbtn{flex:1;padding:9px;border-radius:8px;border:2px solid var(--border);background:var(--surface2);color:var(--muted);font-family:'Syne';font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px}
-.vbtn.av{border-color:var(--veg);color:var(--veg);background:rgba(34,197,94,.08)}
-.vbtn.an{border-color:var(--nonveg);color:var(--nonveg);background:rgba(239,68,68,.08)}
-.trow{display:flex;align-items:center;gap:10px;margin-bottom:12px}
-.tswitch{position:relative;width:42px;height:22px}
-.tswitch input{opacity:0;width:0;height:0}
-.tslider{position:absolute;cursor:pointer;inset:0;background:var(--surface2);border-radius:22px;border:1px solid var(--border);transition:.3s}
-.tslider::before{content:'';position:absolute;width:14px;height:14px;border-radius:50%;background:var(--muted);bottom:3px;left:3px;transition:.3s}
-.tswitch input:checked+.tslider{background:var(--accent);border-color:var(--accent)}
-.tswitch input:checked+.tslider::before{transform:translateX(20px);background:#fff}
-#vblock{display:none}
-.vtable{width:100%;border-collapse:collapse;margin-bottom:10px}
-.vtable th{text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;color:var(--muted);padding:7px 8px;border-bottom:1px solid var(--border)}
-.vrow td{padding:6px 5px}
-.vrow td input{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:7px 9px;width:100%}
-.delbtn{background:none;border:none;color:var(--nonveg);cursor:pointer;font-size:17px}
-.addvarbtn{background:none;border:1px dashed var(--border);color:var(--muted);padding:8px 14px;border-radius:8px;cursor:pointer;width:100%}
-.btnrow{display:flex;gap:10px;margin-top:6px}
-.btn{flex:1;padding:11px 18px;border-radius:10px;font-family:'Syne';font-size:13px;font-weight:700;cursor:pointer;border:none}
-.btn-pre{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
-.btn-sub{background:var(--accent);color:#fff}
-.btn-clr{background:none;color:var(--muted);border:1px solid var(--border);flex:0 0 auto}
-#ilistwrap{display:none}
-.ichip{display:flex;justify-content:space-between;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;margin-bottom:7px}
-.cdel{background:none;border:none;color:var(--muted);cursor:pointer}
-.output{padding:32px 28px;display:flex;flex-direction:column;overflow-y:auto}
-.tabs{display:flex;margin-bottom:18px;border-bottom:1px solid var(--border)}
-.tbtn{padding:9px 18px;background:none;border:none;font-family:'Syne';font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent}
-.tbtn.on{color:var(--accent);border-bottom-color:var(--accent)}
-.prevwrap{background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:24px;min-height:300px;overflow:auto}
-.mcard{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;display:flex;align-items:center;gap:14px;margin-bottom:10px}
-.mcard-img{width:64px;height:64px;border-radius:8px;background:var(--surface2);flex-shrink:0;overflow:hidden}
-.mcard-img img{width:100%;height:100%;object-fit:cover}
-.mcard-body{flex:1;cursor:pointer}
-.mcard-name{font-family:'Syne';font-size:14px;font-weight:700;display:flex;align-items:center;gap:7px}
-.vdot{width:14px;height:14px;border-radius:3px;border:2px solid;display:inline-flex;align-items:center;justify-content:center}
-.vdot::after{content:'';width:6px;height:6px;border-radius:50%}
-.vdot.veg{border-color:var(--veg)}.vdot.veg::after{background:var(--veg)}
-.vdot.nonveg{border-color:var(--nonveg)}.vdot.nonveg::after{background:var(--nonveg)}
-.addbtn{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:8px 16px;cursor:pointer}
-.overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;z-index:200;opacity:0;pointer-events:none;transition:opacity .22s}
-.overlay.vis{opacity:1;pointer-events:all}
-.mbox{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:26px;max-width:600px;width:90%;max-height:80vh;overflow:auto}
-.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(56px);background:var(--accent);color:#fff;padding:11px 22px;border-radius:10px;transition:transform .3s;opacity:0}
-.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
-.img-preview{max-width:100px;max-height:100px;border-radius:8px;margin-top:5px}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Menu Manager – Full CRUD + Image Upload</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #0a0c10;
+      color: #eef2ff;
+      padding: 24px;
+    }
+    .app {
+      max-width: 1600px;
+      margin: 0 auto;
+    }
+    h1 {
+      font-size: 28px;
+      margin-bottom: 24px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    @media (max-width: 900px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+    .panel {
+      background: #11161f;
+      border-radius: 20px;
+      border: 1px solid #2a2f3a;
+      overflow: hidden;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+    }
+    .panel-header {
+      padding: 18px 24px;
+      background: #0f131c;
+      border-bottom: 1px solid #2a2f3a;
+      font-weight: 600;
+      font-size: 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .panel-body {
+      padding: 24px;
+    }
+    button, .button {
+      background: #2d3748;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 10px;
+      color: white;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 14px;
+    }
+    button.primary {
+      background: #6c5ce7;
+    }
+    button.primary:hover {
+      background: #5b4bc4;
+      transform: translateY(-1px);
+    }
+    button.danger {
+      background: #e74c3c;
+    }
+    button.danger:hover {
+      background: #c0392b;
+    }
+    button.secondary {
+      background: #2c3e50;
+    }
+    button.small {
+      padding: 4px 10px;
+      font-size: 12px;
+    }
+    input, textarea, select {
+      width: 100%;
+      background: #0f131c;
+      border: 1px solid #2a2f3a;
+      border-radius: 10px;
+      padding: 10px 14px;
+      color: #eef2ff;
+      font-size: 14px;
+      outline: none;
+    }
+    input:focus, textarea:focus, select:focus {
+      border-color: #6c5ce7;
+    }
+    .form-group {
+      margin-bottom: 16px;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 13px;
+      color: #9ca3af;
+    }
+    .row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .heading-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 20px;
+      max-height: 250px;
+      overflow-y: auto;
+    }
+    .heading-item {
+      background: #0f131c;
+      border-radius: 12px;
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-left: 3px solid #6c5ce7;
+      cursor: pointer;
+      transition: 0.1s;
+    }
+    .heading-item.active {
+      background: #1a1f2c;
+      border-left-color: #f1c40f;
+    }
+    .heading-item:hover {
+      background: #161c26;
+    }
+    .item-card {
+      background: #0f131c;
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 12px;
+      border: 1px solid #2a2f3a;
+      position: relative;
+    }
+    .item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .item-name {
+      font-weight: 600;
+      font-size: 16px;
+    }
+    .item-details {
+      font-size: 13px;
+      color: #9ca3af;
+      margin-bottom: 8px;
+    }
+    .item-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .variation-badge {
+      background: #2a2f3a;
+      border-radius: 20px;
+      padding: 4px 10px;
+      font-size: 11px;
+      display: inline-block;
+      margin-right: 6px;
+    }
+    .image-preview {
+      max-width: 80px;
+      max-height: 80px;
+      border-radius: 10px;
+      margin-top: 8px;
+    }
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1e2a3a;
+      backdrop-filter: blur(10px);
+      padding: 12px 24px;
+      border-radius: 40px;
+      font-size: 14px;
+      z-index: 1000;
+      transition: 0.2s;
+      opacity: 0;
+      pointer-events: none;
+      border: 1px solid #6c5ce7;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(-10px);
+    }
+    iframe {
+      width: 100%;
+      height: 600px;
+      border: none;
+      border-radius: 16px;
+      background: white;
+    }
+    hr {
+      border-color: #2a2f3a;
+      margin: 20px 0;
+    }
+    .flex-between {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .gap-2 { gap: 8px; }
+    .mt-4 { margin-top: 16px; }
+    .mb-2 { margin-bottom: 8px; }
+    .text-accent { color: #6c5ce7; }
+  </style>
 </head>
 <body>
 <div class="app">
-  <div class="builder">
-    <div class="pane-head"><span class="dot"></span>Menu Builder</div>
+  <h1>🍽️ Menu Manager <span style="font-size:14px; font-weight:normal;">(Full CRUD + Image Upload)</span></h1>
 
-    <!-- Heading selection / creation -->
-    <div class="card">
-      <div class="slabel">📌 Main Heading (Superset)</div>
-      <div class="f">
-        <label>Select existing heading from Drive</label>
-        <select id="headingSelect" onchange="selectHeading()">
-          <option value="">-- Load from Drive --</option>
-        </select>
-      </div>
-      <div class="f">
-        <label>Or create new heading</label>
-        <input id="newHeading" type="text" placeholder="e.g., Pizza Combos"/>
-      </div>
-      <button class="btn btn-pre" onclick="loadFromDrive()" style="margin-top:5px">📂 Load Existing Menu</button>
-    </div>
-
-    <div class="card">
-      <div class="slabel">🍕 Item Details (Subset)</div>
-      <div class="f"><label>Item Name</label><input id="iname" type="text"/></div>
-      <div class="f">
-        <label>Type</label>
-        <div class="veg-row">
-          <button class="vbtn av" id="bv" onclick="setType('veg')"><span class="sq" style="background:var(--veg)"></span>Veg</button>
-          <button class="vbtn" id="bn" onclick="setType('nonveg')"><span class="sq" style="background:var(--nonveg)"></span>Non-Veg</button>
+  <div class="grid">
+    <!-- LEFT PANEL: HEADINGS & ITEMS MANAGEMENT -->
+    <div class="panel">
+      <div class="panel-header">
+        <span>📌 Headings (Supersets)</span>
+        <div class="row gap-2">
+          <button id="newHeadingBtn" class="primary small">+ New Heading</button>
+          <button id="refreshBtn" class="secondary small">⟳ Refresh</button>
         </div>
       </div>
-      <div class="f"><label>Description</label><input id="idesc" type="text"/></div>
-      <div class="f"><label>Preparation Time</label><input id="itime" type="text"/></div>
-      <div class="f">
-        <label>Item Image (upload)</label>
-        <input type="file" id="itemImageFile" accept="image/*" onchange="uploadItemImage(this.files[0])"/>
-        <div id="itemImagePreview"></div>
-        <input type="hidden" id="itemImageUrl"/>
+      <div class="panel-body">
+        <div id="headingsContainer" class="heading-list">
+          <div style="color:#6b7280; text-align:center;">Click "Load from Drive" first</div>
+        </div>
+        <div class="row gap-2" style="margin-top:16px;">
+          <button id="loadDriveBtn" class="primary" style="flex:1;">📂 Load from Drive</button>
+          <button id="saveDriveBtn" class="secondary" style="flex:1;">💾 Save to Drive (Merge)</button>
+        </div>
       </div>
     </div>
 
-    <div class="card">
-      <div class="slabel">💰 Variations (each can have its own image)</div>
-      <div class="trow">
-        <label class="tswitch"><input type="checkbox" id="hasvar" onchange="toggleVar()"/><span class="tslider"></span></label>
-        <span>Has variations</span>
+    <!-- RIGHT PANEL: ITEM EDITOR / PREVIEW -->
+    <div class="panel">
+      <div class="panel-header">
+        <span>✏️ Edit Items under <span id="selectedHeadingName" class="text-accent">—</span></span>
+        <button id="addItemBtn" class="primary small">+ Add Item</button>
       </div>
-      <div id="dprice"><div class="f"><label>Base Price (₹)</label><input id="iprice" type="number"/></div></div>
-      <div id="vblock">
-        <table class="vtable"><thead><tr><th>Variation Name</th><th>Price (₹)</th><th>Image</th><th></th></tr></thead><tbody id="vtbody"></tbody></table>
-        <button class="addvarbtn" onclick="addVarRow()">+ Add Variation</button>
-      </div>
-    </div>
-
-    <div class="btnrow">
-      <button class="btn btn-pre" onclick="previewItem()">👁 Preview</button>
-      <button class="btn btn-sub" onclick="submitItem()">✅ Add to Menu</button>
-      <button class="btn btn-clr" onclick="clearForm()">✕ Clear</button>
-    </div>
-
-    <div id="ilistwrap">
-      <hr class="sep"/>
-      <div class="slabel">📋 Items under current heading</div>
-      <div id="ilist"></div>
-      <div class="btnrow" style="margin-top:8px">
-        <button class="btn btn-sub" onclick="saveToDrive()" style="flex:1">💾 Save to Drive (Merge)</button>
-        <button class="btn btn-pre" onclick="showLivePreview()" style="flex:0 0 auto">👁 Live Preview</button>
+      <div class="panel-body" id="itemsListContainer">
+        <div style="color:#6b7280; text-align:center;">Select a heading to see its items</div>
       </div>
     </div>
   </div>
 
-  <div class="output">
-    <div class="pane-head"><span class="dot" style="background:#22c55e"></span>Live Menu Preview</div>
-    <div class="prevwrap" id="livePreviewArea">
-      <div id="livePreviewContent">Select a heading or load from Drive</div>
+  <!-- LIVE PREVIEW SECTION -->
+  <div class="panel" style="margin-top: 24px;">
+    <div class="panel-header">
+      <span>🔍 Live Preview (rendered HTML from Drive)</span>
+      <button id="refreshPreviewBtn" class="secondary small">⟳ Refresh Preview</button>
+    </div>
+    <div class="panel-body" style="padding:0;">
+      <iframe id="previewIframe" srcdoc="<div style='padding:20px; text-align:center;'>Click 'Refresh Preview'</div>"></iframe>
     </div>
   </div>
 </div>
 
-<div class="toast" id="toast"></div>
+<div id="toast" class="toast">Message</div>
+
+<!-- MODAL FOR ITEM FORM (create/edit) -->
+<div id="itemModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); align-items:center; justify-content:center; z-index:1000;">
+  <div style="background:#11161f; max-width:600px; width:90%; border-radius:24px; padding:24px; border:1px solid #2a2f3a; max-height:90vh; overflow:auto;">
+    <h3 id="itemModalTitle" style="margin-bottom:16px;">Add / Edit Item</h3>
+    <div class="form-group">
+      <label>Item Name *</label>
+      <input type="text" id="itemName" placeholder="e.g., Margherita Pizza">
+    </div>
+    <div class="form-group">
+      <label>Type</label>
+      <select id="itemType">
+        <option value="veg">🌿 Veg</option>
+        <option value="nonveg">🍗 Non-Veg</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Description</label>
+      <input type="text" id="itemDesc" placeholder="Classic cheese & tomato">
+    </div>
+    <div class="form-group">
+      <label>Preparation Time</label>
+      <input type="text" id="itemTime" placeholder="15-20 min">
+    </div>
+    <div class="form-group">
+      <label>Item Image (upload)</label>
+      <input type="file" id="itemImageFile" accept="image/*">
+      <div id="itemImagePreview"></div>
+      <input type="hidden" id="itemImageUrl">
+    </div>
+    <div class="form-group">
+      <label>Price (if no variations)</label>
+      <input type="number" id="itemPrice" placeholder="199">
+    </div>
+    <div class="form-group">
+      <label><input type="checkbox" id="hasVariations"> This item has variations</label>
+    </div>
+    <div id="variationsContainer" style="display:none;">
+      <label>Variations</label>
+      <div id="varList"></div>
+      <button type="button" class="secondary small" id="addVariationBtn" style="margin-top:8px;">+ Add Variation</button>
+    </div>
+    <div class="row gap-2" style="margin-top:24px; justify-content:flex-end;">
+      <button id="closeItemModalBtn" class="secondary">Cancel</button>
+      <button id="saveItemBtn" class="primary">Save Item</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL FOR NEW HEADING -->
+<div id="headingModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); align-items:center; justify-content:center; z-index:1000;">
+  <div style="background:#11161f; max-width:400px; width:90%; border-radius:24px; padding:24px;">
+    <h3>New Heading</h3>
+    <input type="text" id="newHeadingInput" placeholder="e.g., Lunch Specials" style="margin:16px 0;">
+    <div class="row gap-2" style="justify-content:flex-end;">
+      <button id="closeHeadingModalBtn" class="secondary">Cancel</button>
+      <button id="createHeadingBtn" class="primary">Create</button>
+    </div>
+  </div>
+</div>
 
 <script>
-// ========== CONFIGURATION ==========
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzewI6M6VmYsbG69RNk_YqBIvHyE1VmVgO-UzNHZMmMectheDFZU6W9u4157QIPLdfD5w/exec"; // REPLACE WITH YOUR ACTUAL URL
+// ==================== CONFIGURATION ====================
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxcUYLRI5BpRwR4JS9mRF-khA5PnfhXbR0v0uJ8kGVlJ0rpT8RLKKtOLZ1m81CYrtBFSA/exec"; // 🔁 REPLACE WITH YOUR ACTUAL APPS SCRIPT URL
 
-// ========== GLOBAL STATE ==========
-let itype = 'veg';
-let currentItems = [];      // items under the selected heading
-let currentHeading = "";
-let vrc = 0;
-let allHeadingsData = {};   // { heading1: [items], heading2: [items] }
+// ==================== GLOBAL STATE ====================
+let menuData = {};          // { "Heading1": [items], "Heading2": [items] }
+let currentHeading = null;  // currently selected heading
+let editingItemIndex = null; // index of item being edited, null for new
+let variationCounter = 0;
 
-// ========== IMAGE UPLOAD ==========
-async function uploadImageToDrive(file, fileName) {
+// ==================== UTILITIES ====================
+function showToast(msg, isError = false) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.style.background = isError ? '#c0392b' : '#1e2a3a';
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+async function uploadImage(file) {
   const formData = new FormData();
-  formData.append("action", "uploadImage");
-  formData.append("imageBlob", file);
-  formData.append("fileName", fileName);
-  const res = await fetch(APPS_SCRIPT_URL, { method: "POST", body: formData });
+  formData.append('action', 'uploadImage');
+  formData.append('imageBlob', file);
+  formData.append('fileName', file.name);
+  const res = await fetch(WEB_APP_URL, { method: 'POST', body: formData });
   const json = await res.json();
   if (json.success) return json.url;
   else throw new Error(json.error);
 }
 
-async function uploadItemImage(file) {
-  if (!file) return;
-  showToast("Uploading image...");
-  try {
-    const url = await uploadImageToDrive(file, file.name);
-    document.getElementById("itemImageUrl").value = url;
-    document.getElementById("itemImagePreview").innerHTML = `<img src="${url}" class="img-preview">`;
-    showToast("✅ Image uploaded");
-  } catch(e) { showToast("❌ Upload failed"); }
-}
-
-async function uploadVarImage(file, varId) {
-  if (!file) return;
-  try {
-    const url = await uploadImageToDrive(file, file.name);
-    document.getElementById(`varImg_${varId}`).value = url;
-    document.getElementById(`varImgPreview_${varId}`).innerHTML = `<img src="${url}" class="img-preview" style="max-width:50px">`;
-    showToast("✅ Variation image uploaded");
-  } catch(e) { showToast("❌ Upload failed"); }
-}
-
-// ========== VARIATIONS ==========
-function addVarRow() {
-  vrc++;
-  const id = vrc;
-  const tr = document.createElement('tr');
-  tr.className = 'vrow'; tr.id = `vr${id}`;
-  tr.innerHTML = `
-    <td><input type="text" placeholder="Name" id="vn${id}"/></td>
-    <td><input type="number" placeholder="Price" id="vp${id}"/></td>
-    <td>
-      <input type="file" accept="image/*" onchange="uploadVarImage(this.files[0], ${id})"/>
-      <input type="hidden" id="varImg_${id}"/>
-      <div id="varImgPreview_${id}"></div>
-    </td>
-    <td><button class="delbtn" onclick="delVar(${id})">✕</button></td>
-  `;
-  document.getElementById('vtbody').appendChild(tr);
-}
-function delVar(id) { document.getElementById(`vr${id}`)?.remove(); }
-function getVars() {
-  return [...document.querySelectorAll('.vrow')].map(r => {
-    const id = r.id.replace('vr','');
-    return {
-      name: document.getElementById(`vn${id}`)?.value.trim() || "",
-      price: document.getElementById(`vp${id}`)?.value.trim() || "",
-      image: document.getElementById(`varImg_${id}`)?.value || ""
-    };
-  }).filter(v => v.name);
-}
-
-// ========== COLLECT FORM ==========
-function collectItem() {
-  return {
-    name: document.getElementById('iname').value.trim(),
-    type: itype,
-    desc: document.getElementById('idesc').value.trim(),
-    time: document.getElementById('itime').value.trim(),
-    image: document.getElementById('itemImageUrl').value,
-    price: document.getElementById('iprice').value.trim(),
-    hasVar: document.getElementById('hasvar').checked,
-    vars: document.getElementById('hasvar').checked ? getVars() : []
-  };
-}
-
-function clearForm() {
-  document.getElementById('iname').value = '';
-  document.getElementById('idesc').value = '';
-  document.getElementById('itime').value = '';
-  document.getElementById('iprice').value = '';
-  document.getElementById('hasvar').checked = false;
-  document.getElementById('vtbody').innerHTML = '';
-  vrc = 0;
-  toggleVar();
-  setType('veg');
-  document.getElementById('itemImageFile').value = '';
-  document.getElementById('itemImagePreview').innerHTML = '';
-  document.getElementById('itemImageUrl').value = '';
-}
-
-function setType(t) { itype = t;
-  document.getElementById('bv').className = 'vbtn' + (t==='veg'?' av':'');
-  document.getElementById('bn').className = 'vbtn' + (t==='nonveg'?' an':'');
-}
-function toggleVar() {
-  const on = document.getElementById('hasvar').checked;
-  document.getElementById('dprice').style.display = on ? 'none' : 'block';
-  document.getElementById('vblock').style.display = on ? 'block' : 'none';
-  if(on && !document.querySelector('.vrow')) addVarRow();
-}
-
-// ========== SUBMIT ITEM ==========
-function submitItem() {
-  const item = collectItem();
-  if(!item.name) { showToast("Enter item name"); return; }
-  currentItems.push(item);
-  renderItemList();
-  clearForm();
-  showToast(`✅ "${item.name}" added`);
-}
-
-function renderItemList() {
-  const wrap = document.getElementById('ilistwrap');
-  if(!currentItems.length) { wrap.style.display = 'none'; return; }
-  wrap.style.display = 'block';
-  document.getElementById('ilist').innerHTML = currentItems.map((it,idx) => `
-    <div class="ichip">
-      <div><strong>${escapeHtml(it.name)}</strong> ${it.hasVar ? `(${it.vars.length} vars)` : (it.price ? `₹${it.price}` : '')}</div>
-      <button class="cdel" onclick="deleteItem(${idx})">✕</button>
-    </div>
-  `).join('');
-}
-
-function deleteItem(idx) {
-  currentItems.splice(idx,1);
-  renderItemList();
-  showToast("Item deleted");
-}
-
-// ========== PREVIEW ==========
-function previewItem() {
-  const item = collectItem();
-  if(!item.name) return;
-  renderPreview([item], "Preview");
-}
-
-function renderPreview(items, heading) {
-  const container = document.getElementById('livePreviewContent');
-  if(!items.length) { container.innerHTML = "<div>No items</div>"; return; }
-  container.innerHTML = `<h2>${escapeHtml(heading)}</h2>` + items.map(d => `
-    <div class="mcard">
-      <div class="mcard-img"><img src="${d.image||''}" onerror="this.src=''"></div>
-      <div class="mcard-body">
-        <div class="mcard-name"><span class="vdot ${d.type}"></span>${escapeHtml(d.name)}</div>
-        <div class="mcard-desc">${escapeHtml(d.desc)}</div>
-        ${!d.hasVar && d.price ? `<div class="mcard-price">₹${escapeHtml(d.price)}</div>` : ''}
-      </div>
-      <button class="addbtn" onclick="alert('Added ${d.name}')">Add</button>
-    </div>
-  `).join('');
-}
-
-// ========== DRIVE OPERATIONS ==========
+// ==================== LOAD FROM DRIVE (PARSE HTML) ====================
 async function loadFromDrive() {
   showToast("Loading from Drive...");
   try {
-    const res = await fetch(APPS_SCRIPT_URL);
-    const html = await res.text();
-    // Parse the HTML to extract headings and items
+    const response = await fetch(WEB_APP_URL);
+    const html = await response.text();
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, 'text/html');
-    const h1s = doc.querySelectorAll('h1');
+    const headings = doc.querySelectorAll('h1');
     const newData = {};
-    for(let h1 of h1s) {
-      let heading = h1.textContent.trim();
+    for (let h1 of headings) {
+      let headingName = h1.textContent.trim();
       let items = [];
       let next = h1.nextElementSibling;
-      while(next && next.classList && next.classList.contains('mcard')) {
-        // Extract item data from the card (simplified: just name and image)
-        let nameEl = next.querySelector('.mcard-name');
-        let name = nameEl ? nameEl.textContent.replace(/[^\w\s]/g,'').trim() : '';
-        let imgEl = next.querySelector('.mcard-img img');
-        let img = imgEl ? imgEl.src : '';
-        items.push({ name, image: img }); // We only store basic info for selection
+      while (next && next.classList && next.classList.contains('mcard')) {
+        // Extract item details
+        const nameEl = next.querySelector('.mcard-name');
+        let name = nameEl ? nameEl.textContent.replace(/[^\w\s]/g, '').trim() : '';
+        const typeEl = nameEl ? (nameEl.querySelector('.vdot') ? (nameEl.querySelector('.vdot').style.borderColor === 'rgb(34, 197, 94)' ? 'veg' : 'nonveg') : 'veg') : 'veg';
+        const descEl = next.querySelector('.mcard-desc');
+        let desc = descEl ? descEl.textContent.trim() : '';
+        const priceEl = next.querySelector('.mcard-price');
+        let price = priceEl ? priceEl.textContent.replace('₹', '').trim() : '';
+        const imgEl = next.querySelector('.mcard-img img');
+        let image = imgEl ? imgEl.src : '';
+        // Variations are not stored in the simple card, we'll keep an empty array
+        items.push({
+          name, type: typeEl, desc, time: '', image, price,
+          hasVar: false, vars: []
+        });
         next = next.nextElementSibling;
       }
-      newData[heading] = items;
+      newData[headingName] = items;
     }
-    allHeadingsData = newData;
-    const select = document.getElementById('headingSelect');
-    select.innerHTML = '<option value="">-- Select heading --</option>';
-    for(let h in newData) {
-      select.innerHTML += `<option value="${escapeHtml(h)}">${escapeHtml(h)} (${newData[h].length} items)</option>`;
+    menuData = newData;
+    renderHeadingsList();
+    if (Object.keys(menuData).length === 0) {
+      showToast("No headings found in Drive file. Add one.");
+    } else {
+      showToast(`Loaded ${Object.keys(menuData).length} headings`);
+      // Auto-select first heading
+      const firstHeading = Object.keys(menuData)[0];
+      if (firstHeading) selectHeading(firstHeading);
     }
-    showToast("Loaded headings from Drive");
-  } catch(e) { showToast("Error loading: "+e.message); }
+  } catch (err) {
+    showToast("Error loading: " + err.message, true);
+  }
 }
 
-function selectHeading() {
-  const select = document.getElementById('headingSelect');
-  const heading = select.value;
-  if(!heading) return;
+// ==================== RENDER HEADINGS LIST ====================
+function renderHeadingsList() {
+  const container = document.getElementById('headingsContainer');
+  if (Object.keys(menuData).length === 0) {
+    container.innerHTML = '<div style="color:#6b7280; text-align:center;">No headings. Create one.</div>';
+    return;
+  }
+  container.innerHTML = '';
+  for (let heading in menuData) {
+    const div = document.createElement('div');
+    div.className = 'heading-item' + (currentHeading === heading ? ' active' : '');
+    div.innerHTML = `
+      <span style="font-weight:500;">${escapeHtml(heading)} (${menuData[heading].length} items)</span>
+      <div style="display:flex; gap:6px;">
+        <button class="small edit-heading" data-heading="${escapeHtml(heading)}" style="background:#2c3e50;">✏️</button>
+        <button class="small danger delete-heading" data-heading="${escapeHtml(heading)}">🗑️</button>
+      </div>
+    `;
+    div.addEventListener('click', (e) => {
+      if (!e.target.classList.contains('edit-heading') && !e.target.classList.contains('delete-heading')) {
+        selectHeading(heading);
+      }
+    });
+    container.appendChild(div);
+  }
+  // attach events after render
+  document.querySelectorAll('.edit-heading').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const oldName = btn.getAttribute('data-heading');
+      const newName = prompt("Edit heading name:", oldName);
+      if (newName && newName !== oldName) {
+        menuData[newName] = menuData[oldName];
+        delete menuData[oldName];
+        if (currentHeading === oldName) currentHeading = newName;
+        renderHeadingsList();
+        if (currentHeading) renderItemsList();
+        showToast(`Heading renamed to "${newName}"`);
+      }
+    });
+  });
+  document.querySelectorAll('.delete-heading').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const heading = btn.getAttribute('data-heading');
+      if (confirm(`Delete heading "${heading}" and all its items?`)) {
+        delete menuData[heading];
+        if (currentHeading === heading) {
+          currentHeading = null;
+          document.getElementById('itemsListContainer').innerHTML = '<div style="color:#6b7280;">Select a heading</div>';
+          document.getElementById('selectedHeadingName').innerText = '—';
+        }
+        renderHeadingsList();
+        showToast(`Heading "${heading}" deleted`);
+      }
+    });
+  });
+}
+
+// ==================== SELECT HEADING ====================
+function selectHeading(heading) {
   currentHeading = heading;
-  currentItems = allHeadingsData[heading] || [];
-  renderItemList();
-  renderPreview(currentItems, currentHeading);
-  document.getElementById('newHeading').value = heading;
+  document.getElementById('selectedHeadingName').innerText = heading;
+  renderItemsList();
+  renderHeadingsList(); // to update active class
+}
+
+// ==================== RENDER ITEMS LIST ====================
+function renderItemsList() {
+  const container = document.getElementById('itemsListContainer');
+  if (!currentHeading || !menuData[currentHeading] || menuData[currentHeading].length === 0) {
+    container.innerHTML = '<div style="color:#6b7280; text-align:center;">No items under this heading. Click "Add Item".</div>';
+    return;
+  }
+  container.innerHTML = '';
+  menuData[currentHeading].forEach((item, idx) => {
+    const card = document.createElement('div');
+    card.className = 'item-card';
+    card.innerHTML = `
+      <div class="item-header">
+        <span class="item-name">${escapeHtml(item.name)} <span class="variation-badge">${item.type === 'veg' ? '🌿 Veg' : '🍗 Non-Veg'}</span></span>
+        <div style="display:flex; gap:6px;">
+          <button class="small edit-item" data-index="${idx}">✏️</button>
+          <button class="small danger delete-item" data-index="${idx}">🗑️</button>
+        </div>
+      </div>
+      <div class="item-details">${escapeHtml(item.desc)} ${item.time ? '⏱️ ' + escapeHtml(item.time) : ''}</div>
+      ${item.image ? `<img src="${item.image}" class="image-preview" onerror="this.style.display='none'">` : ''}
+      <div>${item.hasVar ? `<span class="variation-badge">${item.vars.length} variation(s)</span>` : (item.price ? `💰 ₹${item.price}` : '')}</div>
+    `;
+    container.appendChild(card);
+  });
+  // attach events
+  document.querySelectorAll('.edit-item').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const idx = parseInt(btn.getAttribute('data-index'));
+      openItemModal(idx);
+    });
+  });
+  document.querySelectorAll('.delete-item').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const idx = parseInt(btn.getAttribute('data-index'));
+      if (confirm(`Delete item "${menuData[currentHeading][idx].name}"?`)) {
+        menuData[currentHeading].splice(idx, 1);
+        renderItemsList();
+        showToast("Item deleted");
+      }
+    });
+  });
+}
+
+// ==================== ITEM MODAL (CREATE/EDIT) ====================
+function openItemModal(index = null) {
+  editingItemIndex = index;
+  const modal = document.getElementById('itemModal');
+  const title = document.getElementById('itemModalTitle');
+  if (index !== null) {
+    title.innerText = "Edit Item";
+    const item = menuData[currentHeading][index];
+    document.getElementById('itemName').value = item.name;
+    document.getElementById('itemType').value = item.type;
+    document.getElementById('itemDesc').value = item.desc || '';
+    document.getElementById('itemTime').value = item.time || '';
+    document.getElementById('itemPrice').value = item.price || '';
+    document.getElementById('itemImageUrl').value = item.image || '';
+    document.getElementById('hasVariations').checked = item.hasVar;
+    document.getElementById('itemImagePreview').innerHTML = item.image ? `<img src="${item.image}" class="image-preview">` : '';
+    // load variations
+    variationCounter = 0;
+    const varContainer = document.getElementById('varList');
+    varContainer.innerHTML = '';
+    if (item.hasVar && item.vars) {
+      item.vars.forEach((v, i) => {
+        addVariationRow(v.name, v.price, v.image, i);
+      });
+    }
+  } else {
+    title.innerText = "Add New Item";
+    document.getElementById('itemName').value = '';
+    document.getElementById('itemType').value = 'veg';
+    document.getElementById('itemDesc').value = '';
+    document.getElementById('itemTime').value = '';
+    document.getElementById('itemPrice').value = '';
+    document.getElementById('itemImageUrl').value = '';
+    document.getElementById('hasVariations').checked = false;
+    document.getElementById('itemImagePreview').innerHTML = '';
+    document.getElementById('varList').innerHTML = '';
+    variationCounter = 0;
+  }
+  toggleVariationsUI();
+  modal.style.display = 'flex';
+}
+
+function closeItemModal() {
+  document.getElementById('itemModal').style.display = 'none';
+  editingItemIndex = null;
+}
+
+function toggleVariationsUI() {
+  const hasVar = document.getElementById('hasVariations').checked;
+  document.getElementById('variationsContainer').style.display = hasVar ? 'block' : 'none';
+  document.getElementById('itemPrice').disabled = hasVar;
+}
+
+function addVariationRow(name = '', price = '', img = '', idOverride = null) {
+  const id = idOverride !== null ? idOverride : variationCounter++;
+  const container = document.getElementById('varList');
+  const div = document.createElement('div');
+  div.className = 'variation-row';
+  div.style.marginBottom = '12px';
+  div.style.background = '#0f131c';
+  div.style.padding = '12px';
+  div.style.borderRadius = '12px';
+  div.innerHTML = `
+    <div class="row gap-2" style="flex-wrap:wrap;">
+      <input type="text" placeholder="Variation name" class="var-name" value="${escapeHtml(name)}" style="flex:2;">
+      <input type="number" placeholder="Price ₹" class="var-price" value="${escapeHtml(price)}" style="flex:1;">
+      <input type="file" accept="image/*" class="var-image-file" style="flex:2;">
+      <input type="hidden" class="var-image-url" value="${escapeHtml(img)}">
+      <button class="small danger remove-var">✕</button>
+    </div>
+    <div class="var-preview" style="margin-top:5px;">${img ? `<img src="${img}" class="image-preview" style="max-width:60px;">` : ''}</div>
+  `;
+  const fileInput = div.querySelector('.var-image-file');
+  const previewDiv = div.querySelector('.var-preview');
+  const urlHidden = div.querySelector('.var-image-url');
+  fileInput.addEventListener('change', async (e) => {
+    if (e.target.files[0]) {
+      try {
+        const url = await uploadImage(e.target.files[0]);
+        urlHidden.value = url;
+        previewDiv.innerHTML = `<img src="${url}" class="image-preview" style="max-width:60px;">`;
+        showToast("Variation image uploaded");
+      } catch(err) { showToast("Upload failed", true); }
+    }
+  });
+  div.querySelector('.remove-var').addEventListener('click', () => div.remove());
+  container.appendChild(div);
+}
+
+async function saveCurrentItem() {
+  if (!currentHeading) { showToast("Select a heading first", true); return; }
+  const name = document.getElementById('itemName').value.trim();
+  if (!name) { showToast("Item name required", true); return; }
+  const type = document.getElementById('itemType').value;
+  const desc = document.getElementById('itemDesc').value;
+  const time = document.getElementById('itemTime').value;
+  const price = document.getElementById('itemPrice').value;
+  const image = document.getElementById('itemImageUrl').value;
+  const hasVar = document.getElementById('hasVariations').checked;
+  let vars = [];
+  if (hasVar) {
+    const rows = document.querySelectorAll('.variation-row');
+    for (let row of rows) {
+      const vname = row.querySelector('.var-name')?.value.trim();
+      const vprice = row.querySelector('.var-price')?.value.trim();
+      const vimg = row.querySelector('.var-image-url')?.value;
+      if (vname) vars.push({ name: vname, price: vprice, image: vimg });
+    }
+  }
+  const newItem = { name, type, desc, time, image, price, hasVar, vars };
+  if (editingItemIndex !== null) {
+    menuData[currentHeading][editingItemIndex] = newItem;
+    showToast("Item updated");
+  } else {
+    menuData[currentHeading].push(newItem);
+    showToast("Item added");
+  }
+  renderItemsList();
+  closeItemModal();
+}
+
+// ==================== SAVE TO DRIVE (OVERWRITE WITH CURRENT DATA) ====================
+function buildFullHTML() {
+  let html = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Menu</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0f1117;--surface:#1a1e2e;--surface2:#222638;--border:#2e3350;--accent:#7c5cbf;--text:#e2e8f0;--muted:#8892a4}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);padding:32px 20px;max-width:680px;margin:0 auto}
+h1{font-family:'Syne';font-size:22px;font-weight:800;color:#fff;margin-top:32px;}
+.mcard{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;display:flex;align-items:center;gap:14px;margin-bottom:12px}
+.mcard-img{width:64px;height:64px;border-radius:8px;background:var(--surface2);overflow:hidden}
+.mcard-img img{width:100%;height:100%;object-fit:cover}
+.mcard-body{flex:1}
+.mcard-name{font-family:'Syne';font-size:14px;font-weight:700;display:flex;align-items:center;gap:7px}
+.vdot{width:14px;height:14px;border-radius:3px;border:2px solid;display:inline-flex;align-items:center;justify-content:center}
+.vdot span{width:6px;height:6px;border-radius:50%;display:block}
+.mcard-desc{font-size:12px;color:var(--muted)}
+.mcard-price{font-size:13px;font-weight:600;color:var(--text);margin-top:3px}
+.addbtn{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:8px 16px;cursor:pointer}
+</style>
+</head>
+<body>`;
+  for (let heading in menuData) {
+    html += `<h1>${escapeHtml(heading)}</h1>`;
+    for (let item of menuData[heading]) {
+      const dotColor = item.type === 'veg' ? '#22c55e' : '#ef4444';
+      const imgTag = item.image ? `<img src="${item.image}" onerror="this.style.display='none'">` : '';
+      const priceHtml = (!item.hasVar && item.price) ? `<div class="mcard-price">₹${escapeHtml(item.price)}</div>` : '';
+      html += `
+      <div class="mcard">
+        <div class="mcard-img">${imgTag}</div>
+        <div class="mcard-body">
+          <div class="mcard-name"><span class="vdot" style="border-color:${dotColor}"><span style="background:${dotColor}"></span></span>${escapeHtml(item.name)}</div>
+          <div class="mcard-desc">${escapeHtml(item.desc)} ${item.time ? '⏱️ '+escapeHtml(item.time) : ''}</div>
+          ${priceHtml}
+        </div>
+        <button class="addbtn" onclick="alert('Added ${escapeHtml(item.name)}')">Add</button>
+      </div>`;
+    }
+  }
+  html += `</body></html>`;
+  return html;
 }
 
 async function saveToDrive() {
-  let heading = document.getElementById('newHeading').value.trim();
-  if(!heading && currentHeading) heading = currentHeading;
-  if(!heading) { showToast("Select or enter a heading"); return; }
-  if(currentItems.length === 0) { showToast("No items to save"); return; }
-  const fullHtml = buildFullHtml(heading, currentItems);
+  if (Object.keys(menuData).length === 0) {
+    showToast("Nothing to save. Add a heading first.", true);
+    return;
+  }
+  const fullHtml = buildFullHTML();
   try {
-    const res = await fetch(APPS_SCRIPT_URL, { method: 'POST', body: fullHtml, headers: {'Content-Type':'text/plain'} });
-    if(res.ok) {
-      showToast("✅ Drive updated (merged)");
-      await loadFromDrive(); // reload headings
-      selectHeading();
-    } else showToast("Update failed");
-  } catch(e) { showToast("Error: "+e.message); }
+    const res = await fetch(WEB_APP_URL, {
+      method: 'POST',
+      body: fullHtml,
+      headers: { 'Content-Type': 'text/plain' }
+    });
+    if (res.ok) {
+      showToast("✅ Saved to Drive successfully!");
+      refreshPreview();
+    } else {
+      showToast("Save failed", true);
+    }
+  } catch (err) {
+    showToast("Error: " + err.message, true);
+  }
 }
 
-function buildFullHtml(heading, items) {
-  const cardsHtml = items.map(d => {
-    const dotColor = d.type === 'veg' ? '#22c55e' : '#ef4444';
-    const imgTag = d.image ? `<img src="${d.image}" style="width:64px;height:64px;object-fit:cover;">` : '';
-    const priceHtml = !d.hasVar && d.price ? `<div class="mcard-price">₹${d.price}</div>` : '';
-    return `<div class="mcard">
-      <div class="mcard-img">${imgTag}</div>
-      <div class="mcard-body">
-        <div class="mcard-name"><span class="vdot" style="border-color:${dotColor}"><span style="background:${dotColor}"></span></span>${escapeHtml(d.name)}</div>
-        <div class="mcard-desc">${escapeHtml(d.desc)}</div>
-        ${priceHtml}
-      </div>
-      <button class="addbtn" onclick="alert('Added ${escapeHtml(d.name)}')">Add</button>
-    </div>`;
-  }).join('');
-  return `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(heading)}</title><link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet"><style>
-    :root{--bg:#0f1117;--surface:#1a1e2e;--surface2:#222638;--border:#2e3350;--accent:#7c5cbf;--text:#e2e8f0;--muted:#8892a4}
-    body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);padding:32px 20px;max-width:680px;margin:0 auto}
-    h1{font-family:'Syne';font-size:22px;font-weight:800;color:#fff}
-    .mcard{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;display:flex;align-items:center;gap:14px;margin-bottom:12px}
-    .mcard-img{width:64px;height:64px;border-radius:8px;background:var(--surface2);overflow:hidden}
-    .mcard-body{flex:1}
-    .mcard-name{font-family:'Syne';font-size:14px;font-weight:700;display:flex;align-items:center;gap:7px}
-    .vdot{width:14px;height:14px;border-radius:3px;border:2px solid;display:inline-flex;align-items:center;justify-content:center}
-    .vdot span{width:6px;height:6px;border-radius:50%;display:block}
-    .addbtn{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:8px 16px;cursor:pointer}
-  </style></head><body><h1>${escapeHtml(heading)}</h1>${cardsHtml}</body></html>`;
+// ==================== PREVIEW ====================
+async function refreshPreview() {
+  try {
+    const res = await fetch(WEB_APP_URL);
+    const html = await res.text();
+    const iframe = document.getElementById('previewIframe');
+    iframe.srcdoc = html;
+  } catch (err) {
+    showToast("Preview error", true);
+  }
 }
 
-async function showLivePreview() {
-  const res = await fetch(APPS_SCRIPT_URL);
-  const html = await res.text();
-  document.getElementById('livePreviewContent').innerHTML = `<iframe srcdoc="${escapeHtml(html).replace(/"/g, '&quot;')}" style="width:100%; height:500px; border:none; background:white;"></iframe>`;
+// ==================== EVENT LISTENERS & INIT ====================
+document.getElementById('loadDriveBtn').addEventListener('click', loadFromDrive);
+document.getElementById('saveDriveBtn').addEventListener('click', saveToDrive);
+document.getElementById('refreshPreviewBtn').addEventListener('click', refreshPreview);
+document.getElementById('newHeadingBtn').addEventListener('click', () => {
+  document.getElementById('headingModal').style.display = 'flex';
+});
+document.getElementById('closeHeadingModalBtn').addEventListener('click', () => {
+  document.getElementById('headingModal').style.display = 'none';
+});
+document.getElementById('createHeadingBtn').addEventListener('click', () => {
+  const newHeading = document.getElementById('newHeadingInput').value.trim();
+  if (!newHeading) { showToast("Heading name required", true); return; }
+  if (menuData[newHeading]) { showToast("Heading already exists", true); return; }
+  menuData[newHeading] = [];
+  renderHeadingsList();
+  selectHeading(newHeading);
+  document.getElementById('headingModal').style.display = 'none';
+  document.getElementById('newHeadingInput').value = '';
+  showToast(`Heading "${newHeading}" created`);
+});
+document.getElementById('addItemBtn').addEventListener('click', () => {
+  if (!currentHeading) { showToast("Select a heading first", true); return; }
+  openItemModal(null);
+});
+document.getElementById('closeItemModalBtn').addEventListener('click', closeItemModal);
+document.getElementById('saveItemBtn').addEventListener('click', saveCurrentItem);
+document.getElementById('hasVariations').addEventListener('change', toggleVariationsUI);
+document.getElementById('addVariationBtn').addEventListener('click', () => addVariationRow());
+document.getElementById('itemImageFile').addEventListener('change', async (e) => {
+  if (e.target.files[0]) {
+    try {
+      const url = await uploadImage(e.target.files[0]);
+      document.getElementById('itemImageUrl').value = url;
+      document.getElementById('itemImagePreview').innerHTML = `<img src="${url}" class="image-preview">`;
+      showToast("Item image uploaded");
+    } catch(err) { showToast("Upload failed", true); }
+  }
+});
+document.getElementById('refreshBtn').addEventListener('click', loadFromDrive);
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/[&<>]/g, function(m) {
+    if (m === '&') return '&amp;';
+    if (m === '<') return '&lt;';
+    if (m === '>') return '&gt;';
+    return m;
+  });
 }
 
-// ========== UTILITIES ==========
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
-}
-function escapeHtml(str) { return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-function switchTab() {} // not used
+// initial load
+loadFromDrive();
 </script>
 </body>
 </html>
