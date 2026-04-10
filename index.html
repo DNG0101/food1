@@ -229,18 +229,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       <button class="btn btn-pre" onclick="copyBodyToClipboard()" style="flex:0 0 auto;padding:11px 14px;font-size:12px">📋 Copy Body</button>
     </div>
   </div>
-  
-  <!-- New Drive URL input field -->
-  <div class="card" style="margin-top:12px">
-    <div class="slabel">🔗 Google Drive TXT URL</div>
-    <div class="f">
-      <label>URL of your existing .txt file on Drive</label>
-      <input id="driveUrl" type="url" placeholder="https://drive.google.com/file/d/.../view?usp=sharing"/>
-      <div style="font-size:11px; color:var(--muted); margin-top:6px">
-        After generating body HTML, copy it and paste into this Drive file (replace existing content). No new file is created.
-      </div>
-    </div>
-  </div>
 </div>
 
 <!-- ══ RIGHT: OUTPUT ══ -->
@@ -270,10 +258,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
         <span>BODY HTML SNIPPET (paste into your Drive .txt file)</span>
         <div class="codetbar-btns">
           <button class="copybtn" onclick="copyBodyToClipboard()">📋 Copy Body</button>
-          <button class="copybtn" onclick="showToast('📄 Open your Drive file and paste this content, then save.')">ℹ️ Help</button>
+          <button class="copybtn" onclick="showDriveHelp()">ℹ️ Help</button>
         </div>
       </div>
       <textarea id="gcode" readonly placeholder="Body HTML will appear here after clicking 'Generate Body HTML'..."></textarea>
+      <div id="driveInfo" style="padding:8px 14px; background:var(--surface2); border-top:1px solid var(--border); font-size:12px; color:var(--muted); display:none;"></div>
     </div>
   </div>
 </div>
@@ -295,7 +284,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
   </div>
 </div>
 
-<!-- Variations Modal: triggered by clicking Add button -->
+<!-- Variations Modal -->
 <div class="overlay" id="mvar">
   <div class="mbox">
     <div class="mtitle">Item Variations</div>
@@ -317,6 +306,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 <div class="toast" id="toast"></div>
 
 <script>
+/* ========== CONFIGURATION: SET YOUR DRIVE TXT FILE URL HERE ========== */
+// Only you (the developer) can edit this line. Replace with your actual Google Drive .txt file URL.
+const DRIVE_TXT_URL = "https://drive.google.com/file/d/1Jw9clKSGvzslC0EnTFknSeXht9OugIfp/view?usp=drivesdk";
+// ======================================================================
+
 /* ── State ── */
 let itype = 'veg';
 let items = [];
@@ -401,8 +395,8 @@ function collect() {
   };
 }
 
-/* ── Clear form after Add to Menu ── */
-function clearForm(keepHeading = false) {
+/* ── Clear form after Add to Menu (and keep heading unchanged) ── */
+function clearForm(keepHeading = true) {
   if (!keepHeading) document.getElementById('heading').value = 'Pizza Combos';
   document.getElementById('iname').value = '';
   document.getElementById('idesc').value = '';
@@ -509,7 +503,7 @@ function submitItem() {
   if (!d.name) { showToast('⚠ Enter an item name'); return; }
   items.push({ ...d });
   renderList();
-  clearForm();  // <-- Clear ALL input fields after adding
+  clearForm();  // <-- Clears all input fields after adding
   showToast('✅ "' + d.name + '" added to menu');
 }
 
@@ -536,7 +530,14 @@ function generateBodyOnly() {
   document.getElementById('gcode').value = bodyHtml;
   renderPreview(items, heading);
   switchTab('code');
-  showToast('✅ Body HTML generated – copy it and paste into your Drive .txt file');
+  
+  // Show Drive info with the hardcoded URL
+  const driveInfoDiv = document.getElementById('driveInfo');
+  driveInfoDiv.style.display = 'block';
+  driveInfoDiv.innerHTML = `🔗 <strong>Your Drive TXT file URL:</strong> <a href="${DRIVE_TXT_URL}" target="_blank" style="color:var(--accent)">${DRIVE_TXT_URL}</a><br>
+  📝 <strong>Next step:</strong> Copy the body HTML above, open your Drive file, select all (Ctrl+A), paste (Ctrl+V), and save. No new file is created.`;
+  
+  showToast('✅ Body HTML generated – copy it and update your Drive file');
 }
 
 function buildBodySnippet(arr, heading) {
@@ -678,12 +679,13 @@ function copyBodyToClipboard() {
   const bodyHtml = document.getElementById('gcode').value;
   if (!bodyHtml) { showToast('⚠ Generate Body HTML first'); return; }
   navigator.clipboard.writeText(bodyHtml).then(() => {
-    showToast('✅ Body HTML copied! Now paste it into your Drive .txt file');
+    showToast('✅ Body HTML copied! Now paste it into your Drive file.');
   }).catch(() => showToast('❌ Copy failed, manually select and copy'));
 }
 
-/* ── Download removed (no new .txt file) ── */
-function downloadHtml() { showToast('Use "Copy Body" instead – no new file created'); }
+function showDriveHelp() {
+  showToast(`Your Drive TXT URL is set to: ${DRIVE_TXT_URL}. Replace YOUR_FILE_ID_HERE in the code.`);
+}
 
 /* ── Tab switcher ── */
 function switchTab(t) {
