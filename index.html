@@ -7,7 +7,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     /* ============================================================
-       RESET & ROOT (same as original – kept intact for brevity)
+       RESET & ROOT (same as original – kept intact)
        ============================================================ */
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
     :root {
@@ -189,7 +189,7 @@
       transition: color var(--transition);
     }
     .heading-drag-handle:hover { color: var(--accent2); }
-    .heading-item-name { font-weight: 600; font-size: 13.5px; truncate; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+    .heading-item-name { font-weight: 600; font-size: 13.5px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
     .heading-item-actions { display: flex; gap: 4px; flex-shrink: 0; opacity: 0; transition: opacity var(--transition); }
     .heading-item:hover .heading-item-actions { opacity: 1; }
     .heading-item.dragging { opacity: .4; border-style: dashed; }
@@ -590,7 +590,7 @@
 
 </div>
 
-<!-- MODALS: itemModal, headingModal, confirmModal, bulkMoveModal (same as original – included for completeness) -->
+<!-- MODALS: itemModal, headingModal, confirmModal, bulkMoveModal -->
 <div class="modal-overlay" id="itemModal" role="dialog" aria-modal="true" aria-labelledby="itemModalTitle">
   <div class="modal-box">
     <div class="modal-header">
@@ -614,7 +614,7 @@
       <div id="simplePriceSection" class="form-group"><label class="form-label" for="iPrice">Price (₹)</label><input type="number" class="form-input" id="iPrice" placeholder="e.g. 249" min="0"></div>
     </div>
     <div class="tab-pane" id="imageTab">
-      <div class="form-group"><label class="form-label">Upload Image</label><input type="file" class="form-file" id="iImageFile" accept="image/*"><input type="hidden" id="iImageUrl"><div id="iImagePreview"></div><p class="fs-sm text-dim mt-8">Supported: JPG, PNG, WEBP, GIF. Max 5 MB. Image will be uploaded to Drive.</p></div>
+      <div class="form-group"><label class="form-label">Upload Image</label><input type="file" class="form-file" id="iImageFile" accept="image/*"><input type="hidden" id="iImageUrl"><div id="iImagePreview"></div><p class="fs-sm text-dim mt-8">Supported: JPG, PNG, WEBP, GIF. Max 5 MB. Image will be stored (Base64 if upload fails).</p></div>
       <div class="form-group"><label class="form-label">Or paste an image URL</label><input type="url" class="form-input" id="iImageUrlInput" placeholder="https://…"><button class="btn btn-sm mt-8" id="iImageUrlApply">Apply URL</button></div>
     </div>
     <div class="tab-pane" id="variationsTab">
@@ -646,7 +646,9 @@
 
 <script>
 /* ============================================================
-   FULL CRUD ENGINE – with dynamic BASE_URL and fixed heading actions
+   FULL CRUD ENGINE – with dynamic BASE_URL
+   Saves only BODY content to Drive, preview works with full template.
+   Image upload fallback to Base64 ensures images are always saved.
 ============================================================ */
 const BASE_URL = "https://script.google.com/macros/s/AKfycby8qo4d7vCkTzQouZxuuZplEtFN-DPrZXmuuMV13OI1f4r2ba94Wq7QIDPYCXbAXZvd9Q/exec";
 
@@ -715,19 +717,33 @@ async function netFetch(url, options = {}, retries = CFG.MAX_RETRIES) {
   for (let attempt = 1; attempt <= retries; attempt++) { try { const res = await fetch(url, options); if (!res.ok) throw new Error(`HTTP ${res.status}`); return res; } catch (err) { if (attempt === retries) throw err; await sleep(CFG.RETRY_DELAY * attempt); } }
 }
 
+// Improved uploadImage with Base64 fallback (ensures images are always saved)
 async function uploadImage(file) {
   if (!file) return null;
   if (file.size > 5 * 1024 * 1024) throw new Error('File too large (max 5 MB)');
-  const form = new FormData();
-  form.append('action', 'uploadImage');
-  form.append('imageBlob', file);
-  form.append('fileName', file.name);
-  const res = await netFetch(CFG.WEB_APP_URL, { method: 'POST', body: form });
-  const text = await res.text();
-  let json;
-  try { json = JSON.parse(text); } catch (e) { throw new Error('Bad response from server'); }
-  if (!json.success) throw new Error(json.error || 'Upload failed');
-  return json.url;
+  
+  // First attempt: Drive upload via Apps Script
+  try {
+    const form = new FormData();
+    form.append('action', 'uploadImage');
+    form.append('imageBlob', file);
+    form.append('fileName', file.name);
+    const res = await netFetch(CFG.WEB_APP_URL, { method: 'POST', body: form });
+    const text = await res.text();
+    let json;
+    try { json = JSON.parse(text); } catch (e) { throw new Error('Bad response from server'); }
+    if (json.success && json.url) return json.url;
+    throw new Error(json.error || 'Upload failed');
+  } catch (uploadErr) {
+    console.warn('Drive upload failed, falling back to Base64:', uploadErr);
+    // Fallback: convert to data URL (guaranteed to be saved)
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = () => reject(new Error('Base64 conversion failed'));
+      reader.readAsDataURL(file);
+    });
+  }
 }
 
 async function loadFromDrive() {
@@ -738,6 +754,7 @@ async function loadFromDrive() {
   try {
     const res = await netFetch(`${CFG.WEB_APP_URL}?action=getData`);
     const html = await res.text();
+    // Parse the HTML (works with both full document or body fragment)
     const parsed = parseMenuHTML(html);
     if (Object.keys(parsed).length === 0) { toast('Drive file is empty — showing local data', 'warning'); }
     else { STATE.pushHistory(); STATE.menu = parsed; STATE.isDriveLoaded = true; saveLocal(); toast(`Loaded ${Object.keys(parsed).length} headings from Drive`, 'success'); }
@@ -776,22 +793,38 @@ function parseItemFromCard(el) {
 }
 function parseItemFromDataAttrs(el) { return { id: el.getAttribute('data-id') || uid(), name: el.getAttribute('data-name') || 'Unnamed', type: el.getAttribute('data-type') || 'veg', desc: el.getAttribute('data-desc') || '', time: el.getAttribute('data-time') || '', image: el.getAttribute('data-img') || '', price: el.getAttribute('data-price') || '', hasVar: el.getAttribute('data-hasvar') === 'true', vars: JSON.parse(el.getAttribute('data-vars') || '[]'), category: el.getAttribute('data-category') || '' }; }
 
+// Save only the BODY fragment (no <html>, <head>, etc.)
 async function saveToDrive() {
   if (STATE.isSyncing) { toast('Already syncing…', 'info'); return; }
   if (Object.keys(STATE.menu).length === 0) { toast('Nothing to save', 'warning'); return; }
   STATE.isSyncing = true; setSyncStatus('pending', 'Saving…');
   const btn = document.getElementById('saveDriveBtn'); const origLabel = btn.innerHTML; btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Saving…';
-  try { const fullHtml = buildMenuHTML(); await netFetch(CFG.WEB_APP_URL, { method: 'POST', body: fullHtml, headers: { 'Content-Type': 'text/plain' } }); markSynced(); saveLocal(); toast('Saved to Drive ✓', 'success'); }
-  catch (err) { setSyncStatus('error', 'Save failed'); toast('Save failed: ' + err.message, 'error', 7000); }
+  try {
+    const bodyHtml = buildMenuBodyHTML();  // only the body content
+    await netFetch(CFG.WEB_APP_URL, { method: 'POST', body: bodyHtml, headers: { 'Content-Type': 'text/plain' } });
+    markSynced(); saveLocal(); toast('Saved to Drive (body only) ✓', 'success');
+  } catch (err) { setSyncStatus('error', 'Save failed'); toast('Save failed: ' + err.message, 'error', 7000); }
   finally { STATE.isSyncing = false; btn.disabled = false; btn.innerHTML = origLabel; }
 }
 
-function buildMenuHTML() {
-  const STYLE = `:root{--bg:#0f1117;--surf:#1a1e2e;--surf2:#222638;--brd:#2e3350;--acc:#7c5cbf;--text:#e2e8f0;--mut:#8892a4}*{margin:0;padding:0;box-sizing:border-box}body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);padding:24px 16px;max-width:700px;margin:0 auto}h1{font-size:20px;font-weight:800;color:#fff;margin:32px 0 12px;letter-spacing:-.3px;display:flex;align-items:center;gap:8px}h1:first-child{margin-top:0}.mcard{background:var(--surf);border:1px solid var(--brd);border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:14px;margin-bottom:10px;transition:.15s}.mcard:hover{border-color:var(--acc);background:var(--surf2)}.mcard-img{width:72px;height:72px;border-radius:10px;background:var(--surf2);overflow:hidden;flex-shrink:0;border:1px solid var(--brd)}.mcard-img img{width:100%;height:100%;object-fit:cover;display:block}.mcard-body{flex:1;min-width:0}.mcard-name{font-size:14.5px;font-weight:700;display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap}.vdot{width:14px;height:14px;border-radius:3px;border:2px solid;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}.vdot span{width:6px;height:6px;border-radius:50%;display:block}.mcard-desc{font-size:12.5px;color:var(--mut);margin-bottom:6px;line-height:1.4}.mcard-price{font-size:14px;font-weight:700;color:#a29bfe}.vars-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.vchip{background:var(--surf2);border:1px solid var(--brd);border-radius:8px;padding:5px 10px;font-size:12px;display:flex;align-items:center;gap:6px}.vchip-price{color:#a29bfe;font-weight:600}.vchip-img{width:20px;height:20px;border-radius:4px;object-fit:cover}.addbtn{background:var(--acc);color:#fff;border:none;border-radius:10px;padding:9px 18px;cursor:pointer;font-weight:600;font-size:13px;flex-shrink:0;transition:.15s}.addbtn:hover{filter:brightness(1.15)}@media(max-width:480px){.mcard{flex-wrap:wrap}.mcard-img{width:56px;height:56px}.addbtn{width:100%;margin-top:8px;text-align:center}}`.trim();
+// Build only the inner body content (h1 + mcard divs) – what gets saved to Drive.
+function buildMenuBodyHTML() {
   let body = '';
-  for (const heading in STATE.menu) { const items = STATE.menu[heading] || []; body += `\n<h1>${escHtml(heading)}</h1>\n`; for (const item of items) body += buildItemCard(item); }
-  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Menu</title><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet"><style>${STYLE}</style></head><body>${body}</body></html>`;
+  for (const heading in STATE.menu) {
+    const items = STATE.menu[heading] || [];
+    body += `\n<h1>${escHtml(heading)}</h1>\n`;
+    for (const item of items) body += buildItemCard(item);
+  }
+  return body;
 }
+
+// Build full HTML document (used for preview)
+function buildFullPreviewHTML() {
+  const STYLE = `:root{--bg:#0f1117;--surf:#1a1e2e;--surf2:#222638;--brd:#2e3350;--acc:#7c5cbf;--text:#e2e8f0;--mut:#8892a4}*{margin:0;padding:0;box-sizing:border-box}body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);padding:24px 16px;max-width:700px;margin:0 auto}h1{font-size:20px;font-weight:800;color:#fff;margin:32px 0 12px;letter-spacing:-.3px;display:flex;align-items:center;gap:8px}h1:first-child{margin-top:0}.mcard{background:var(--surf);border:1px solid var(--brd);border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:14px;margin-bottom:10px;transition:.15s}.mcard:hover{border-color:var(--acc);background:var(--surf2)}.mcard-img{width:72px;height:72px;border-radius:10px;background:var(--surf2);overflow:hidden;flex-shrink:0;border:1px solid var(--brd)}.mcard-img img{width:100%;height:100%;object-fit:cover;display:block}.mcard-body{flex:1;min-width:0}.mcard-name{font-size:14.5px;font-weight:700;display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap}.vdot{width:14px;height:14px;border-radius:3px;border:2px solid;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}.vdot span{width:6px;height:6px;border-radius:50%;display:block}.mcard-desc{font-size:12.5px;color:var(--mut);margin-bottom:6px;line-height:1.4}.mcard-price{font-size:14px;font-weight:700;color:#a29bfe}.vars-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.vchip{background:var(--surf2);border:1px solid var(--brd);border-radius:8px;padding:5px 10px;font-size:12px;display:flex;align-items:center;gap:6px}.vchip-price{color:#a29bfe;font-weight:600}.vchip-img{width:20px;height:20px;border-radius:4px;object-fit:cover}.addbtn{background:var(--acc);color:#fff;border:none;border-radius:10px;padding:9px 18px;cursor:pointer;font-weight:600;font-size:13px;flex-shrink:0;transition:.15s}.addbtn:hover{filter:brightness(1.15)}@media(max-width:480px){.mcard{flex-wrap:wrap}.mcard-img{width:56px;height:56px}.addbtn{width:100%;margin-top:8px;text-align:center}}`.trim();
+  const body = buildMenuBodyHTML();
+  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Menu Preview</title><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet"><style>${STYLE}</style></head><body>${body}</body></html>`;
+}
+
 function buildItemCard(item) {
   const dotColor = item.type === 'veg' ? '#22c55e' : '#ef4444';
   const imgInner = item.image ? `<img src="${escAttr(item.image)}" alt="${escAttr(item.name)}" loading="lazy" onerror="this.parentElement.innerHTML='📷'">` : '📷';
@@ -799,7 +832,13 @@ function buildItemCard(item) {
   const timeHtml = item.time ? ` · ⏱ ${escHtml(item.time)}` : '';
   const catHtml = item.category ? `<span style="font-size:11px;opacity:.6;">[${escHtml(item.category)}]</span>` : '';
   let varsHtml = '';
-  if (item.hasVar && item.vars && item.vars.length) { const chips = item.vars.map(v => { const vImg = v.image ? `<img class="vchip-img" src="${escAttr(v.image)}" alt="${escAttr(v.name)}" onerror="this.style.display='none'">` : ''; return `<span class="vchip">${vImg}<span>${escHtml(v.name)}</span><span class="vchip-price">₹${escHtml(v.price)}</span></span>`; }).join(''); varsHtml = `<div class="vars-row">${chips}</div>`; }
+  if (item.hasVar && item.vars && item.vars.length) {
+    const chips = item.vars.map(v => {
+      const vImg = v.image ? `<img class="vchip-img" src="${escAttr(v.image)}" alt="${escAttr(v.name)}" onerror="this.style.display='none'">` : '';
+      return `<span class="vchip">${vImg}<span>${escHtml(v.name)}</span><span class="vchip-price">₹${escHtml(v.price)}</span></span>`;
+    }).join('');
+    varsHtml = `<div class="vars-row">${chips}</div>`;
+  }
   const dataVars = escAttr(JSON.stringify(item.vars || []));
   return `<div class="mcard" data-item="1" data-id="${escAttr(item.id||uid())}" data-name="${escAttr(item.name)}" data-type="${escAttr(item.type)}" data-desc="${escAttr(item.desc||'')}" data-time="${escAttr(item.time||'')}" data-price="${escAttr(item.price||'')}" data-img="${escAttr(item.image||'')}" data-hasvar="${item.hasVar?'true':'false'}" data-vars="${dataVars}" data-category="${escAttr(item.category||'')}"><div class="mcard-img">${imgInner}</div><div class="mcard-body"><div class="mcard-name"><span class="vdot" style="border-color:${dotColor}"><span style="background:${dotColor}"></span></span>${escHtml(item.name)} ${catHtml}</div><div class="mcard-desc">${escHtml(item.desc||'')}${timeHtml}</div>${priceHtml}${varsHtml}</div><button class="addbtn" onclick="this.textContent='✓ Added';setTimeout(()=>this.textContent='Add',1800)">Add</button></div>`;
 }
@@ -828,7 +867,7 @@ function renderItems() {
   items.forEach(item => { const realIdx = sourceItems.findIndex(s => s === item || (s.id && s.id === item.id)); const card = buildItemCardEl(item, realIdx); grid.appendChild(card); });
 }
 function buildItemCardEl(item, idx) {
-  const card = document.createElement('div'); card.className = 'item-card'; card.setAttribute('draggable', 'true'); card.dataset.idx = idx; const dotColor = item.type === 'veg' ? '#22c55e' : '#ef4444'; const typeLabel = item.type === 'veg' ? 'Veg' : 'Non-Veg'; const checked = STATE.selectedItems.has(item.id || idx) ? 'checked' : '';
+  const card = document.createElement('div'); card.className = 'item-card'; card.setAttribute('draggable', 'true'); card.dataset.idx = idx; const dotColor = item.type === 'veg' ? '#22c55e' : '#ef4444'; const checked = STATE.selectedItems.has(item.id || idx) ? 'checked' : '';
   const imgHtml = item.image ? `<div class="item-card-img"><img src="${escAttr(item.image)}" alt="${escAttr(item.name)}" onerror="this.parentElement.innerHTML='<div style=height:100%;display:flex;align-items:center;justify-content:center;font-size:24px;>📷</div>'"></div>` : `<div class="item-card-img-placeholder">🍽️</div>`;
   const priceInfo = item.hasVar ? `<span class="text-muted fs-sm">${(item.vars||[]).length} variation(s)</span>` : (item.price ? `<span class="item-card-price">₹${escHtml(item.price)}</span>` : '<span class="text-dim fs-sm">No price</span>');
   let varsHtml = ''; if (item.hasVar && item.vars && item.vars.length) { const chips = item.vars.slice(0,5).map(v => { const vImg = v.image ? `<img class="variation-chip-img" src="${escAttr(v.image)}" onerror="this.style.display='none'">` : ''; return `<span class="variation-chip">${vImg}<span>${escHtml(v.name)}</span><span class="variation-chip-price">₹${escHtml(v.price)}</span></span>`; }).join(''); const more = item.vars.length > 5 ? `<span class="variation-chip text-dim">+${item.vars.length - 5} more</span>` : ''; varsHtml = `<div class="variations-section"><div class="variations-title">Variations</div><div class="variations-list">${chips}${more}</div></div>`; }
@@ -859,6 +898,7 @@ function addVariationRow(name = '', price = '', img = '') { const id = `var_${_v
 document.getElementById('iImageFile').addEventListener('change', async e => { const file = e.target.files[0]; if (!file) return; const preview = document.getElementById('iImagePreview'); preview.innerHTML = '<span class="text-dim fs-sm"><span class="spinner spinner-accent" style="width:14px;height:14px;"></span> Uploading…</span>'; try { const url = await uploadImage(file); document.getElementById('iImageUrl').value = url; document.getElementById('iImageUrlInput').value = url; preview.innerHTML = `<img class="img-preview-thumb" src="${escAttr(url)}">`; toast('Image uploaded ✓', 'success'); } catch (err) { preview.innerHTML = `<span class="text-danger fs-sm">Upload failed: ${escHtml(err.message)}</span>`; toast('Image upload failed', 'error'); } });
 document.getElementById('iImageUrlApply').addEventListener('click', () => { const url = document.getElementById('iImageUrlInput').value.trim(); if (!url) return; document.getElementById('iImageUrl').value = url; document.getElementById('iImagePreview').innerHTML = `<img class="img-preview-thumb" src="${escAttr(url)}" onerror="this.src='';this.alt='Invalid URL'">`; toast('Image URL applied', 'info'); });
 
+// Drag & drop handlers (same as before, kept for brevity)
 let _dragHeading = null;
 function handleHeadingDragStart(e) { _dragHeading = this.dataset.heading; this.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', _dragHeading); }
 function handleHeadingDragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; const target = this.dataset.heading; if (target !== _dragHeading) { document.querySelectorAll('.heading-item').forEach(el => el.classList.remove('drag-over')); this.classList.add('drag-over'); } }
@@ -896,8 +936,21 @@ document.getElementById('bulkMoveClose').addEventListener('click', () => closeMo
 document.getElementById('bulkMoveCancelBtn').addEventListener('click', () => closeModal('bulkMoveModal'));
 document.getElementById('bulkMoveConfirmBtn').addEventListener('click', () => { const dest = document.getElementById('bulkMoveTarget').value; if (!dest || !STATE.menu[dest]) return; STATE.pushHistory(); const toMove = (STATE.menu[STATE.currentHeading] || []).filter(item => STATE.selectedItems.has(item.id || item.name)); STATE.menu[STATE.currentHeading] = (STATE.menu[STATE.currentHeading] || []).filter(item => !STATE.selectedItems.has(item.id || item.name)); STATE.menu[dest].push(...toMove); STATE.selectedItems.clear(); STATE.bulkMode = false; closeModal('bulkMoveModal'); renderAll(); markPending(); toast(`Moved ${toMove.length} item(s) to "${dest}"`, 'success'); });
 
-function previewLocal() { const html = buildMenuHTML(); document.getElementById('previewIframe').srcdoc = html; toast('Preview updated', 'info'); }
-async function refreshPreview() { try { const res = await netFetch(`${CFG.WEB_APP_URL}?action=getData`); const html = await res.text(); document.getElementById('previewIframe').srcdoc = html; toast('Preview refreshed from Drive', 'info'); } catch (err) { toast('Preview error: ' + err.message, 'error'); } }
+// Preview functions – uses full HTML wrapper
+function previewLocal() { const fullHtml = buildFullPreviewHTML(); document.getElementById('previewIframe').srcdoc = fullHtml; toast('Preview updated', 'info'); }
+async function refreshPreview() {
+  try {
+    const res = await netFetch(`${CFG.WEB_APP_URL}?action=getData`);
+    const bodyHtml = await res.text();
+    // Wrap the fetched body content into a full document for preview
+    const STYLE = `:root{--bg:#0f1117;--surf:#1a1e2e;--surf2:#222638;--brd:#2e3350;--acc:#7c5cbf;--text:#e2e8f0;--mut:#8892a4}*{margin:0;padding:0;box-sizing:border-box}body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);padding:24px 16px;max-width:700px;margin:0 auto}h1{font-size:20px;font-weight:800;color:#fff;margin:32px 0 12px;letter-spacing:-.3px;display:flex;align-items:center;gap:8px}h1:first-child{margin-top:0}.mcard{background:var(--surf);border:1px solid var(--brd);border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:14px;margin-bottom:10px;transition:.15s}.mcard:hover{border-color:var(--acc);background:var(--surf2)}.mcard-img{width:72px;height:72px;border-radius:10px;background:var(--surf2);overflow:hidden;flex-shrink:0;border:1px solid var(--brd)}.mcard-img img{width:100%;height:100%;object-fit:cover;display:block}.mcard-body{flex:1;min-width:0}.mcard-name{font-size:14.5px;font-weight:700;display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap}.vdot{width:14px;height:14px;border-radius:3px;border:2px solid;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}.vdot span{width:6px;height:6px;border-radius:50%;display:block}.mcard-desc{font-size:12.5px;color:var(--mut);margin-bottom:6px;line-height:1.4}.mcard-price{font-size:14px;font-weight:700;color:#a29bfe}.vars-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.vchip{background:var(--surf2);border:1px solid var(--brd);border-radius:8px;padding:5px 10px;font-size:12px;display:flex;align-items:center;gap:6px}.vchip-price{color:#a29bfe;font-weight:600}.vchip-img{width:20px;height:20px;border-radius:4px;object-fit:cover}.addbtn{background:var(--acc);color:#fff;border:none;border-radius:10px;padding:9px 18px;cursor:pointer;font-weight:600;font-size:13px;flex-shrink:0;transition:.15s}.addbtn:hover{filter:brightness(1.15)}@media(max-width:480px){.mcard{flex-wrap:wrap}.mcard-img{width:56px;height:56px}.addbtn{width:100%;margin-top:8px;text-align:center}}`.trim();
+    const fullHtml = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Menu Preview</title><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet"><style>${STYLE}</style></head><body>${bodyHtml}</body></html>`;
+    document.getElementById('previewIframe').srcdoc = fullHtml;
+    toast('Preview refreshed from Drive', 'info');
+  } catch (err) {
+    toast('Preview error: ' + err.message, 'error');
+  }
+}
 document.getElementById('previewLocalBtn').addEventListener('click', previewLocal);
 document.getElementById('refreshPreviewBtn').addEventListener('click', refreshPreview);
 
@@ -925,10 +978,21 @@ document.addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && e.ke
 window.addEventListener('beforeunload', e => { if (STATE.pendingChanges) { e.preventDefault(); e.returnValue = 'You have unsaved changes. Save to Drive before leaving.'; } });
 setInterval(() => { if (STATE.pendingChanges) saveLocal(); }, 10000);
 
-// Attach persistent heading action listener (fixed)
 document.getElementById('headingsList').addEventListener('click', headingActionHandler);
 
-(function init() { const gotLocal = loadLocal(); if (gotLocal && Object.keys(STATE.menu).length > 0) { renderAll(); const keys = Object.keys(STATE.menu); if (keys.length) selectHeading(keys[0]); setSyncStatus('pending', 'Local data loaded — sync to Drive'); toast('Restored from local backup', 'info'); } else { loadFromDrive(); } updateUndoRedoBtns(); })();
+(function init() {
+  const gotLocal = loadLocal();
+  if (gotLocal && Object.keys(STATE.menu).length > 0) {
+    renderAll();
+    const keys = Object.keys(STATE.menu);
+    if (keys.length) selectHeading(keys[0]);
+    setSyncStatus('pending', 'Local data loaded — sync to Drive');
+    toast('Restored from local backup', 'info');
+  } else {
+    loadFromDrive();
+  }
+  updateUndoRedoBtns();
+})();
 </script>
 </body>
 </html>
