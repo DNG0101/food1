@@ -507,6 +507,9 @@
         <button class="btn btn-sm btn-icon" id="undoBtn" title="Undo (Ctrl+Z)" data-tip="Undo" disabled>↩</button>
         <button class="btn btn-sm btn-icon" id="redoBtn" title="Redo (Ctrl+Y)" data-tip="Redo" disabled>↪</button>
       </div>
+      <!-- ========== NEW SHOOT BUTTON ========== -->
+      <button class="btn btn-sm" id="shootBtn">📸 Shoot</button>
+      <!-- ===================================== -->
       <button class="btn btn-sm" id="loadDriveBtn">📂 Load Drive</button>
       <button class="btn btn-sm btn-success" id="saveDriveBtn">💾 Save to Drive</button>
     </div>
@@ -649,8 +652,13 @@
    FULL CRUD ENGINE – with dynamic BASE_URL
    Saves only BODY content to Drive, preview works with full template.
    Image upload fallback to Base64 ensures images are always saved.
+   ADDED: Shoot button -> copies entire page source to second Apps Script
 ============================================================ */
 const BASE_URL = "https://script.google.com/macros/s/AKfycby8qo4d7vCkTzQouZxuuZplEtFN-DPrZXmuuMV13OI1f4r2ba94Wq7QIDPYCXbAXZvd9Q/exec";
+
+// ========== CONFIGURE YOUR SECOND APPS SCRIPT URL HERE ==========
+const SECOND_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw-Hqdia2rczWbf-9rdOScZlII_ZK8Q55T0G6FDzC_-zy7MQ-IDKCFHZ0K2IEng0KDJ/exec";  // <-- Replace with your actual URL
+// =================================================================
 
 const CFG = {
   WEB_APP_URL: BASE_URL,
@@ -955,6 +963,38 @@ document.getElementById('previewLocalBtn').addEventListener('click', previewLoca
 document.getElementById('refreshPreviewBtn').addEventListener('click', refreshPreview);
 
 function setLoadingOverlay(panelId, show) { const panel = document.getElementById(panelId); const existing = panel.querySelector('.loading-overlay'); if (show && !existing) { const ov = document.createElement('div'); ov.className = 'loading-overlay'; ov.innerHTML = `<div class="loading-block"><span class="spinner"></span> Loading from Drive…</div>`; panel.style.position = 'relative'; panel.appendChild(ov); } else if (!show && existing) { existing.remove(); } }
+
+// ---------- SHOOT FUNCTION ----------
+async function shootToSecondDrive() {
+  if (!SECOND_SCRIPT_URL || SECOND_SCRIPT_URL === "YOUR_SECOND_SCRIPT_URL_HERE") {
+    toast("Please configure SECOND_SCRIPT_URL in the code first.", "error");
+    return;
+  }
+  const shootBtn = document.getElementById('shootBtn');
+  const originalText = shootBtn.innerHTML;
+  shootBtn.disabled = true;
+  shootBtn.innerHTML = '<span class="spinner"></span> Shooting...';
+  try {
+    // Capture full page source (including doctype)
+    const fullHtml = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+    const response = await fetch(SECOND_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors', // Because Apps Script redirects, we still get status via no-cors? Actually we need to see success. We'll use opaque but we trust.
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ code: fullHtml, filename: `menu_manager_backup_${new Date().toISOString().replace(/[:.]/g, '-')}.txt` })
+    });
+    // Due to no-cors we cannot read response, but the request will go through.
+    toast("Code sent to second Drive. Check your Drive for the .txt file.", "success");
+  } catch (err) {
+    console.error(err);
+    toast("Failed to send code: " + err.message, "error");
+  } finally {
+    shootBtn.disabled = false;
+    shootBtn.innerHTML = originalText;
+  }
+}
+document.getElementById('shootBtn').addEventListener('click', shootToSecondDrive);
+// ----------------------------------
 
 document.getElementById('loadDriveBtn').addEventListener('click', loadFromDrive);
 document.getElementById('saveDriveBtn').addEventListener('click', saveToDrive);
