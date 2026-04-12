@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Menu Manager Pro — Full CRUD</title>
+  <title>Menu Manager Pro — Full CRUD + Shoot Button</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     /* ============================================================
@@ -507,11 +507,10 @@
         <button class="btn btn-sm btn-icon" id="undoBtn" title="Undo (Ctrl+Z)" data-tip="Undo" disabled>↩</button>
         <button class="btn btn-sm btn-icon" id="redoBtn" title="Redo (Ctrl+Y)" data-tip="Redo" disabled>↪</button>
       </div>
-      <!-- ========== NEW SHOOT BUTTON ========== -->
-      <button class="btn btn-sm" id="shootBtn">📸 Shoot</button>
-      <!-- ===================================== -->
       <button class="btn btn-sm" id="loadDriveBtn">📂 Load Drive</button>
       <button class="btn btn-sm btn-success" id="saveDriveBtn">💾 Save to Drive</button>
+      <!-- NEW SHOOT BUTTON -->
+      <button class="btn btn-sm" id="shootBtn">🔫 Shoot</button>
     </div>
   </div>
 
@@ -652,13 +651,12 @@
    FULL CRUD ENGINE – with dynamic BASE_URL
    Saves only BODY content to Drive, preview works with full template.
    Image upload fallback to Base64 ensures images are always saved.
-   ADDED: Shoot button -> copies entire page source to second Apps Script
+   NEW: "Shoot" button copies the same body HTML to a second Apps Script.
 ============================================================ */
 const BASE_URL = "https://script.google.com/macros/s/AKfycby8qo4d7vCkTzQouZxuuZplEtFN-DPrZXmuuMV13OI1f4r2ba94Wq7QIDPYCXbAXZvd9Q/exec";
 
-// ========== CONFIGURE YOUR SECOND APPS SCRIPT URL HERE ==========
-const SECOND_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw-Hqdia2rczWbf-9rdOScZlII_ZK8Q55T0G6FDzC_-zy7MQ-IDKCFHZ0K2IEng0KDJ/exec";  // <-- Replace with your actual URL
-// =================================================================
+// === REPLACE WITH YOUR SECOND APPS SCRIPT WEB APP URL ===
+const SECOND_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw-Hqdia2rczWbf-9rdOScZlII_ZK8Q55T0G6FDzC_-zy7MQ-IDKCFHZ0K2IEng0KDJ/exec";
 
 const CFG = {
   WEB_APP_URL: BASE_URL,
@@ -851,6 +849,44 @@ function buildItemCard(item) {
   return `<div class="mcard" data-item="1" data-id="${escAttr(item.id||uid())}" data-name="${escAttr(item.name)}" data-type="${escAttr(item.type)}" data-desc="${escAttr(item.desc||'')}" data-time="${escAttr(item.time||'')}" data-price="${escAttr(item.price||'')}" data-img="${escAttr(item.image||'')}" data-hasvar="${item.hasVar?'true':'false'}" data-vars="${dataVars}" data-category="${escAttr(item.category||'')}"><div class="mcard-img">${imgInner}</div><div class="mcard-body"><div class="mcard-name"><span class="vdot" style="border-color:${dotColor}"><span style="background:${dotColor}"></span></span>${escHtml(item.name)} ${catHtml}</div><div class="mcard-desc">${escHtml(item.desc||'')}${timeHtml}</div>${priceHtml}${varsHtml}</div><button class="addbtn" onclick="this.textContent='✓ Added';setTimeout(()=>this.textContent='Add',1800)">Add</button></div>`;
 }
 
+// ========== NEW FUNCTION: Shoot to second txt file ==========
+async function shootToSecondDrive() {
+  if (!SECOND_SCRIPT_URL || SECOND_SCRIPT_URL === "https://script.google.com/macros/s/YOUR_SECOND_SCRIPT_ID/exec") {
+    toast('Second Apps Script URL is not configured. Please set SECOND_SCRIPT_URL in the code.', 'error', 6000);
+    return;
+  }
+  if (Object.keys(STATE.menu).length === 0) {
+    toast('No menu data to copy', 'warning');
+    return;
+  }
+  const btn = document.getElementById('shootBtn');
+  const originalText = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Shooting...';
+  try {
+    const bodyHtml = buildMenuBodyHTML();  // same content that is saved to primary Drive
+    const response = await netFetch(SECOND_SCRIPT_URL, {
+      method: 'POST',
+      body: bodyHtml,
+      headers: { 'Content-Type': 'text/plain' }
+    });
+    const resultText = await response.text();
+    let json;
+    try { json = JSON.parse(resultText); } catch(e) { json = { success: false, error: 'Invalid response from second script' }; }
+    if (json.success) {
+      toast('Menu successfully copied to second txt file!', 'success');
+    } else {
+      throw new Error(json.error || 'Unknown error');
+    }
+  } catch (err) {
+    toast('Shoot failed: ' + err.message, 'error', 6000);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = originalText;
+  }
+}
+// =============================================================
+
 function renderAll() { renderHeadings(); renderItems(); updateStats(); }
 
 function renderHeadings() {
@@ -964,38 +1000,6 @@ document.getElementById('refreshPreviewBtn').addEventListener('click', refreshPr
 
 function setLoadingOverlay(panelId, show) { const panel = document.getElementById(panelId); const existing = panel.querySelector('.loading-overlay'); if (show && !existing) { const ov = document.createElement('div'); ov.className = 'loading-overlay'; ov.innerHTML = `<div class="loading-block"><span class="spinner"></span> Loading from Drive…</div>`; panel.style.position = 'relative'; panel.appendChild(ov); } else if (!show && existing) { existing.remove(); } }
 
-// ---------- SHOOT FUNCTION ----------
-async function shootToSecondDrive() {
-  if (!SECOND_SCRIPT_URL || SECOND_SCRIPT_URL === "YOUR_SECOND_SCRIPT_URL_HERE") {
-    toast("Please configure SECOND_SCRIPT_URL in the code first.", "error");
-    return;
-  }
-  const shootBtn = document.getElementById('shootBtn');
-  const originalText = shootBtn.innerHTML;
-  shootBtn.disabled = true;
-  shootBtn.innerHTML = '<span class="spinner"></span> Shooting...';
-  try {
-    // Capture full page source (including doctype)
-    const fullHtml = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
-    const response = await fetch(SECOND_SCRIPT_URL, {
-      method: 'POST',
-      mode: 'no-cors', // Because Apps Script redirects, we still get status via no-cors? Actually we need to see success. We'll use opaque but we trust.
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({ code: fullHtml, filename: `menu_manager_backup_${new Date().toISOString().replace(/[:.]/g, '-')}.txt` })
-    });
-    // Due to no-cors we cannot read response, but the request will go through.
-    toast("Code sent to second Drive. Check your Drive for the .txt file.", "success");
-  } catch (err) {
-    console.error(err);
-    toast("Failed to send code: " + err.message, "error");
-  } finally {
-    shootBtn.disabled = false;
-    shootBtn.innerHTML = originalText;
-  }
-}
-document.getElementById('shootBtn').addEventListener('click', shootToSecondDrive);
-// ----------------------------------
-
 document.getElementById('loadDriveBtn').addEventListener('click', loadFromDrive);
 document.getElementById('saveDriveBtn').addEventListener('click', saveToDrive);
 document.getElementById('refreshBtn').addEventListener('click', loadFromDrive);
@@ -1013,6 +1017,9 @@ document.getElementById('saveItemBtn').addEventListener('click', saveItem);
 document.getElementById('iHasVar').addEventListener('change', togglePricingUI);
 document.getElementById('addVariationBtn').addEventListener('click', () => addVariationRow());
 document.getElementById('iName').addEventListener('keydown', e => { if (e.key === 'Enter') saveItem(); });
+
+// NEW SHOOT BUTTON EVENT
+document.getElementById('shootBtn').addEventListener('click', shootToSecondDrive);
 
 document.addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) { e.preventDefault(); STATE.undo(); } if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) { e.preventDefault(); STATE.redo(); } if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); saveToDrive(); } if (e.key === 'Escape') { ['itemModal','headingModal','confirmModal','bulkMoveModal'].forEach(id => closeModal(id)); } if (e.key === 'n' && !e.ctrlKey && !e.metaKey) { const anyOpen = document.querySelector('.modal-overlay.active'); if (!anyOpen && STATE.currentHeading && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') { e.preventDefault(); openItemModal(null); } } });
 window.addEventListener('beforeunload', e => { if (STATE.pendingChanges) { e.preventDefault(); e.returnValue = 'You have unsaved changes. Save to Drive before leaving.'; } });
