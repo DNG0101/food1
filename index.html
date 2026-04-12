@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Menu Manager Pro — Full CRUD + Shoot</title>
+  <title>Menu Manager Pro — Full CRUD</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     /* ============================================================
@@ -114,8 +114,6 @@
     .btn-danger:hover { background: rgba(225,112,85,.25); border-color: var(--danger); }
     .btn-success { background: rgba(0,184,148,.15); color: var(--success); border-color: rgba(0,184,148,.3); }
     .btn-success:hover { background: rgba(0,184,148,.25); border-color: var(--success); }
-    .btn-shoot { background: rgba(108,92,231,.2); color: var(--accent2); border-color: var(--accent); }
-    .btn-shoot:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
     .btn-sm { padding: 5px 10px; font-size: 12px; }
     .btn-xs { padding: 3px 8px; font-size: 11px; border-radius: 6px; }
     .btn-icon { padding: 7px; border-radius: var(--radius-sm); font-size: 14px; }
@@ -512,7 +510,7 @@
       <button class="btn btn-sm" id="loadDriveBtn">📂 Load Drive</button>
       <button class="btn btn-sm btn-success" id="saveDriveBtn">💾 Save to Drive</button>
       <!-- NEW SHOOT BUTTON -->
-      <button class="btn btn-sm btn-shoot" id="shootBtn">🔫 Shoot to Second File</button>
+      <button class="btn btn-sm btn-primary" id="shootBtn">🔫 Shoot</button>
     </div>
   </div>
 
@@ -653,21 +651,14 @@
    FULL CRUD ENGINE – with dynamic BASE_URL
    Saves only BODY content to Drive, preview works with full template.
    Image upload fallback to Base64 ensures images are always saved.
-   
-   NEW: SHOOT BUTTON copies current menu content to second Drive txt file
-   You must set SHOOT_SCRIPT_URL to your deployed Apps Script URL for the second file.
 ============================================================ */
 const BASE_URL = "https://script.google.com/macros/s/AKfycby8qo4d7vCkTzQouZxuuZplEtFN-DPrZXmuuMV13OI1f4r2ba94Wq7QIDPYCXbAXZvd9Q/exec";
 
-// *************************************************************
-// IMPORTANT: Replace this URL with your second Google Apps Script URL
-// (the script that writes to your second txt file)
-// *************************************************************
-const SHOOT_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw-Hqdia2rczWbf-9rdOScZlII_ZK8Q55T0G6FDzC_-zy7MQ-IDKCFHZ0K2IEng0KDJ/exec";  // <-- CHANGE THIS
+// 👇 SET THIS TO YOUR SECOND APP SCRIPT URL (deployed as a web app)
+const SECOND_DRIVE_APP_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw-Hqdia2rczWbf-9rdOScZlII_ZK8Q55T0G6FDzC_-zy7MQ-IDKCFHZ0K2IEng0KDJ/exec";
 
 const CFG = {
   WEB_APP_URL: BASE_URL,
-  SHOOT_URL: SHOOT_SCRIPT_URL,
   LOCAL_KEY:    'menuManagerData_v3',
   HISTORY_LIMIT: 50,
   AUTO_SAVE_DELAY: 2000,
@@ -731,9 +722,12 @@ async function netFetch(url, options = {}, retries = CFG.MAX_RETRIES) {
   for (let attempt = 1; attempt <= retries; attempt++) { try { const res = await fetch(url, options); if (!res.ok) throw new Error(`HTTP ${res.status}`); return res; } catch (err) { if (attempt === retries) throw err; await sleep(CFG.RETRY_DELAY * attempt); } }
 }
 
+// Improved uploadImage with Base64 fallback (ensures images are always saved)
 async function uploadImage(file) {
   if (!file) return null;
   if (file.size > 5 * 1024 * 1024) throw new Error('File too large (max 5 MB)');
+  
+  // First attempt: Drive upload via Apps Script
   try {
     const form = new FormData();
     form.append('action', 'uploadImage');
@@ -747,6 +741,7 @@ async function uploadImage(file) {
     throw new Error(json.error || 'Upload failed');
   } catch (uploadErr) {
     console.warn('Drive upload failed, falling back to Base64:', uploadErr);
+    // Fallback: convert to data URL (guaranteed to be saved)
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => resolve(reader.result);
@@ -764,6 +759,7 @@ async function loadFromDrive() {
   try {
     const res = await netFetch(`${CFG.WEB_APP_URL}?action=getData`);
     const html = await res.text();
+    // Parse the HTML (works with both full document or body fragment)
     const parsed = parseMenuHTML(html);
     if (Object.keys(parsed).length === 0) { toast('Drive file is empty — showing local data', 'warning'); }
     else { STATE.pushHistory(); STATE.menu = parsed; STATE.isDriveLoaded = true; saveLocal(); toast(`Loaded ${Object.keys(parsed).length} headings from Drive`, 'success'); }
@@ -802,52 +798,21 @@ function parseItemFromCard(el) {
 }
 function parseItemFromDataAttrs(el) { return { id: el.getAttribute('data-id') || uid(), name: el.getAttribute('data-name') || 'Unnamed', type: el.getAttribute('data-type') || 'veg', desc: el.getAttribute('data-desc') || '', time: el.getAttribute('data-time') || '', image: el.getAttribute('data-img') || '', price: el.getAttribute('data-price') || '', hasVar: el.getAttribute('data-hasvar') === 'true', vars: JSON.parse(el.getAttribute('data-vars') || '[]'), category: el.getAttribute('data-category') || '' }; }
 
+// Save only the BODY fragment (no <html>, <head>, etc.)
 async function saveToDrive() {
   if (STATE.isSyncing) { toast('Already syncing…', 'info'); return; }
   if (Object.keys(STATE.menu).length === 0) { toast('Nothing to save', 'warning'); return; }
   STATE.isSyncing = true; setSyncStatus('pending', 'Saving…');
   const btn = document.getElementById('saveDriveBtn'); const origLabel = btn.innerHTML; btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Saving…';
   try {
-    const bodyHtml = buildMenuBodyHTML();
+    const bodyHtml = buildMenuBodyHTML();  // only the body content
     await netFetch(CFG.WEB_APP_URL, { method: 'POST', body: bodyHtml, headers: { 'Content-Type': 'text/plain' } });
     markSynced(); saveLocal(); toast('Saved to Drive (body only) ✓', 'success');
   } catch (err) { setSyncStatus('error', 'Save failed'); toast('Save failed: ' + err.message, 'error', 7000); }
   finally { STATE.isSyncing = false; btn.disabled = false; btn.innerHTML = origLabel; }
 }
 
-// SHOOT FUNCTION: copies current menu content (same as saved to first txt) to second txt file
-async function shootToSecondFile() {
-  if (!CFG.SHOOT_URL || CFG.SHOOT_URL.includes('YOUR_SECOND_SCRIPT_ID')) {
-    toast('Please set the SHOOT_SCRIPT_URL variable to your second Apps Script URL', 'error', 6000);
-    return;
-  }
-  if (Object.keys(STATE.menu).length === 0) {
-    toast('No menu data to shoot!', 'warning');
-    return;
-  }
-  const btn = document.getElementById('shootBtn');
-  const origHtml = btn.innerHTML;
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span> Shooting…';
-  try {
-    const bodyContent = buildMenuBodyHTML(); // exact same format as saved to Drive
-    const response = await fetch(CFG.SHOOT_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain' },
-      body: bodyContent
-    });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const resultText = await response.text();
-    toast('Menu successfully copied to second txt file!', 'success');
-  } catch (err) {
-    console.error(err);
-    toast('Shoot failed: ' + err.message, 'error', 6000);
-  } finally {
-    btn.disabled = false;
-    btn.innerHTML = origHtml;
-  }
-}
-
+// Build only the inner body content (h1 + mcard divs) – what gets saved to Drive.
 function buildMenuBodyHTML() {
   let body = '';
   for (const heading in STATE.menu) {
@@ -858,6 +823,7 @@ function buildMenuBodyHTML() {
   return body;
 }
 
+// Build full HTML document (used for preview)
 function buildFullPreviewHTML() {
   const STYLE = `:root{--bg:#0f1117;--surf:#1a1e2e;--surf2:#222638;--brd:#2e3350;--acc:#7c5cbf;--text:#e2e8f0;--mut:#8892a4}*{margin:0;padding:0;box-sizing:border-box}body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);padding:24px 16px;max-width:700px;margin:0 auto}h1{font-size:20px;font-weight:800;color:#fff;margin:32px 0 12px;letter-spacing:-.3px;display:flex;align-items:center;gap:8px}h1:first-child{margin-top:0}.mcard{background:var(--surf);border:1px solid var(--brd);border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:14px;margin-bottom:10px;transition:.15s}.mcard:hover{border-color:var(--acc);background:var(--surf2)}.mcard-img{width:72px;height:72px;border-radius:10px;background:var(--surf2);overflow:hidden;flex-shrink:0;border:1px solid var(--brd)}.mcard-img img{width:100%;height:100%;object-fit:cover;display:block}.mcard-body{flex:1;min-width:0}.mcard-name{font-size:14.5px;font-weight:700;display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap}.vdot{width:14px;height:14px;border-radius:3px;border:2px solid;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}.vdot span{width:6px;height:6px;border-radius:50%;display:block}.mcard-desc{font-size:12.5px;color:var(--mut);margin-bottom:6px;line-height:1.4}.mcard-price{font-size:14px;font-weight:700;color:#a29bfe}.vars-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.vchip{background:var(--surf2);border:1px solid var(--brd);border-radius:8px;padding:5px 10px;font-size:12px;display:flex;align-items:center;gap:6px}.vchip-price{color:#a29bfe;font-weight:600}.vchip-img{width:20px;height:20px;border-radius:4px;object-fit:cover}.addbtn{background:var(--acc);color:#fff;border:none;border-radius:10px;padding:9px 18px;cursor:pointer;font-weight:600;font-size:13px;flex-shrink:0;transition:.15s}.addbtn:hover{filter:brightness(1.15)}@media(max-width:480px){.mcard{flex-wrap:wrap}.mcard-img{width:56px;height:56px}.addbtn{width:100%;margin-top:8px;text-align:center}}`.trim();
   const body = buildMenuBodyHTML();
@@ -937,6 +903,7 @@ function addVariationRow(name = '', price = '', img = '') { const id = `var_${_v
 document.getElementById('iImageFile').addEventListener('change', async e => { const file = e.target.files[0]; if (!file) return; const preview = document.getElementById('iImagePreview'); preview.innerHTML = '<span class="text-dim fs-sm"><span class="spinner spinner-accent" style="width:14px;height:14px;"></span> Uploading…</span>'; try { const url = await uploadImage(file); document.getElementById('iImageUrl').value = url; document.getElementById('iImageUrlInput').value = url; preview.innerHTML = `<img class="img-preview-thumb" src="${escAttr(url)}">`; toast('Image uploaded ✓', 'success'); } catch (err) { preview.innerHTML = `<span class="text-danger fs-sm">Upload failed: ${escHtml(err.message)}</span>`; toast('Image upload failed', 'error'); } });
 document.getElementById('iImageUrlApply').addEventListener('click', () => { const url = document.getElementById('iImageUrlInput').value.trim(); if (!url) return; document.getElementById('iImageUrl').value = url; document.getElementById('iImagePreview').innerHTML = `<img class="img-preview-thumb" src="${escAttr(url)}" onerror="this.src='';this.alt='Invalid URL'">`; toast('Image URL applied', 'info'); });
 
+// Drag & drop handlers (same as before, kept for brevity)
 let _dragHeading = null;
 function handleHeadingDragStart(e) { _dragHeading = this.dataset.heading; this.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', _dragHeading); }
 function handleHeadingDragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; const target = this.dataset.heading; if (target !== _dragHeading) { document.querySelectorAll('.heading-item').forEach(el => el.classList.remove('drag-over')); this.classList.add('drag-over'); } }
@@ -974,11 +941,13 @@ document.getElementById('bulkMoveClose').addEventListener('click', () => closeMo
 document.getElementById('bulkMoveCancelBtn').addEventListener('click', () => closeModal('bulkMoveModal'));
 document.getElementById('bulkMoveConfirmBtn').addEventListener('click', () => { const dest = document.getElementById('bulkMoveTarget').value; if (!dest || !STATE.menu[dest]) return; STATE.pushHistory(); const toMove = (STATE.menu[STATE.currentHeading] || []).filter(item => STATE.selectedItems.has(item.id || item.name)); STATE.menu[STATE.currentHeading] = (STATE.menu[STATE.currentHeading] || []).filter(item => !STATE.selectedItems.has(item.id || item.name)); STATE.menu[dest].push(...toMove); STATE.selectedItems.clear(); STATE.bulkMode = false; closeModal('bulkMoveModal'); renderAll(); markPending(); toast(`Moved ${toMove.length} item(s) to "${dest}"`, 'success'); });
 
+// Preview functions – uses full HTML wrapper
 function previewLocal() { const fullHtml = buildFullPreviewHTML(); document.getElementById('previewIframe').srcdoc = fullHtml; toast('Preview updated', 'info'); }
 async function refreshPreview() {
   try {
     const res = await netFetch(`${CFG.WEB_APP_URL}?action=getData`);
     const bodyHtml = await res.text();
+    // Wrap the fetched body content into a full document for preview
     const STYLE = `:root{--bg:#0f1117;--surf:#1a1e2e;--surf2:#222638;--brd:#2e3350;--acc:#7c5cbf;--text:#e2e8f0;--mut:#8892a4}*{margin:0;padding:0;box-sizing:border-box}body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);padding:24px 16px;max-width:700px;margin:0 auto}h1{font-size:20px;font-weight:800;color:#fff;margin:32px 0 12px;letter-spacing:-.3px;display:flex;align-items:center;gap:8px}h1:first-child{margin-top:0}.mcard{background:var(--surf);border:1px solid var(--brd);border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:14px;margin-bottom:10px;transition:.15s}.mcard:hover{border-color:var(--acc);background:var(--surf2)}.mcard-img{width:72px;height:72px;border-radius:10px;background:var(--surf2);overflow:hidden;flex-shrink:0;border:1px solid var(--brd)}.mcard-img img{width:100%;height:100%;object-fit:cover;display:block}.mcard-body{flex:1;min-width:0}.mcard-name{font-size:14.5px;font-weight:700;display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap}.vdot{width:14px;height:14px;border-radius:3px;border:2px solid;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}.vdot span{width:6px;height:6px;border-radius:50%;display:block}.mcard-desc{font-size:12.5px;color:var(--mut);margin-bottom:6px;line-height:1.4}.mcard-price{font-size:14px;font-weight:700;color:#a29bfe}.vars-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.vchip{background:var(--surf2);border:1px solid var(--brd);border-radius:8px;padding:5px 10px;font-size:12px;display:flex;align-items:center;gap:6px}.vchip-price{color:#a29bfe;font-weight:600}.vchip-img{width:20px;height:20px;border-radius:4px;object-fit:cover}.addbtn{background:var(--acc);color:#fff;border:none;border-radius:10px;padding:9px 18px;cursor:pointer;font-weight:600;font-size:13px;flex-shrink:0;transition:.15s}.addbtn:hover{filter:brightness(1.15)}@media(max-width:480px){.mcard{flex-wrap:wrap}.mcard-img{width:56px;height:56px}.addbtn{width:100%;margin-top:8px;text-align:center}}`.trim();
     const fullHtml = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Menu Preview</title><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet"><style>${STYLE}</style></head><body>${bodyHtml}</body></html>`;
     document.getElementById('previewIframe').srcdoc = fullHtml;
@@ -989,7 +958,39 @@ async function refreshPreview() {
 }
 document.getElementById('previewLocalBtn').addEventListener('click', previewLocal);
 document.getElementById('refreshPreviewBtn').addEventListener('click', refreshPreview);
-document.getElementById('shootBtn').addEventListener('click', shootToSecondFile);
+
+// ======================= SHOOT BUTTON ======================= 
+async function shootToSecondTxt() {
+  if (SECOND_DRIVE_APP_SCRIPT_URL === "YOUR_SECOND_APP_SCRIPT_URL_HERE") {
+    toast("Please set SECOND_DRIVE_APP_SCRIPT_URL in the code first!", "error");
+    return;
+  }
+  if (Object.keys(STATE.menu).length === 0) {
+    toast("No menu data to shoot. Load or create some headings first.", "warning");
+    return;
+  }
+  const btn = document.getElementById('shootBtn');
+  const origHtml = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Shooting...';
+  try {
+    const bodyHtml = buildMenuBodyHTML();
+    const res = await fetch(SECOND_DRIVE_APP_SCRIPT_URL, {
+      method: 'POST',
+      body: bodyHtml,
+      headers: { 'Content-Type': 'text/plain' }
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const result = await res.text();
+    toast('Menu copied to second text file successfully!', 'success');
+  } catch (err) {
+    toast('Shoot failed: ' + err.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = origHtml;
+  }
+}
+document.getElementById('shootBtn').addEventListener('click', shootToSecondTxt);
 
 function setLoadingOverlay(panelId, show) { const panel = document.getElementById(panelId); const existing = panel.querySelector('.loading-overlay'); if (show && !existing) { const ov = document.createElement('div'); ov.className = 'loading-overlay'; ov.innerHTML = `<div class="loading-block"><span class="spinner"></span> Loading from Drive…</div>`; panel.style.position = 'relative'; panel.appendChild(ov); } else if (!show && existing) { existing.remove(); } }
 
