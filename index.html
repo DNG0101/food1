@@ -597,7 +597,7 @@
     </div>
   </div>
 
-  <!-- Part C: Embeddable code (pure menu HTML/CSS, no html/head/body) – now EDITABLE -->
+  <!-- Part C: Embeddable code (pure menu HTML/CSS, no html/head/body) – EDITABLE -->
   <div class="panel embed-panel">
     <div class="panel-header">
       <div class="panel-title"><span class="panel-title-icon">📄</span> Part C: Embeddable Menu Code (no &lt;html&gt;/&lt;head&gt;)</div>
@@ -678,6 +678,7 @@
 const BASE_URL = "https://script.google.com/macros/s/AKfycby8qo4d7vCkTzQouZxuuZplEtFN-DPrZXmuuMV13OI1f4r2ba94Wq7QIDPYCXbAXZvd9Q/exec";
 
 // 👇 SET THIS TO YOUR SECOND APP SCRIPT URL (deployed as a web app)
+// The script below uses your specific file ID to overwrite the exact Drive file.
 const SECOND_DRIVE_APP_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzAC8fzJ-10yWcvD5cItcguHrz-j9p5LYTYDNQyz-pG9JZjp7EUbIaw_pkmGy98xn5cEw/exec";
 
 const CFG = {
@@ -875,20 +876,15 @@ function generateEmbedCode() {
 }
 
 function updatePartCTextarea() {
-  // Only auto-update if the user hasn't manually focused/edited? For simplicity, we auto-update on every render.
-  // This means manual edits will be overwritten when menu changes. The user can re-edit if needed.
-  // If you want to preserve manual edits, you can add a flag, but for now keep it simple.
   const embedCode = generateEmbedCode();
   const ta = document.getElementById('partCTextarea');
-  // Only update if the textarea is not currently focused (to avoid interrupting typing)
   if (document.activeElement !== ta) {
     ta.value = embedCode;
   }
 }
 
-// ======================= SHOOT BUTTON (Part D) – FIXED with better error handling ======================= 
+// ======================= SHOOT BUTTON (Part D) – sends exactly Part C content ======================= 
 async function shootToSecondTxt() {
-  // Check if URL is valid and not the placeholder
   if (!SECOND_DRIVE_APP_SCRIPT_URL || SECOND_DRIVE_APP_SCRIPT_URL === "YOUR_SECOND_APP_SCRIPT_URL_HERE") {
     toast("Please set SECOND_DRIVE_APP_SCRIPT_URL in the code (must point to your second Apps Script web app URL).", "error");
     return;
@@ -906,7 +902,6 @@ async function shootToSecondTxt() {
   btn.innerHTML = '<span class="spinner"></span> Shooting...';
   
   try {
-    // Try to send as text/plain (most direct)
     const res = await fetch(SECOND_DRIVE_APP_SCRIPT_URL, {
       method: 'POST',
       body: embedCode,
@@ -931,7 +926,6 @@ async function shootToSecondTxt() {
     console.error('Shoot error:', err);
     toast(`❌ Shoot failed: ${err.message}`, 'error');
     
-    // Offer manual copy as fallback
     const manualCopy = confirm("Automatic upload failed.\n\nDo you want to copy the embed code to your clipboard so you can manually paste it into your second Drive file?");
     if (manualCopy) {
       try {
