@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Menu Manager Pro — Full CRUD + PDF + Cart</title>
-  <!-- PDF.js for client‑side PDF rendering -->
+  <!-- PDF.js for rendering PDF pages -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     /* ============================================================
-       RESET & ROOT (preserved)
+       RESET & ROOT (same as original – kept intact)
        ============================================================ */
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
     :root {
@@ -351,7 +351,6 @@
     ============================================================ */
     .preview-panel { margin-top: 20px; }
     #previewIframe { width: 100%; height: 600px; border: none; border-radius: var(--radius); background: white; display: block; }
-    /* PDF scroller inside preview handled by iframe's own CSS */
     /* ============================================================
        STATS ROW
     ============================================================ */
@@ -488,6 +487,22 @@
     .mt-16     { margin-top: 16px; }
     .w-full    { width: 100%; }
     .relative  { position: relative; }
+    /* ============================================================
+       NEW: PDF UPLOAD SECTION
+    ============================================================ */
+    .pdf-upload-area {
+      display: flex; align-items: center; gap: 8px;
+    }
+    .pdf-scroller {
+      display: flex; overflow-x: auto; gap: 12px; padding: 12px 0;
+      scroll-snap-type: x mandatory;
+    }
+    .pdf-page-card {
+      flex: 0 0 auto; width: 180px; border-radius: var(--radius);
+      border: 2px solid var(--border); overflow: hidden;
+      scroll-snap-align: start; background: #fff;
+    }
+    .pdf-page-card img { width: 100%; height: auto; display: block; }
   </style>
 </head>
 <body>
@@ -502,9 +517,15 @@
         <span class="app-title-icon">🍽️</span>
         Menu Manager Pro
       </div>
-      <div class="app-subtitle">Full CRUD · Live Preview · PDF · Cart · Drive Sync</div>
+      <div class="app-subtitle">Full CRUD · Live Preview · Google Drive Sync · Variations · PDF · Cart</div>
     </div>
     <div class="header-actions">
+      <!-- PDF Upload -->
+      <div class="pdf-upload-area">
+        <label class="btn btn-sm" for="pdfUploadInput" style="margin:0;">📄 Upload PDF Menu</label>
+        <input type="file" id="pdfUploadInput" accept="application/pdf" style="display:none;">
+        <button class="btn btn-sm" id="clearPdfBtn" title="Clear PDF">🗑</button>
+      </div>
       <div id="syncStatusBar" class="sync-bar synced"><div class="sync-dot"></div><span id="syncStatusText">Saved</span></div>
       <div class="history-bar">
         <button class="btn btn-sm btn-icon" id="undoBtn" title="Undo (Ctrl+Z)" data-tip="Undo" disabled>↩</button>
@@ -512,7 +533,7 @@
       </div>
       <button class="btn btn-sm" id="loadDriveBtn">📂 Load Drive</button>
       <button class="btn btn-sm btn-success" id="saveDriveBtn">💾 Save to Drive</button>
-      <button class="btn btn-sm btn-primary" id="shootBtn">🔫 Shoot (to second txt)</button>
+      <button class="btn btn-sm btn-primary" id="shootBtn">🔫 Shoot</button>
     </div>
   </div>
 
@@ -579,32 +600,25 @@
     </div>
   </div>
 
-  <!-- Preview Panel with new controls -->
   <div class="panel preview-panel">
     <div class="panel-header">
       <div class="panel-title"><span class="panel-title-icon">🔍</span> Live Preview</div>
-      <div class="flex gap-8" style="flex-wrap:wrap;">
-        <!-- PDF Upload -->
-        <label class="btn btn-sm" for="pdfUploadInput" style="cursor:pointer;">📄 Upload PDF</label>
-        <input type="file" id="pdfUploadInput" accept="application/pdf" style="display:none;">
-        <!-- Toggle: Item List Shown -->
-        <label class="checkbox-label" style="margin-right:6px;">
-          <input type="checkbox" id="showItemListCheck" checked> Show Item List
-        </label>
-        <!-- Veg/NonVeg filter in preview (handled inside iframe) -->
+      <div class="flex gap-8">
+        <button class="btn btn-sm" id="togglePdfPreviewBtn" title="Toggle PDF pages view">📖 PDF View</button>
+        <button class="btn btn-sm" id="toggleListViewBtn" title="Toggle list/card view">📋 List View</button>
         <button class="btn btn-sm" id="refreshPreviewBtn">⟳ Refresh Preview</button>
         <button class="btn btn-sm" id="previewLocalBtn">👁 Preview Local</button>
-        <button class="btn btn-sm" id="downloadTxtBtn">⬇ Download TXT</button>
+        <button class="btn btn-sm btn-success" id="exportTxtBtn">⬇ Export TXT</button>
       </div>
     </div>
     <div class="panel-body no-pad" style="position:relative;">
-      <iframe id="previewIframe" srcdoc="<div style='padding:40px;text-align:center;font-family:sans-serif;color:#888'>Click “Preview Local” or upload a PDF.</div>"></iframe>
+      <iframe id="previewIframe" srcdoc="<div style='padding:40px;text-align:center;font-family:sans-serif;color:#888'>Click &ldquo;Preview Local&rdquo; or &ldquo;Refresh Preview&rdquo;</div>"></iframe>
     </div>
   </div>
 
 </div>
 
-<!-- MODALS (unchanged) -->
+<!-- MODALS: itemModal, headingModal, confirmModal, bulkMoveModal -->
 <div class="modal-overlay" id="itemModal" role="dialog" aria-modal="true" aria-labelledby="itemModalTitle">
   <div class="modal-box">
     <div class="modal-header">
@@ -628,7 +642,7 @@
       <div id="simplePriceSection" class="form-group"><label class="form-label" for="iPrice">Price (₹)</label><input type="number" class="form-input" id="iPrice" placeholder="e.g. 249" min="0"></div>
     </div>
     <div class="tab-pane" id="imageTab">
-      <div class="form-group"><label class="form-label">Upload Image</label><input type="file" class="form-file" id="iImageFile" accept="image/*"><input type="hidden" id="iImageUrl"><div id="iImagePreview"></div><p class="fs-sm text-dim mt-8">Supported: JPG, PNG, WEBP, GIF. Max 5 MB.</p></div>
+      <div class="form-group"><label class="form-label">Upload Image</label><input type="file" class="form-file" id="iImageFile" accept="image/*"><input type="hidden" id="iImageUrl"><div id="iImagePreview"></div><p class="fs-sm text-dim mt-8">Supported: JPG, PNG, WEBP, GIF. Max 5 MB. Image will be stored (Base64 if upload fails).</p></div>
       <div class="form-group"><label class="form-label">Or paste an image URL</label><input type="url" class="form-input" id="iImageUrlInput" placeholder="https://…"><button class="btn btn-sm mt-8" id="iImageUrlApply">Apply URL</button></div>
     </div>
     <div class="tab-pane" id="variationsTab">
@@ -660,15 +674,19 @@
 
 <script>
 /* ============================================================
-   FULL CRUD ENGINE – with PDF, Cart, TXT download
-   Preserves all original features.
+   FULL CRUD ENGINE – with dynamic BASE_URL
+   Saves only BODY content to Drive, preview works with full template.
+   Image upload fallback to Base64 ensures images are always saved.
+   NEW FEATURES: PDF upload, cart, filter, list view, export TXT.
 ============================================================ */
 const BASE_URL = "https://script.google.com/macros/s/AKfycby8qo4d7vCkTzQouZxuuZplEtFN-DPrZXmuuMV13OI1f4r2ba94Wq7QIDPYCXbAXZvd9Q/exec";
+
+// 👇 SET THIS TO YOUR SECOND APP SCRIPT URL (deployed as a web app)
 const SECOND_DRIVE_APP_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw-Hqdia2rczWbf-9rdOScZlII_ZK8Q55T0G6FDzC_-zy7MQ-IDKCFHZ0K2IEng0KDJ/exec";
 
 const CFG = {
   WEB_APP_URL: BASE_URL,
-  LOCAL_KEY:    'menuManagerData_v4',
+  LOCAL_KEY:    'menuManagerData_v3',
   HISTORY_LIMIT: 50,
   AUTO_SAVE_DELAY: 2000,
   MAX_RETRIES: 3,
@@ -687,11 +705,11 @@ const STATE = {
   isDriveLoaded:  false,
   lastSaveTime:   null,
   pendingChanges: false,
+  pdfPages:       [],         // array of data URLs for PDF pages
+  previewListView: false,     // toggle for list/card view in preview
+  previewPdfVisible: false,   // toggle for showing PDF scroller in preview
   _history:   [],
   _future:    [],
-  // PDF related
-  pdfFile: null,        // File object
-  pdfObjectUrl: null,   // blob URL for PDF
   snapshot() { return JSON.parse(JSON.stringify(this.menu)); },
   pushHistory() { this._history.push(this.snapshot()); if (this._history.length > CFG.HISTORY_LIMIT) this._history.shift(); this._future = []; updateUndoRedoBtns(); },
   undo() { if (!this._history.length) return; this._future.push(this.snapshot()); this.menu = this._history.pop(); updateUndoRedoBtns(); renderAll(); toast('Undo', 'info'); markPending(); },
@@ -734,6 +752,7 @@ async function netFetch(url, options = {}, retries = CFG.MAX_RETRIES) {
   for (let attempt = 1; attempt <= retries; attempt++) { try { const res = await fetch(url, options); if (!res.ok) throw new Error(`HTTP ${res.status}`); return res; } catch (err) { if (attempt === retries) throw err; await sleep(CFG.RETRY_DELAY * attempt); } }
 }
 
+// Improved uploadImage with Base64 fallback
 async function uploadImage(file) {
   if (!file) return null;
   if (file.size > 5 * 1024 * 1024) throw new Error('File too large (max 5 MB)');
@@ -805,6 +824,7 @@ function parseItemFromCard(el) {
 }
 function parseItemFromDataAttrs(el) { return { id: el.getAttribute('data-id') || uid(), name: el.getAttribute('data-name') || 'Unnamed', type: el.getAttribute('data-type') || 'veg', desc: el.getAttribute('data-desc') || '', time: el.getAttribute('data-time') || '', image: el.getAttribute('data-img') || '', price: el.getAttribute('data-price') || '', hasVar: el.getAttribute('data-hasvar') === 'true', vars: JSON.parse(el.getAttribute('data-vars') || '[]'), category: el.getAttribute('data-category') || '' }; }
 
+// Save only the BODY fragment
 async function saveToDrive() {
   if (STATE.isSyncing) { toast('Already syncing…', 'info'); return; }
   if (Object.keys(STATE.menu).length === 0) { toast('Nothing to save', 'warning'); return; }
@@ -828,180 +848,173 @@ function buildMenuBodyHTML() {
   return body;
 }
 
-// Full preview HTML with embedded cart, filter, and optional PDF viewer
-function buildFullPreviewHTML(includePdf = false, pdfUrl = '') {
-  const menuData = STATE.menu;
-  // Style (same as original preview but extended)
-  const STYLE = `:root{--bg:#0f1117;--surf:#1a1e2e;--surf2:#222638;--brd:#2e3350;--acc:#7c5cbf;--text:#e2e8f0;--mut:#8892a4}*{margin:0;padding:0;box-sizing:border-box}body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);padding:24px 16px;max-width:900px;margin:0 auto;position:relative}h1{font-size:20px;font-weight:800;color:#fff;margin:32px 0 12px;letter-spacing:-.3px;display:flex;align-items:center;gap:8px}h1:first-child{margin-top:0}.mcard{background:var(--surf);border:1px solid var(--brd);border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:14px;margin-bottom:10px;transition:.15s}.mcard:hover{border-color:var(--acc);background:var(--surf2)}.mcard-img{width:72px;height:72px;border-radius:10px;background:var(--surf2);overflow:hidden;flex-shrink:0;border:1px solid var(--brd)}.mcard-img img{width:100%;height:100%;object-fit:cover;display:block}.mcard-body{flex:1;min-width:0}.mcard-name{font-size:14.5px;font-weight:700;display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap}.vdot{width:14px;height:14px;border-radius:3px;border:2px solid;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}.vdot span{width:6px;height:6px;border-radius:50%;display:block}.mcard-desc{font-size:12.5px;color:var(--mut);margin-bottom:6px;line-height:1.4}.mcard-price{font-size:14px;font-weight:700;color:#a29bfe}.vars-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.vchip{background:var(--surf2);border:1px solid var(--brd);border-radius:8px;padding:5px 10px;font-size:12px;display:flex;align-items:center;gap:6px}.vchip-price{color:#a29bfe;font-weight:600}.vchip-img{width:20px;height:20px;border-radius:4px;object-fit:cover}.addbtn{background:var(--acc);color:#fff;border:none;border-radius:10px;padding:9px 18px;cursor:pointer;font-weight:600;font-size:13px;flex-shrink:0;transition:.15s}.addbtn:hover{filter:brightness(1.15)}.filter-bar{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap}.filter-btn{padding:6px 14px;border-radius:30px;border:1px solid var(--brd);background:var(--surf);color:var(--text);cursor:pointer;font-size:13px}.filter-btn.active{background:var(--acc);border-color:var(--acc);color:#fff}.cart-panel{position:sticky;top:20px;background:var(--surf);border:1px solid var(--brd);border-radius:16px;padding:16px;margin-bottom:24px}.cart-title{font-weight:700;margin-bottom:12px;display:flex;justify-content:space-between}.cart-items{list-style:none;max-height:200px;overflow-y:auto}.cart-item{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--brd)}.cart-total{font-weight:700;margin-top:12px;text-align:right}.pdf-scroller{display:flex;overflow-x:auto;gap:16px;padding:20px 0}.pdf-page{flex:0 0 auto;width:280px;border:1px solid var(--brd);border-radius:12px;overflow:hidden;background:#fff}.pdf-page canvas{width:100%;height:auto;display:block}.hidden{display:none !important}@media(max-width:480px){.mcard{flex-wrap:wrap}.mcard-img{width:56px;height:56px}.addbtn{width:100%;margin-top:8px;text-align:center}}`.trim();
-
-  // Build menu HTML
-  let menuHtml = '';
-  for (const heading in menuData) {
-    const items = menuData[heading] || [];
-    menuHtml += `<h1>${escHtml(heading)}</h1>`;
-    for (const item of items) {
-      const dotColor = item.type === 'veg' ? '#22c55e' : '#ef4444';
-      const imgInner = item.image ? `<img src="${escAttr(item.image)}" alt="${escAttr(item.name)}" loading="lazy">` : '📷';
-      const priceHtml = (!item.hasVar && item.price) ? `<div class="mcard-price">₹${escHtml(item.price)}</div>` : '';
-      const timeHtml = item.time ? ` · ⏱ ${escHtml(item.time)}` : '';
-      const catHtml = item.category ? `<span style="font-size:11px;opacity:.6;">[${escHtml(item.category)}]</span>` : '';
-      let varsHtml = '';
-      if (item.hasVar && item.vars && item.vars.length) {
-        const chips = item.vars.map(v => {
-          const vImg = v.image ? `<img class="vchip-img" src="${escAttr(v.image)}" alt="${escAttr(v.name)}">` : '';
-          return `<span class="vchip">${vImg}<span>${escHtml(v.name)}</span><span class="vchip-price">₹${escHtml(v.price)}</span></span>`;
-        }).join('');
-        varsHtml = `<div class="vars-row">${chips}</div>`;
-      }
-      const dataVars = escAttr(JSON.stringify(item.vars || []));
-      menuHtml += `<div class="mcard" data-item="1" data-id="${escAttr(item.id||uid())}" data-name="${escAttr(item.name)}" data-type="${escAttr(item.type)}" data-price="${escAttr(item.price||'')}" data-hasvar="${item.hasVar}" data-vars="${dataVars}"><div class="mcard-img">${imgInner}</div><div class="mcard-body"><div class="mcard-name"><span class="vdot" style="border-color:${dotColor}"><span style="background:${dotColor}"></span></span>${escHtml(item.name)} ${catHtml}</div><div class="mcard-desc">${escHtml(item.desc||'')}${timeHtml}</div>${priceHtml}${varsHtml}</div><button class="addbtn">Add</button></div>`;
-    }
-  }
-
-  // PDF viewer section (if includePdf and pdfUrl)
-  const pdfSection = includePdf && pdfUrl ? `
-    <div id="pdfViewer" class="pdf-scroller"></div>
-    <script>
-      (function(){
-        const url = ${JSON.stringify(pdfUrl)};
-        pdfjsLib.getDocument(url).promise.then(pdf => {
-          const container = document.getElementById('pdfViewer');
-          for (let i=1; i<=pdf.numPages; i++) {
-            pdf.getPage(i).then(page => {
-              const scale = 1.2;
-              const viewport = page.getViewport({scale});
-              const canvas = document.createElement('canvas');
-              canvas.width = viewport.width;
-              canvas.height = viewport.height;
-              const ctx = canvas.getContext('2d');
-              page.render({canvasContext: ctx, viewport});
-              const pageDiv = document.createElement('div');
-              pageDiv.className = 'pdf-page';
-              pageDiv.appendChild(canvas);
-              container.appendChild(pageDiv);
-            });
-          }
-        }).catch(err => console.warn('PDF render error', err));
-      })();
-    <\/script>
-  ` : '';
-
-  // The complete document with cart and filter logic
+// Build full preview HTML with interactive cart, filter, list view, and PDF scroller
+function buildFullPreviewHTML() {
+  const STYLE = `:root{--bg:#0f1117;--surf:#1a1e2e;--surf2:#222638;--brd:#2e3350;--acc:#7c5cbf;--text:#e2e8f0;--mut:#8892a4;--veg:#00b894;--nonveg:#e17055}*{margin:0;padding:0;box-sizing:border-box}body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);padding:24px 16px;max-width:700px;margin:0 auto}h1{font-size:20px;font-weight:800;color:#fff;margin:32px 0 12px;letter-spacing:-.3px;display:flex;align-items:center;gap:8px}h1:first-child{margin-top:0}.mcard{background:var(--surf);border:1px solid var(--brd);border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:14px;margin-bottom:10px;transition:.15s}.mcard:hover{border-color:var(--acc);background:var(--surf2)}.mcard-img{width:72px;height:72px;border-radius:10px;background:var(--surf2);overflow:hidden;flex-shrink:0;border:1px solid var(--brd)}.mcard-img img{width:100%;height:100%;object-fit:cover;display:block}.mcard-body{flex:1;min-width:0}.mcard-name{font-size:14.5px;font-weight:700;display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap}.vdot{width:14px;height:14px;border-radius:3px;border:2px solid;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}.vdot span{width:6px;height:6px;border-radius:50%;display:block}.mcard-desc{font-size:12.5px;color:var(--mut);margin-bottom:6px;line-height:1.4}.mcard-price{font-size:14px;font-weight:700;color:#a29bfe}.vars-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.vchip{background:var(--surf2);border:1px solid var(--brd);border-radius:8px;padding:5px 10px;font-size:12px;display:flex;align-items:center;gap:6px}.vchip-price{color:#a29bfe;font-weight:600}.vchip-img{width:20px;height:20px;border-radius:4px;object-fit:cover}.addbtn{background:var(--acc);color:#fff;border:none;border-radius:10px;padding:9px 18px;cursor:pointer;font-weight:600;font-size:13px;flex-shrink:0;transition:.15s}.addbtn:hover{filter:brightness(1.15)}.cart-panel{position:sticky;top:16px;background:var(--surf);border:1px solid var(--brd);border-radius:14px;padding:16px;margin-bottom:24px}.cart-title{font-weight:700;margin-bottom:12px;display:flex;justify-content:space-between}.cart-items{list-style:none;margin-bottom:12px}.cart-item{display:flex;justify-content:space-between;font-size:13px;padding:4px 0}.cart-total{font-weight:700;border-top:1px solid var(--brd);padding-top:8px;margin-top:4px}.filter-bar{display:flex;gap:8px;margin-bottom:16px}.filter-chip{background:var(--surf2);border:1px solid var(--brd);border-radius:20px;padding:4px 12px;font-size:12px;cursor:pointer}.filter-chip.active{background:var(--acc);color:#fff}.list-view .mcard{flex-direction:row;align-items:center}.list-view .mcard-img{width:48px;height:48px}.pdf-scroller{display:flex;overflow-x:auto;gap:12px;padding:12px 0;margin-bottom:20px;scroll-snap-type:x mandatory}.pdf-page{flex:0 0 auto;width:160px;border-radius:10px;border:2px solid var(--brd);overflow:hidden;scroll-snap-align:start}.pdf-page img{width:100%;height:auto;display:block}.hidden{display:none!important}@media(max-width:480px){.mcard{flex-wrap:wrap}.mcard-img{width:56px;height:56px}.addbtn{width:100%;margin-top:8px;text-align:center}}`;
+  
+  const bodyContent = buildMenuBodyHTML();
+  const pdfPagesJson = JSON.stringify(STATE.pdfPages);
+  const listViewClass = STATE.previewListView ? 'list-view' : '';
+  const pdfVisibleClass = STATE.previewPdfVisible ? '' : 'hidden';
+  
   return `<!DOCTYPE html>
-<html>
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Menu Preview</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
-<style>${STYLE}</style>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Menu Preview</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>${STYLE}</style>
 </head>
-<body>
-<div class="filter-bar">
-  <button class="filter-btn active" data-filter="all">All</button>
-  <button class="filter-btn" data-filter="veg">🌿 Veg</button>
-  <button class="filter-btn" data-filter="nonveg">🍗 Non-Veg</button>
-</div>
-<div class="cart-panel">
-  <div class="cart-title"><span>🛒 Your Cart</span> <button id="clearCartBtn" style="background:none;border:none;color:var(--mut);cursor:pointer;">Clear</button></div>
-  <ul class="cart-items" id="cartList"></ul>
-  <div class="cart-total">Total: ₹<span id="cartTotal">0</span></div>
-</div>
-<div id="menuContainer">
-  ${menuHtml}
-</div>
-${pdfSection}
-<script>
-  (function(){
-    // Cart state
-    let cart = JSON.parse(localStorage.getItem('menuCart') || '[]');
-    const cartList = document.getElementById('cartList');
-    const cartTotalSpan = document.getElementById('cartTotal');
-    
-    function saveCart() { localStorage.setItem('menuCart', JSON.stringify(cart)); }
-    function updateCartUI() {
-      cartList.innerHTML = '';
-      let total = 0;
-      cart.forEach((item, idx) => {
-        const li = document.createElement('li');
-        li.className = 'cart-item';
-        const price = parseFloat(item.price) || 0;
-        total += price * item.qty;
-        li.innerHTML = \`<span>\${item.name} x\${item.qty}</span><span>₹\${(price*item.qty).toFixed(0)} <button data-idx="\${idx}" class="remove-item" style="margin-left:8px;background:none;border:none;color:var(--danger);cursor:pointer;">✕</button></span>\`;
-        cartList.appendChild(li);
-      });
-      cartTotalSpan.textContent = total.toFixed(0);
-      document.querySelectorAll('.remove-item').forEach(btn => btn.addEventListener('click', e => {
-        const idx = btn.dataset.idx;
-        if (idx !== undefined) { cart.splice(idx,1); saveCart(); updateCartUI(); }
-      }));
-    }
-    
-    function addToCart(name, price) {
-      const existing = cart.find(i => i.name === name);
-      if (existing) existing.qty += 1;
-      else cart.push({ name, price: parseFloat(price)||0, qty: 1 });
-      saveCart();
-      updateCartUI();
-    }
-    
-    document.querySelectorAll('.addbtn').forEach(btn => {
-      btn.addEventListener('click', function(e) {
-        const card = this.closest('.mcard');
-        const name = card.querySelector('.mcard-name')?.textContent.replace(/[🌿🍗\\[\\]]/g,'').trim() || 'Item';
-        let price = 0;
-        if (card.dataset.hasvar === 'true') {
-          const vars = JSON.parse(card.dataset.vars || '[]');
-          if (vars.length) price = parseFloat(vars[0].price) || 0;
-        } else {
-          price = parseFloat(card.dataset.price) || 0;
+<body class="${listViewClass}">
+  <!-- Cart Panel -->
+  <div class="cart-panel" id="cartPanel">
+    <div class="cart-title">
+      <span>🛒 Your Cart</span>
+      <button id="clearCartBtn" style="background:none;border:none;color:var(--mut);cursor:pointer;">Clear</button>
+    </div>
+    <ul class="cart-items" id="cartItemsList"></ul>
+    <div class="cart-total">Total: ₹<span id="cartTotal">0</span></div>
+  </div>
+  
+  <!-- Filter chips -->
+  <div class="filter-bar">
+    <span class="filter-chip active" data-filter="all">All</span>
+    <span class="filter-chip" data-filter="veg">🌿 Veg</span>
+    <span class="filter-chip" data-filter="nonveg">🍗 Non-Veg</span>
+  </div>
+  
+  <!-- PDF scroller (hidden by default) -->
+  <div id="pdfScroller" class="pdf-scroller ${pdfVisibleClass}"></div>
+  
+  <!-- Menu items -->
+  <div id="menuContainer">
+    ${bodyContent}
+  </div>
+  
+  <script>
+    (function(){
+      const pdfPages = ${pdfPagesJson};
+      const scroller = document.getElementById('pdfScroller');
+      if (pdfPages.length) {
+        scroller.innerHTML = pdfPages.map(url => \`<div class="pdf-page"><img src="\${url}" alt="PDF page"></div>\`).join('');
+      }
+      
+      // Cart state
+      let cart = JSON.parse(localStorage.getItem('menuCart') || '[]');
+      
+      function updateCartUI() {
+        const list = document.getElementById('cartItemsList');
+        const totalSpan = document.getElementById('cartTotal');
+        let total = 0;
+        list.innerHTML = '';
+        cart.forEach((item, idx) => {
+          const li = document.createElement('li');
+          li.className = 'cart-item';
+          li.innerHTML = \`<span>\${item.name} \${item.variant ? '('+item.variant+')' : ''}</span><span>₹\${item.price} <button data-idx="\${idx}" style="margin-left:8px;background:none;border:none;color:var(--danger);cursor:pointer;">✕</button></span>\`;
+          list.appendChild(li);
+          total += parseFloat(item.price) || 0;
+        });
+        totalSpan.textContent = total.toFixed(2);
+        localStorage.setItem('menuCart', JSON.stringify(cart));
+      }
+      
+      function addToCart(name, price, variant = '') {
+        cart.push({ name, price, variant });
+        updateCartUI();
+      }
+      
+      function removeFromCart(idx) {
+        cart.splice(idx, 1);
+        updateCartUI();
+      }
+      
+      document.getElementById('cartItemsList').addEventListener('click', e => {
+        if (e.target.tagName === 'BUTTON') {
+          const idx = e.target.dataset.idx;
+          if (idx !== undefined) removeFromCart(parseInt(idx));
         }
-        addToCart(name, price);
-        this.textContent = '✓ Added';
-        setTimeout(() => this.textContent = 'Add', 1000);
       });
-    });
-    
-    document.getElementById('clearCartBtn').addEventListener('click', () => { cart = []; saveCart(); updateCartUI(); });
-    
-    // Filtering
-    const filterBtns = document.querySelectorAll('.filter-btn');
-    const cards = document.querySelectorAll('.mcard');
-    filterBtns.forEach(btn => btn.addEventListener('click', () => {
-      filterBtns.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      const filter = btn.dataset.filter;
-      cards.forEach(card => {
-        if (filter === 'all') card.style.display = '';
-        else card.style.display = card.dataset.type === filter ? '' : 'none';
+      
+      document.getElementById('clearCartBtn').addEventListener('click', () => {
+        cart = [];
+        updateCartUI();
       });
-    }));
-    
-    // Show/hide based on mode (menu vs pdf)
-    const menuContainer = document.getElementById('menuContainer');
-    const pdfViewer = document.getElementById('pdfViewer');
-    const showMenu = ${!includePdf || document.getElementById('showItemListCheck')?.checked || false};
-    if (!showMenu && pdfViewer) {
-      menuContainer.classList.add('hidden');
-      pdfViewer.classList.remove('hidden');
-    } else if (pdfViewer) {
-      pdfViewer.classList.add('hidden');
-    }
-    
-    updateCartUI();
-  })();
-<\/script>
+      
+      // Hook Add buttons
+      document.querySelectorAll('.addbtn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          const card = this.closest('.mcard');
+          if (!card) return;
+          const name = card.querySelector('.mcard-name')?.textContent.replace(/[🌿🍗]/g,'').trim() || 'Item';
+          let price = '0';
+          const priceEl = card.querySelector('.mcard-price');
+          if (priceEl) price = priceEl.textContent.replace(/[^\\d.]/g,'');
+          else {
+            const varChip = card.querySelector('.vchip');
+            if (varChip) {
+              const varName = varChip.querySelector('span:not(.vchip-price)')?.textContent || '';
+              const varPrice = varChip.querySelector('.vchip-price')?.textContent.replace(/[^\\d.]/g,'') || '0';
+              addToCart(name + ' (' + varName + ')', varPrice, varName);
+              this.textContent = '✓ Added';
+              setTimeout(() => this.textContent = 'Add', 1500);
+              return;
+            }
+          }
+          addToCart(name, price);
+          this.textContent = '✓ Added';
+          setTimeout(() => this.textContent = 'Add', 1500);
+        });
+      });
+      
+      // Filter functionality
+      const filterChips = document.querySelectorAll('.filter-chip');
+      const cards = document.querySelectorAll('.mcard');
+      filterChips.forEach(chip => {
+        chip.addEventListener('click', () => {
+          filterChips.forEach(c => c.classList.remove('active'));
+          chip.classList.add('active');
+          const filter = chip.dataset.filter;
+          cards.forEach(card => {
+            const type = card.dataset.type;
+            if (filter === 'all' || type === filter) card.style.display = '';
+            else card.style.display = 'none';
+          });
+        });
+      });
+      
+      updateCartUI();
+      
+      // Listen for messages from parent (for PDF toggle, list view)
+      window.addEventListener('message', (e) => {
+        if (e.data.type === 'togglePdf') {
+          scroller.classList.toggle('hidden');
+        }
+        if (e.data.type === 'toggleListView') {
+          document.body.classList.toggle('list-view');
+        }
+        if (e.data.type === 'updatePdfPages') {
+          const pages = e.data.pages || [];
+          scroller.innerHTML = pages.map(url => \`<div class="pdf-page"><img src="\${url}" alt="PDF page"></div>\`).join('');
+        }
+      });
+    })();
+  <\/script>
 </body>
 </html>`;
 }
 
 function buildItemCard(item) {
   const dotColor = item.type === 'veg' ? '#22c55e' : '#ef4444';
-  const imgInner = item.image ? `<img src="${escAttr(item.image)}" alt="${escAttr(item.name)}" loading="lazy">` : '📷';
+  const imgInner = item.image ? `<img src="${escAttr(item.image)}" alt="${escAttr(item.name)}" loading="lazy" onerror="this.parentElement.innerHTML='📷'">` : '📷';
   const priceHtml = (!item.hasVar && item.price) ? `<div class="mcard-price">₹${escHtml(item.price)}</div>` : '';
   const timeHtml = item.time ? ` · ⏱ ${escHtml(item.time)}` : '';
   const catHtml = item.category ? `<span style="font-size:11px;opacity:.6;">[${escHtml(item.category)}]</span>` : '';
   let varsHtml = '';
   if (item.hasVar && item.vars && item.vars.length) {
     const chips = item.vars.map(v => {
-      const vImg = v.image ? `<img class="vchip-img" src="${escAttr(v.image)}" alt="${escAttr(v.name)}">` : '';
+      const vImg = v.image ? `<img class="vchip-img" src="${escAttr(v.image)}" alt="${escAttr(v.name)}" onerror="this.style.display='none'">` : '';
       return `<span class="vchip">${vImg}<span>${escHtml(v.name)}</span><span class="vchip-price">₹${escHtml(v.price)}</span></span>`;
     }).join('');
     varsHtml = `<div class="vars-row">${chips}</div>`;
@@ -1035,9 +1048,9 @@ function renderItems() {
 }
 function buildItemCardEl(item, idx) {
   const card = document.createElement('div'); card.className = 'item-card'; card.setAttribute('draggable', 'true'); card.dataset.idx = idx; const dotColor = item.type === 'veg' ? '#22c55e' : '#ef4444'; const checked = STATE.selectedItems.has(item.id || idx) ? 'checked' : '';
-  const imgHtml = item.image ? `<div class="item-card-img"><img src="${escAttr(item.image)}" alt="${escAttr(item.name)}"></div>` : `<div class="item-card-img-placeholder">🍽️</div>`;
+  const imgHtml = item.image ? `<div class="item-card-img"><img src="${escAttr(item.image)}" alt="${escAttr(item.name)}" onerror="this.parentElement.innerHTML='<div style=height:100%;display:flex;align-items:center;justify-content:center;font-size:24px;>📷</div>'"></div>` : `<div class="item-card-img-placeholder">🍽️</div>`;
   const priceInfo = item.hasVar ? `<span class="text-muted fs-sm">${(item.vars||[]).length} variation(s)</span>` : (item.price ? `<span class="item-card-price">₹${escHtml(item.price)}</span>` : '<span class="text-dim fs-sm">No price</span>');
-  let varsHtml = ''; if (item.hasVar && item.vars && item.vars.length) { const chips = item.vars.slice(0,5).map(v => { const vImg = v.image ? `<img class="variation-chip-img" src="${escAttr(v.image)}">` : ''; return `<span class="variation-chip">${vImg}<span>${escHtml(v.name)}</span><span class="variation-chip-price">₹${escHtml(v.price)}</span></span>`; }).join(''); const more = item.vars.length > 5 ? `<span class="variation-chip text-dim">+${item.vars.length - 5} more</span>` : ''; varsHtml = `<div class="variations-section"><div class="variations-title">Variations</div><div class="variations-list">${chips}${more}</div></div>`; }
+  let varsHtml = ''; if (item.hasVar && item.vars && item.vars.length) { const chips = item.vars.slice(0,5).map(v => { const vImg = v.image ? `<img class="variation-chip-img" src="${escAttr(v.image)}" onerror="this.style.display='none'">` : ''; return `<span class="variation-chip">${vImg}<span>${escHtml(v.name)}</span><span class="variation-chip-price">₹${escHtml(v.price)}</span></span>`; }).join(''); const more = item.vars.length > 5 ? `<span class="variation-chip text-dim">+${item.vars.length - 5} more</span>` : ''; varsHtml = `<div class="variations-section"><div class="variations-title">Variations</div><div class="variations-list">${chips}${more}</div></div>`; }
   card.innerHTML = `<span class="item-drag-handle" title="Drag to reorder">⠿</span><div class="item-card-top"><div class="item-card-main">${STATE.bulkMode ? `<input type="checkbox" class="item-check" data-id="${escAttr(item.id||idx)}" ${checked} style="width:16px;height:16px;accent-color:var(--accent);flex-shrink:0;margin-top:4px;">` : ''}${imgHtml}<div class="item-card-info"><div class="item-card-name"><span class="type-indicator"><span class="type-dot" style="border-color:${dotColor}"><span class="type-dot-inner" style="background:${dotColor}"></span></span></span>${escHtml(item.name)}${item.category ? `<span class="badge-count fs-sm">${escHtml(item.category)}</span>` : ''}</div><div class="item-card-desc">${escHtml(item.desc||'—')} ${item.time ? `<span class="text-dim">· ⏱ ${escHtml(item.time)}</span>` : ''}</div><div class="item-card-meta">${priceInfo}</div></div></div><div class="item-card-actions"><button class="btn btn-icon btn-sm" data-action="edit-item" data-idx="${idx}" title="Edit item">✏️</button><button class="btn btn-icon btn-sm btn-danger" data-action="delete-item" data-idx="${idx}" title="Delete item">🗑</button><button class="btn btn-icon btn-sm" data-action="duplicate-item" data-idx="${idx}" title="Duplicate item">📋</button></div></div>${varsHtml}`;
   card.addEventListener('dragstart', handleItemDragStart); card.addEventListener('dragover', handleItemDragOver); card.addEventListener('drop', handleItemDrop); card.addEventListener('dragend', handleItemDragEnd); card.addEventListener('dragleave', () => card.classList.remove('drag-over'));
   card.addEventListener('click', e => { const btn = e.target.closest('[data-action]'); if (!btn) return; const action = btn.getAttribute('data-action'); const i = parseInt(btn.getAttribute('data-idx'), 10); if (action === 'edit-item') openItemModal(i); if (action === 'delete-item') confirmDeleteItem(i); if (action === 'duplicate-item') duplicateItem(i); });
@@ -1046,84 +1059,177 @@ function buildItemCardEl(item, idx) {
 }
 function updateStats() { const c = countAll(); document.getElementById('statHeadings').textContent = c.headings; document.getElementById('statItems').textContent = c.items; document.getElementById('statVeg').textContent = c.veg; document.getElementById('statNonVeg').textContent = c.nonveg; document.getElementById('statVariations').textContent = c.vars; }
 
-// ... (rest of the CRUD functions unchanged: openNewHeadingModal, createOrRenameHeading, deleteHeading, headingActionHandler, openItemModal, saveItem, duplicateItem, confirmDeleteItem, addVariationRow, drag handlers, modal helpers, etc.)
-// [KEEP ALL EXISTING FUNCTIONS EXACTLY AS IN ORIGINAL – omitted for brevity but present in final code]
-// ... (I'm including them in the final answer but skipping in this snippet to save space)
+let _editingHeadingName = null;
+function openNewHeadingModal(existingName = null) { _editingHeadingName = existingName; document.getElementById('headingModalTitle').textContent = existingName ? 'Rename Heading' : 'New Heading'; document.getElementById('newHeadingInput').value = existingName || ''; document.getElementById('headingEmojiInput').value = ''; openModal('headingModal'); requestAnimationFrame(() => document.getElementById('newHeadingInput').focus()); }
+function createOrRenameHeading() { const input = document.getElementById('newHeadingInput').value.trim(); const emoji = document.getElementById('headingEmojiInput').value.trim(); if (!input) { toast('Heading name is required', 'error'); return; } const displayName = emoji ? `${emoji} ${input}` : input; if (_editingHeadingName) { if (displayName !== _editingHeadingName && STATE.menu[displayName]) { toast('A heading with that name already exists', 'error'); return; } STATE.pushHistory(); const newMenu = {}; for (const k in STATE.menu) { newMenu[k === _editingHeadingName ? displayName : k] = STATE.menu[k]; } STATE.menu = newMenu; if (STATE.currentHeading === _editingHeadingName) STATE.currentHeading = displayName; toast(`Renamed to "${displayName}"`, 'success'); } else { if (STATE.menu[displayName] !== undefined) { toast('Heading already exists', 'error'); return; } STATE.pushHistory(); STATE.menu[displayName] = []; toast(`Created "${displayName}"`, 'success'); } closeModal('headingModal'); renderAll(); selectHeading(displayName); markPending(); }
+function deleteHeading(heading) { confirmAction(`Delete heading "${heading}"?`, `This will permanently remove "${heading}" and all its ${(STATE.menu[heading]||[]).length} items.`, () => { STATE.pushHistory(); delete STATE.menu[heading]; if (STATE.currentHeading === heading) { const keys = Object.keys(STATE.menu); STATE.currentHeading = keys.length ? keys[0] : null; } renderAll(); if (STATE.currentHeading) renderItems(); markPending(); toast(`Deleted "${heading}"`, 'success'); }); }
 
-// PDF handling and preview updates
-const pdfUploadInput = document.getElementById('pdfUploadInput');
-const showItemListCheck = document.getElementById('showItemListCheck');
-const previewIframe = document.getElementById('previewIframe');
+function headingActionHandler(e) { const btn = e.target.closest('[data-action]'); if (!btn) return; const action = btn.getAttribute('data-action'); const heading = btn.getAttribute('data-heading'); if (action === 'rename-heading') openNewHeadingModal(heading); if (action === 'delete-heading') deleteHeading(heading); }
 
-function updatePreview() {
-  const showMenu = showItemListCheck.checked;
-  const pdfUrl = STATE.pdfObjectUrl;
-  const includePdf = !showMenu && pdfUrl;
-  const fullHtml = buildFullPreviewHTML(includePdf, pdfUrl);
-  previewIframe.srcdoc = fullHtml;
-}
+let _editingItemIdx = null; let _varCount = 0;
+function openItemModal(idx = null) { if (!STATE.currentHeading) { toast('Select a heading first', 'error'); return; } _editingItemIdx = idx; const title = document.getElementById('itemModalTitle'); const lbl = document.getElementById('saveItemBtnLabel'); switchTab('basicTab'); if (idx !== null) { const item = STATE.menu[STATE.currentHeading][idx]; if (!item) return; title.textContent = 'Edit Item'; lbl.textContent = 'Update Item'; document.getElementById('iName').value = item.name || ''; document.getElementById('iType').value = item.type || 'veg'; document.getElementById('iDesc').value = item.desc || ''; document.getElementById('iTime').value = item.time || ''; document.getElementById('iPrice').value = item.price || ''; document.getElementById('iCategory').value = item.category || ''; document.getElementById('iHasVar').checked = !!item.hasVar; document.getElementById('iImageUrl').value = item.image || ''; document.getElementById('iImageUrlInput').value = item.image || ''; const preview = document.getElementById('iImagePreview'); preview.innerHTML = item.image ? `<img class="img-preview-thumb" src="${escAttr(item.image)}" onerror="this.style.display='none'">` : ''; _varCount = 0; const varList = document.getElementById('varList'); varList.innerHTML = ''; if (item.vars && item.vars.length) item.vars.forEach(v => addVariationRow(v.name, v.price, v.image)); } else { title.textContent = 'Add New Item'; lbl.textContent = 'Save Item'; document.getElementById('iName').value = ''; document.getElementById('iType').value = 'veg'; document.getElementById('iDesc').value = ''; document.getElementById('iTime').value = ''; document.getElementById('iPrice').value = ''; document.getElementById('iCategory').value = ''; document.getElementById('iHasVar').checked = false; document.getElementById('iImageUrl').value = ''; document.getElementById('iImageUrlInput').value = ''; document.getElementById('iImagePreview').innerHTML = ''; document.getElementById('iImageFile').value = ''; _varCount = 0; document.getElementById('varList').innerHTML = ''; } togglePricingUI(); openModal('itemModal'); requestAnimationFrame(() => document.getElementById('iName').focus()); }
+function togglePricingUI() { const hasVar = document.getElementById('iHasVar').checked; document.getElementById('simplePriceSection').style.opacity = hasVar ? '.4' : '1'; document.getElementById('iPrice').disabled = hasVar; }
+async function saveItem() { const name = document.getElementById('iName').value.trim(); if (!name) { toast('Item name is required', 'error'); switchTab('basicTab'); document.getElementById('iName').focus(); return; } const btn = document.getElementById('saveItemBtn'); btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Saving…'; try { const hasVar = document.getElementById('iHasVar').checked; const vars = []; if (hasVar) { document.querySelectorAll('#varList .var-row').forEach(row => { const vname = row.querySelector('.var-name')?.value.trim() || ''; const vprice = row.querySelector('.var-price')?.value.trim() || ''; const vimg = row.querySelector('.var-img-url')?.value || ''; if (vname) vars.push({ name: vname, price: vprice, image: vimg }); }); } const item = { id: (_editingItemIdx !== null && STATE.menu[STATE.currentHeading][_editingItemIdx]?.id) || uid(), name, type: document.getElementById('iType').value, desc: document.getElementById('iDesc').value.trim(), time: document.getElementById('iTime').value.trim(), price: document.getElementById('iPrice').value.trim(), category: document.getElementById('iCategory').value.trim(), image: document.getElementById('iImageUrl').value.trim(), hasVar, vars }; STATE.pushHistory(); if (_editingItemIdx !== null) STATE.menu[STATE.currentHeading][_editingItemIdx] = item; else STATE.menu[STATE.currentHeading].push(item); renderAll(); closeModal('itemModal'); markPending(); } finally { btn.disabled = false; btn.innerHTML = '<span id="saveItemBtnLabel">Save Item</span>'; document.getElementById('saveItemBtnLabel').textContent = _editingItemIdx !== null ? 'Update Item' : 'Save Item'; } }
+function duplicateItem(idx) { if (!STATE.currentHeading) return; const src = STATE.menu[STATE.currentHeading][idx]; if (!src) return; STATE.pushHistory(); const copy = JSON.parse(JSON.stringify(src)); copy.id = uid(); copy.name = copy.name + ' (Copy)'; STATE.menu[STATE.currentHeading].splice(idx + 1, 0, copy); renderItems(); updateStats(); markPending(); toast(`Duplicated "${src.name}"`, 'success'); }
+function confirmDeleteItem(idx) { const item = STATE.menu[STATE.currentHeading]?.[idx]; if (!item) return; confirmAction(`Delete "${item.name}"?`, 'This action cannot be undone (but you can undo via Ctrl+Z).', () => { STATE.pushHistory(); STATE.menu[STATE.currentHeading].splice(idx, 1); renderItems(); updateStats(); markPending(); toast(`Deleted "${item.name}"`, 'success'); }); }
 
-pdfUploadInput.addEventListener('change', async (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-  if (STATE.pdfObjectUrl) URL.revokeObjectURL(STATE.pdfObjectUrl);
-  STATE.pdfFile = file;
-  STATE.pdfObjectUrl = URL.createObjectURL(file);
-  toast('PDF loaded. Uncheck "Show Item List" to view.', 'info');
-  // If item list is unchecked, show PDF immediately
-  if (!showItemListCheck.checked) updatePreview();
-  else updatePreview(); // still update to have PDF ready in hidden mode
-});
+function addVariationRow(name = '', price = '', img = '') { const id = `var_${_varCount++}`; const container = document.getElementById('varList'); const div = document.createElement('div'); div.className = 'var-row'; div.innerHTML = `<div class="var-row-fields"><div><div class="form-label" style="font-size:11px;">Name</div><input type="text" class="form-input var-name" value="${escAttr(name)}" placeholder="e.g. Half / Full"></div><div><div class="form-label" style="font-size:11px;">Price ₹</div><input type="number" class="form-input var-price" value="${escAttr(price)}" placeholder="149" min="0"></div><div><div class="form-label" style="font-size:11px;">Image (optional)</div><input type="file" class="form-file" accept="image/*" style="padding:4px 8px;font-size:12px;"><input type="hidden" class="var-img-url" value="${escAttr(img)}"></div><button class="btn btn-xs btn-danger remove-var" title="Remove" style="margin-top:18px;">✕</button></div><div class="var-row-preview">${img ? `<img class="var-img-thumb" src="${escAttr(img)}" onerror="this.style.display='none'">` : ''}<span class="var-upload-status text-dim fs-sm"></span></div>`; const fileInput = div.querySelector('input[type="file"]'); const urlHidden = div.querySelector('.var-img-url'); const preview = div.querySelector('.var-row-preview'); const status = div.querySelector('.var-upload-status'); fileInput.addEventListener('change', async e => { const file = e.target.files[0]; if (!file) return; status.textContent = 'Uploading…'; try { const url = await uploadImage(file); urlHidden.value = url; preview.innerHTML = `<img class="var-img-thumb" src="${escAttr(url)}">`; status.textContent = 'Uploaded ✓'; toast('Variation image uploaded', 'success'); } catch (err) { status.textContent = 'Upload failed'; toast('Upload failed: ' + err.message, 'error'); } }); div.querySelector('.remove-var').addEventListener('click', () => div.remove()); container.appendChild(div); }
 
-showItemListCheck.addEventListener('change', updatePreview);
+document.getElementById('iImageFile').addEventListener('change', async e => { const file = e.target.files[0]; if (!file) return; const preview = document.getElementById('iImagePreview'); preview.innerHTML = '<span class="text-dim fs-sm"><span class="spinner spinner-accent" style="width:14px;height:14px;"></span> Uploading…</span>'; try { const url = await uploadImage(file); document.getElementById('iImageUrl').value = url; document.getElementById('iImageUrlInput').value = url; preview.innerHTML = `<img class="img-preview-thumb" src="${escAttr(url)}">`; toast('Image uploaded ✓', 'success'); } catch (err) { preview.innerHTML = `<span class="text-danger fs-sm">Upload failed: ${escHtml(err.message)}</span>`; toast('Image upload failed', 'error'); } });
+document.getElementById('iImageUrlApply').addEventListener('click', () => { const url = document.getElementById('iImageUrlInput').value.trim(); if (!url) return; document.getElementById('iImageUrl').value = url; document.getElementById('iImagePreview').innerHTML = `<img class="img-preview-thumb" src="${escAttr(url)}" onerror="this.src='';this.alt='Invalid URL'">`; toast('Image URL applied', 'info'); });
 
-document.getElementById('previewLocalBtn').addEventListener('click', () => {
-  // force menu view regardless of checkbox? We'll respect checkbox
-  updatePreview();
+// Drag & drop handlers
+let _dragHeading = null;
+function handleHeadingDragStart(e) { _dragHeading = this.dataset.heading; this.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', _dragHeading); }
+function handleHeadingDragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; const target = this.dataset.heading; if (target !== _dragHeading) { document.querySelectorAll('.heading-item').forEach(el => el.classList.remove('drag-over')); this.classList.add('drag-over'); } }
+function handleHeadingDrop(e) { e.preventDefault(); const target = this.dataset.heading; if (!target || target === _dragHeading) return; STATE.pushHistory(); const keys = Object.keys(STATE.menu); const fromIdx = keys.indexOf(_dragHeading); const toIdx = keys.indexOf(target); if (fromIdx < 0 || toIdx < 0) return; keys.splice(fromIdx, 1); keys.splice(toIdx, 0, _dragHeading); const newMenu = {}; keys.forEach(k => (newMenu[k] = STATE.menu[k])); STATE.menu = newMenu; renderHeadings(); updateStats(); markPending(); toast('Heading reordered', 'info'); }
+function handleHeadingDragEnd() { this.classList.remove('dragging'); document.querySelectorAll('.heading-item').forEach(el => el.classList.remove('drag-over')); _dragHeading = null; }
+
+let _dragItemIdx = null;
+function handleItemDragStart(e) { _dragItemIdx = parseInt(this.dataset.idx, 10); this.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; }
+function handleItemDragOver(e) { e.preventDefault(); if (parseInt(this.dataset.idx, 10) !== _dragItemIdx) { document.querySelectorAll('.item-card').forEach(el => el.classList.remove('drag-over')); this.classList.add('drag-over'); } }
+function handleItemDrop(e) { e.preventDefault(); const toIdx = parseInt(this.dataset.idx, 10); if (isNaN(toIdx) || toIdx === _dragItemIdx || !STATE.currentHeading) return; STATE.pushHistory(); const arr = STATE.menu[STATE.currentHeading]; const item = arr.splice(_dragItemIdx, 1)[0]; arr.splice(toIdx, 0, item); renderItems(); markPending(); }
+function handleItemDragEnd() { this.classList.remove('dragging'); document.querySelectorAll('.item-card').forEach(el => el.classList.remove('drag-over')); _dragItemIdx = null; }
+
+function openModal(id) { const el = document.getElementById(id); if (!el) return; el.classList.add('active'); document.body.style.overflow = 'hidden'; }
+function closeModal(id) { const el = document.getElementById(id); if (!el) return; el.classList.remove('active'); document.body.style.overflow = ''; }
+document.querySelectorAll('.modal-overlay').forEach(overlay => { overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(overlay.id); }); });
+function switchTab(tabId) { document.querySelectorAll('#itemModal .tab-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tabId)); document.querySelectorAll('#itemModal .tab-pane').forEach(pane => pane.classList.toggle('active', pane.id === tabId)); }
+document.querySelectorAll('#itemModal .tab-btn').forEach(btn => btn.addEventListener('click', () => switchTab(btn.dataset.tab)));
+
+let _confirmCallback = null;
+function confirmAction(title, msg, onConfirm) { document.getElementById('confirmTitle').textContent = title; document.getElementById('confirmMessage').textContent = msg; _confirmCallback = onConfirm; openModal('confirmModal'); }
+document.getElementById('confirmOk').addEventListener('click', () => { if (_confirmCallback) { _confirmCallback(); _confirmCallback = null; } closeModal('confirmModal'); });
+document.getElementById('confirmCancel').addEventListener('click', () => closeModal('confirmModal'));
+document.getElementById('confirmModalClose').addEventListener('click', () => closeModal('confirmModal'));
+
+document.getElementById('filterChips').addEventListener('click', e => { const chip = e.target.closest('.filter-chip'); if (!chip) return; STATE.filter = chip.dataset.filter; document.querySelectorAll('.filter-chip').forEach(c => c.classList.toggle('active', c === chip)); renderItems(); });
+document.getElementById('headingSearch').addEventListener('input', debounce(e => { STATE.headingSearch = e.target.value.trim(); renderHeadings(); }, 200));
+document.getElementById('itemSearch').addEventListener('input', debounce(e => { STATE.itemSearch = e.target.value.trim(); renderItems(); }, 200));
+
+function updateBulkBar() { const bar = document.getElementById('bulkBar'); const label = document.getElementById('bulkCountLabel'); const count = STATE.selectedItems.size; label.textContent = `${count} selected`; bar.classList.toggle('visible', STATE.bulkMode && count > 0); document.getElementById('selectAll').checked = count === (STATE.menu[STATE.currentHeading]||[]).length; }
+document.getElementById('selectAll').addEventListener('change', e => { const items = STATE.menu[STATE.currentHeading] || []; if (e.target.checked) items.forEach(item => STATE.selectedItems.add(item.id || item.name)); else STATE.selectedItems.clear(); renderItems(); updateBulkBar(); });
+document.getElementById('bulkDeleteBtn').addEventListener('click', () => { if (!STATE.selectedItems.size) return; confirmAction(`Delete ${STATE.selectedItems.size} items?`, 'This will permanently delete all selected items.', () => { STATE.pushHistory(); STATE.menu[STATE.currentHeading] = (STATE.menu[STATE.currentHeading] || []).filter(item => !STATE.selectedItems.has(item.id || item.name)); STATE.selectedItems.clear(); STATE.bulkMode = false; renderAll(); markPending(); toast('Items deleted', 'success'); }); });
+document.getElementById('bulkCancelBtn').addEventListener('click', () => { STATE.bulkMode = false; STATE.selectedItems.clear(); document.getElementById('bulkBar').classList.remove('visible'); renderItems(); });
+document.getElementById('bulkMoveBtn').addEventListener('click', () => { const target = document.getElementById('bulkMoveTarget'); target.innerHTML = ''; Object.keys(STATE.menu).forEach(k => { if (k !== STATE.currentHeading) { const opt = document.createElement('option'); opt.value = k; opt.textContent = k; target.appendChild(opt); } }); openModal('bulkMoveModal'); });
+document.getElementById('bulkMoveClose').addEventListener('click', () => closeModal('bulkMoveModal'));
+document.getElementById('bulkMoveCancelBtn').addEventListener('click', () => closeModal('bulkMoveModal'));
+document.getElementById('bulkMoveConfirmBtn').addEventListener('click', () => { const dest = document.getElementById('bulkMoveTarget').value; if (!dest || !STATE.menu[dest]) return; STATE.pushHistory(); const toMove = (STATE.menu[STATE.currentHeading] || []).filter(item => STATE.selectedItems.has(item.id || item.name)); STATE.menu[STATE.currentHeading] = (STATE.menu[STATE.currentHeading] || []).filter(item => !STATE.selectedItems.has(item.id || item.name)); STATE.menu[dest].push(...toMove); STATE.selectedItems.clear(); STATE.bulkMode = false; closeModal('bulkMoveModal'); renderAll(); markPending(); toast(`Moved ${toMove.length} item(s) to "${dest}"`, 'success'); });
+
+// Preview functions
+function previewLocal() {
+  const fullHtml = buildFullPreviewHTML();
+  document.getElementById('previewIframe').srcdoc = fullHtml;
   toast('Preview updated', 'info');
-});
-
-document.getElementById('refreshPreviewBtn').addEventListener('click', async () => {
+}
+async function refreshPreview() {
   try {
     const res = await netFetch(`${CFG.WEB_APP_URL}?action=getData`);
     const bodyHtml = await res.text();
-    // We'll just update the menu state? Actually we want to show drive content.
-    // For simplicity, we reload from drive and then update preview.
-    await loadFromDrive(); // this updates STATE.menu and renders
-    updatePreview();
+    const STYLE = `:root{--bg:#0f1117;--surf:#1a1e2e;--surf2:#222638;--brd:#2e3350;--acc:#7c5cbf;--text:#e2e8f0;--mut:#8892a4;--veg:#00b894;--nonveg:#e17055}*{margin:0;padding:0;box-sizing:border-box}body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);padding:24px 16px;max-width:700px;margin:0 auto}h1{font-size:20px;font-weight:800;color:#fff;margin:32px 0 12px;letter-spacing:-.3px;display:flex;align-items:center;gap:8px}h1:first-child{margin-top:0}.mcard{background:var(--surf);border:1px solid var(--brd);border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:14px;margin-bottom:10px;transition:.15s}.mcard:hover{border-color:var(--acc);background:var(--surf2)}.mcard-img{width:72px;height:72px;border-radius:10px;background:var(--surf2);overflow:hidden;flex-shrink:0;border:1px solid var(--brd)}.mcard-img img{width:100%;height:100%;object-fit:cover;display:block}.mcard-body{flex:1;min-width:0}.mcard-name{font-size:14.5px;font-weight:700;display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap}.vdot{width:14px;height:14px;border-radius:3px;border:2px solid;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}.vdot span{width:6px;height:6px;border-radius:50%;display:block}.mcard-desc{font-size:12.5px;color:var(--mut);margin-bottom:6px;line-height:1.4}.mcard-price{font-size:14px;font-weight:700;color:#a29bfe}.vars-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.vchip{background:var(--surf2);border:1px solid var(--brd);border-radius:8px;padding:5px 10px;font-size:12px;display:flex;align-items:center;gap:6px}.vchip-price{color:#a29bfe;font-weight:600}.vchip-img{width:20px;height:20px;border-radius:4px;object-fit:cover}.addbtn{background:var(--acc);color:#fff;border:none;border-radius:10px;padding:9px 18px;cursor:pointer;font-weight:600;font-size:13px;flex-shrink:0;transition:.15s}.addbtn:hover{filter:brightness(1.15)}`;
+    const fullHtml = `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Menu Preview</title><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet"><style>${STYLE}</style></head><body>${bodyHtml}</body></html>`;
+    document.getElementById('previewIframe').srcdoc = fullHtml;
     toast('Preview refreshed from Drive', 'info');
   } catch (err) {
     toast('Preview error: ' + err.message, 'error');
   }
+}
+document.getElementById('previewLocalBtn').addEventListener('click', previewLocal);
+document.getElementById('refreshPreviewBtn').addEventListener('click', refreshPreview);
+
+// PDF upload handling
+const pdfInput = document.getElementById('pdfUploadInput');
+pdfInput.addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  toast('Rendering PDF pages...', 'info', 2000);
+  try {
+    const arrayBuffer = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    const pages = [];
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const viewport = page.getViewport({ scale: 1.5 });
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
+      await page.render({ canvasContext: ctx, viewport }).promise;
+      pages.push(canvas.toDataURL('image/jpeg', 0.8));
+    }
+    STATE.pdfPages = pages;
+    toast(`${pages.length} PDF pages rendered`, 'success');
+    // Update preview iframe with new pages
+    const iframe = document.getElementById('previewIframe');
+    iframe.contentWindow?.postMessage({ type: 'updatePdfPages', pages: STATE.pdfPages }, '*');
+    // Also regenerate preview on next local preview
+  } catch (err) {
+    toast('PDF processing failed: ' + err.message, 'error');
+  }
+  pdfInput.value = '';
 });
 
-// Download TXT button
-document.getElementById('downloadTxtBtn').addEventListener('click', () => {
-  const content = buildFullPreviewHTML(!showItemListCheck.checked, STATE.pdfObjectUrl);
-  const blob = new Blob([content], { type: 'text/plain' });
+document.getElementById('clearPdfBtn').addEventListener('click', () => {
+  STATE.pdfPages = [];
+  const iframe = document.getElementById('previewIframe');
+  iframe.contentWindow?.postMessage({ type: 'updatePdfPages', pages: [] }, '*');
+  toast('PDF cleared', 'info');
+});
+
+// Toggle PDF visibility in preview
+document.getElementById('togglePdfPreviewBtn').addEventListener('click', () => {
+  STATE.previewPdfVisible = !STATE.previewPdfVisible;
+  const iframe = document.getElementById('previewIframe');
+  iframe.contentWindow?.postMessage({ type: 'togglePdf' }, '*');
+  toast(`PDF view ${STATE.previewPdfVisible ? 'shown' : 'hidden'}`, 'info');
+});
+
+// Toggle list/card view in preview
+document.getElementById('toggleListViewBtn').addEventListener('click', () => {
+  STATE.previewListView = !STATE.previewListView;
+  const iframe = document.getElementById('previewIframe');
+  iframe.contentWindow?.postMessage({ type: 'toggleListView' }, '*');
+  toast(`Switched to ${STATE.previewListView ? 'list' : 'card'} view`, 'info');
+  // Regenerate preview to apply class
+  previewLocal();
+});
+
+// Export TXT (full preview HTML)
+document.getElementById('exportTxtBtn').addEventListener('click', () => {
+  const htmlContent = buildFullPreviewHTML();
+  const blob = new Blob([htmlContent], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `menu_preview_${Date.now()}.txt`;
+  a.href = url;
+  a.download = `menu-preview-${new Date().toISOString().slice(0,10)}.txt`;
   a.click();
-  URL.revokeObjectURL(a.href);
-  toast('TXT file downloaded', 'success');
+  URL.revokeObjectURL(url);
+  toast('Preview HTML exported as TXT', 'success');
 });
 
 // Shoot button (unchanged)
 async function shootToSecondTxt() {
   if (SECOND_DRIVE_APP_SCRIPT_URL === "YOUR_SECOND_APP_SCRIPT_URL_HERE") {
-    toast("Please set SECOND_DRIVE_APP_SCRIPT_URL", "error"); return;
+    toast("Please set SECOND_DRIVE_APP_SCRIPT_URL in the code first!", "error");
+    return;
   }
-  if (Object.keys(STATE.menu).length === 0) { toast("No menu data", "warning"); return; }
+  if (Object.keys(STATE.menu).length === 0) {
+    toast("No menu data to shoot. Load or create some headings first.", "warning");
+    return;
+  }
   const btn = document.getElementById('shootBtn');
   const origHtml = btn.innerHTML;
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span> Shooting...';
   try {
     const bodyHtml = buildMenuBodyHTML();
-    const res = await fetch(SECOND_DRIVE_APP_SCRIPT_URL, { method: 'POST', body: bodyHtml, headers: { 'Content-Type': 'text/plain' } });
+    const res = await fetch(SECOND_DRIVE_APP_SCRIPT_URL, {
+      method: 'POST',
+      body: bodyHtml,
+      headers: { 'Content-Type': 'text/plain' }
+    });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    toast('Menu copied to second text file!', 'success');
+    toast('Menu copied to second text file successfully!', 'success');
   } catch (err) {
     toast('Shoot failed: ' + err.message, 'error');
   } finally {
@@ -1133,36 +1239,44 @@ async function shootToSecondTxt() {
 }
 document.getElementById('shootBtn').addEventListener('click', shootToSecondTxt);
 
-// ... (rest of initialization and event listeners as before, plus call updatePreview after renderAll in certain places)
-// In renderAll, after renderHeadings/renderItems, call updatePreview() to keep preview in sync.
-const originalRenderAll = renderAll;
-renderAll = function() {
-  originalRenderAll();
-  updatePreview();
-};
+function setLoadingOverlay(panelId, show) { const panel = document.getElementById(panelId); const existing = panel.querySelector('.loading-overlay'); if (show && !existing) { const ov = document.createElement('div'); ov.className = 'loading-overlay'; ov.innerHTML = `<div class="loading-block"><span class="spinner"></span> Loading from Drive…</div>`; panel.style.position = 'relative'; panel.appendChild(ov); } else if (!show && existing) { existing.remove(); } }
 
-// Also after any modification (save, undo, etc) call updatePreview.
-// We'll patch markPending to also update preview.
-const originalMarkPending = markPending;
-markPending = function() {
-  originalMarkPending();
-  updatePreview();
-};
+document.getElementById('loadDriveBtn').addEventListener('click', loadFromDrive);
+document.getElementById('saveDriveBtn').addEventListener('click', saveToDrive);
+document.getElementById('refreshBtn').addEventListener('click', loadFromDrive);
+document.getElementById('undoBtn').addEventListener('click', () => STATE.undo());
+document.getElementById('redoBtn').addEventListener('click', () => STATE.redo());
+document.getElementById('newHeadingBtn').addEventListener('click', () => openNewHeadingModal());
+document.getElementById('headingModalClose').addEventListener('click', () => closeModal('headingModal'));
+document.getElementById('headingModalCancel').addEventListener('click', () => closeModal('headingModal'));
+document.getElementById('createHeadingBtn').addEventListener('click', createOrRenameHeading);
+document.getElementById('newHeadingInput').addEventListener('keydown', e => { if (e.key === 'Enter') createOrRenameHeading(); if (e.key === 'Escape') closeModal('headingModal'); });
+document.getElementById('addItemBtn').addEventListener('click', () => openItemModal(null));
+document.getElementById('itemModalClose').addEventListener('click', () => closeModal('itemModal'));
+document.getElementById('itemModalCancel').addEventListener('click', () => closeModal('itemModal'));
+document.getElementById('saveItemBtn').addEventListener('click', saveItem);
+document.getElementById('iHasVar').addEventListener('change', togglePricingUI);
+document.getElementById('addVariationBtn').addEventListener('click', () => addVariationRow());
+document.getElementById('iName').addEventListener('keydown', e => { if (e.key === 'Enter') saveItem(); });
 
-// Initialize
+document.addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) { e.preventDefault(); STATE.undo(); } if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) { e.preventDefault(); STATE.redo(); } if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); saveToDrive(); } if (e.key === 'Escape') { ['itemModal','headingModal','confirmModal','bulkMoveModal'].forEach(id => closeModal(id)); } if (e.key === 'n' && !e.ctrlKey && !e.metaKey) { const anyOpen = document.querySelector('.modal-overlay.active'); if (!anyOpen && STATE.currentHeading && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') { e.preventDefault(); openItemModal(null); } } });
+window.addEventListener('beforeunload', e => { if (STATE.pendingChanges) { e.preventDefault(); e.returnValue = 'You have unsaved changes. Save to Drive before leaving.'; } });
+setInterval(() => { if (STATE.pendingChanges) saveLocal(); }, 10000);
+
+document.getElementById('headingsList').addEventListener('click', headingActionHandler);
+
 (function init() {
   const gotLocal = loadLocal();
   if (gotLocal && Object.keys(STATE.menu).length > 0) {
     renderAll();
     const keys = Object.keys(STATE.menu);
     if (keys.length) selectHeading(keys[0]);
-    setSyncStatus('pending', 'Local data loaded');
+    setSyncStatus('pending', 'Local data loaded — sync to Drive');
     toast('Restored from local backup', 'info');
   } else {
     loadFromDrive();
   }
   updateUndoRedoBtns();
-  updatePreview();
 })();
 </script>
 </body>
