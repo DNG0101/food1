@@ -486,7 +486,7 @@
     .w-full    { width: 100%; }
     .relative  { position: relative; }
     /* ============================================================
-       PART C - embed textarea
+       PART C - embed textarea (now EDITABLE)
     ============================================================ */
     .embed-panel { margin-top: 20px; }
     .embed-textarea { width: 100%; background: #0a0e14; border: 1px solid var(--border2); border-radius: var(--radius-sm); color: #d4d4dc; font-family: 'Monaco', monospace; font-size: 12px; padding: 14px; resize: vertical; line-height: 1.45; }
@@ -597,7 +597,7 @@
     </div>
   </div>
 
-  <!-- Part C: Embeddable code (pure menu HTML/CSS, no html/head/body) -->
+  <!-- Part C: Embeddable code (pure menu HTML/CSS, no html/head/body) – now EDITABLE -->
   <div class="panel embed-panel">
     <div class="panel-header">
       <div class="panel-title"><span class="panel-title-icon">📄</span> Part C: Embeddable Menu Code (no &lt;html&gt;/&lt;head&gt;)</div>
@@ -606,8 +606,8 @@
       </div>
     </div>
     <div class="panel-body">
-      <textarea id="partCTextarea" class="embed-textarea" rows="8" readonly wrap="off" placeholder="// This code updates automatically. Use it in any other HTML file."></textarea>
-      <div class="text-dim fs-sm" style="margin-top:8px;">✅ This is the exact menu representation (CSS + HTML). Click <strong>Shoot</strong> to save it to Part D (second Drive text file).</div>
+      <textarea id="partCTextarea" class="embed-textarea" rows="8" wrap="off" placeholder="// This code updates automatically when menu changes. You can edit it manually before shooting."></textarea>
+      <div class="text-dim fs-sm" style="margin-top:8px;">✅ This is the exact menu representation (CSS + HTML). You can edit it. Click <strong>Shoot</strong> to save it to Part D (second Drive text file).</div>
     </div>
   </div>
 
@@ -673,6 +673,7 @@
    Saves only BODY content to Drive, preview works with full template.
    Image upload fallback to Base64 ensures images are always saved.
    + Part B (live preview), Part C (embed code), Part D (shoot to second URL)
+   + Part C textarea is now EDITABLE (removed readonly)
 ============================================================ */
 const BASE_URL = "https://script.google.com/macros/s/AKfycby8qo4d7vCkTzQouZxuuZplEtFN-DPrZXmuuMV13OI1f4r2ba94Wq7QIDPYCXbAXZvd9Q/exec";
 
@@ -874,11 +875,18 @@ function generateEmbedCode() {
 }
 
 function updatePartCTextarea() {
+  // Only auto-update if the user hasn't manually focused/edited? For simplicity, we auto-update on every render.
+  // This means manual edits will be overwritten when menu changes. The user can re-edit if needed.
+  // If you want to preserve manual edits, you can add a flag, but for now keep it simple.
   const embedCode = generateEmbedCode();
-  document.getElementById('partCTextarea').value = embedCode;
+  const ta = document.getElementById('partCTextarea');
+  // Only update if the textarea is not currently focused (to avoid interrupting typing)
+  if (document.activeElement !== ta) {
+    ta.value = embedCode;
+  }
 }
 
-// ======================= SHOOT BUTTON (Part D) – FIXED ======================= 
+// ======================= SHOOT BUTTON (Part D) – FIXED with better error handling ======================= 
 async function shootToSecondTxt() {
   // Check if URL is valid and not the placeholder
   if (!SECOND_DRIVE_APP_SCRIPT_URL || SECOND_DRIVE_APP_SCRIPT_URL === "YOUR_SECOND_APP_SCRIPT_URL_HERE") {
@@ -898,16 +906,15 @@ async function shootToSecondTxt() {
   btn.innerHTML = '<span class="spinner"></span> Shooting...';
   
   try {
-    // Try to send as text/plain first (most direct)
+    // Try to send as text/plain (most direct)
     const res = await fetch(SECOND_DRIVE_APP_SCRIPT_URL, {
       method: 'POST',
       body: embedCode,
       headers: { 'Content-Type': 'text/plain' },
-      mode: 'cors' // default, but explicit
+      mode: 'cors'
     });
     
     if (!res.ok) {
-      // Try to read error details
       let errorText = `HTTP ${res.status}`;
       try {
         const errBody = await res.text();
@@ -916,7 +923,6 @@ async function shootToSecondTxt() {
       throw new Error(errorText);
     }
     
-    // Success – optionally read response
     const responseText = await res.text();
     console.log('Shoot response:', responseText);
     toast('✅ Menu code successfully copied to Part D (second text file)!', 'success');
