@@ -878,32 +878,63 @@ function updatePartCTextarea() {
   document.getElementById('partCTextarea').value = embedCode;
 }
 
-// ======================= SHOOT BUTTON (Part D) ======================= 
+// ======================= SHOOT BUTTON (Part D) – FIXED ======================= 
 async function shootToSecondTxt() {
-  if (SECOND_DRIVE_APP_SCRIPT_URL === "YOUR_SECOND_APP_SCRIPT_URL_HERE") {
-    toast("Please set SECOND_DRIVE_APP_SCRIPT_URL in the code first!", "error");
+  // Check if URL is valid and not the placeholder
+  if (!SECOND_DRIVE_APP_SCRIPT_URL || SECOND_DRIVE_APP_SCRIPT_URL === "YOUR_SECOND_APP_SCRIPT_URL_HERE") {
+    toast("Please set SECOND_DRIVE_APP_SCRIPT_URL in the code (must point to your second Apps Script web app URL).", "error");
     return;
   }
+  
   const embedCode = document.getElementById('partCTextarea').value;
   if (!embedCode.trim() || Object.keys(STATE.menu).length === 0) {
     toast("No menu data to shoot. Create or load menu first.", "warning");
     return;
   }
+  
   const btn = document.getElementById('shootBtn');
   const origHtml = btn.innerHTML;
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span> Shooting...';
+  
   try {
+    // Try to send as text/plain first (most direct)
     const res = await fetch(SECOND_DRIVE_APP_SCRIPT_URL, {
       method: 'POST',
       body: embedCode,
-      headers: { 'Content-Type': 'text/plain' }
+      headers: { 'Content-Type': 'text/plain' },
+      mode: 'cors' // default, but explicit
     });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const result = await res.text();
-    toast('Menu code successfully copied to Part D (second text file)!', 'success');
+    
+    if (!res.ok) {
+      // Try to read error details
+      let errorText = `HTTP ${res.status}`;
+      try {
+        const errBody = await res.text();
+        if (errBody) errorText += `: ${errBody.slice(0, 100)}`;
+      } catch(e) {}
+      throw new Error(errorText);
+    }
+    
+    // Success – optionally read response
+    const responseText = await res.text();
+    console.log('Shoot response:', responseText);
+    toast('✅ Menu code successfully copied to Part D (second text file)!', 'success');
+    
   } catch (err) {
-    toast('Shoot failed: ' + err.message, 'error');
+    console.error('Shoot error:', err);
+    toast(`❌ Shoot failed: ${err.message}`, 'error');
+    
+    // Offer manual copy as fallback
+    const manualCopy = confirm("Automatic upload failed.\n\nDo you want to copy the embed code to your clipboard so you can manually paste it into your second Drive file?");
+    if (manualCopy) {
+      try {
+        await navigator.clipboard.writeText(embedCode);
+        toast("Embed code copied to clipboard! You can now paste it into your second Drive text file.", "success", 5000);
+      } catch (clipErr) {
+        toast("Could not copy automatically. Please select the textarea content and copy manually.", "error");
+      }
+    }
   } finally {
     btn.disabled = false;
     btn.innerHTML = origHtml;
