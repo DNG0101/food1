@@ -448,20 +448,20 @@
   <!-- PART C: EMBED CODE (EDITABLE) -->
   <div class="panel embed-panel">
     <div class="panel-header">
-      <div class="panel-title"><span>📄</span> Part C: Embeddable Menu Code (no &lt;html&gt;/&lt;head&gt;)</div>
+      <div class="panel-title"><span>📄</span> Part C: Embeddable Menu Code (pure CSS + HTML)</div>
       <div>
         <button class="btn btn-sm" id="copyEmbedBtn">📋 Copy to Clipboard</button>
       </div>
     </div>
     <div class="panel-body">
       <textarea id="partCTextarea" class="embed-textarea" rows="8" wrap="off" placeholder="// This code updates automatically when menu changes. You can edit it manually before shooting."></textarea>
-      <div class="text-dim fs-sm" style="margin-top:8px;">✅ This is the exact menu representation (CSS + HTML). You can edit it. Click <strong>Shoot</strong> to save it to Part D (second Drive text file).</div>
+      <div class="text-dim fs-sm" style="margin-top:8px;">✅ This is the exact menu representation (CSS + HTML) – same as Part B preview. Click <strong>Shoot</strong> to save it to Part D (second Drive text file).</div>
     </div>
   </div>
 
 </div>
 
-<!-- MODALS -->
+<!-- MODALS (same as before) -->
 <div class="modal-overlay" id="itemModal">
   <div class="modal-box">
     <div class="modal-header"><h2 class="modal-title" id="itemModalTitle">Add Item</h2><button class="modal-close" id="itemModalClose">×</button></div>
@@ -511,8 +511,8 @@
 
 <script>
 // ======================= CONFIGURATION =======================
-// 👇 REPLACE THESE WITH YOUR DEPLOYED APPS SCRIPT URLs
-const BASE_URL = "https://script.google.com/macros/s/AKfycbw_n1Nf1fsZLcYCy_VQz5NNurx50BY8v0q4eW_eWax_N6QTbfTKo0J1ycXu-ATesWeSkA/exec";   // For main menu storage (file ID 1sBV6nhkoHsFIHph9Aqq6JGlf8OQ2PgXu)
+// 👇 REPLACE WITH YOUR DEPLOYED APPS SCRIPT URLs
+const BASE_URL = "https://script.google.com/macros/s/AKfycbw_n1Nf1fsZLcYCy_VQz5NNurx50BY8v0q4eW_eWax_N6QTbfTKo0J1ycXu-ATesWeSkA/exec";          // For main menu storage (file ID 1sBV6nhkoHsFIHph9Aqq6JGlf8OQ2PgXu)
 const SECOND_DRIVE_APP_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby18vwHOnyMAB-a6qcaBhSKJNqftIfkIdap1N_r6El8rXzjWjRUMOK3xfdwh-RdCiOv2Q/exec"; // For embed code storage (file ID 1Jw9clKSGvzslC0EnTFknSeXht9OugIfp)
 
 const CFG = {
@@ -635,12 +635,7 @@ function parseMenuHTML(html) {
   const doc = parser.parseFromString(html, 'text/html');
   const result = {};
   const h1s = doc.querySelectorAll('h1');
-  if (h1s.length === 0) {
-    // Fallback: look for data-heading sections
-    const sections = doc.querySelectorAll('[data-heading]');
-    sections.forEach(sec => { const hName = sec.getAttribute('data-heading') || 'Unnamed'; result[hName] = []; sec.querySelectorAll('[data-item]').forEach(card => { result[hName].push(parseItemFromDataAttrs(card)); }); });
-    return result;
-  }
+  if (h1s.length === 0) return result;
   h1s.forEach(h1 => {
     const headingText = h1.textContent.trim();
     if (!headingText) return;
@@ -686,21 +681,6 @@ function parseItemFromCard(el) {
   return { id: uid(), name, type, desc, time, image, price, hasVar, vars, category };
 }
 
-function parseItemFromDataAttrs(el) {
-  return {
-    id: el.getAttribute('data-id') || uid(),
-    name: el.getAttribute('data-name') || 'Unnamed',
-    type: el.getAttribute('data-type') || 'veg',
-    desc: el.getAttribute('data-desc') || '',
-    time: el.getAttribute('data-time') || '',
-    image: el.getAttribute('data-img') || '',
-    price: el.getAttribute('data-price') || '',
-    hasVar: el.getAttribute('data-hasvar') === 'true',
-    vars: JSON.parse(el.getAttribute('data-vars') || '[]'),
-    category: el.getAttribute('data-category') || ''
-  };
-}
-
 async function saveToDrive() {
   if (STATE.isSyncing) { toast('Already syncing…', 'info'); return; }
   if (Object.keys(STATE.menu).length === 0) { toast('Nothing to save', 'warning'); return; }
@@ -738,8 +718,7 @@ function buildItemCard(item) {
     }).join('');
     varsHtml = `<div class="vars-row">${chips}</div>`;
   }
-  const dataVars = escAttr(JSON.stringify(item.vars || []));
-  return `<div class="mcard" data-item="1" data-id="${escAttr(item.id||uid())}" data-name="${escAttr(item.name)}" data-type="${escAttr(item.type)}" data-desc="${escAttr(item.desc||'')}" data-time="${escAttr(item.time||'')}" data-price="${escAttr(item.price||'')}" data-img="${escAttr(item.image||'')}" data-hasvar="${item.hasVar?'true':'false'}" data-vars="${dataVars}" data-category="${escAttr(item.category||'')}"><div class="mcard-img">${imgInner}</div><div class="mcard-body"><div class="mcard-name"><span class="vdot" style="border-color:${dotColor}"><span style="background:${dotColor}"></span></span>${escHtml(item.name)} ${catHtml}</div><div class="mcard-desc">${escHtml(item.desc||'')}${timeHtml}</div>${priceHtml}${varsHtml}</div><button class="addbtn" onclick="this.textContent='✓ Added';setTimeout(()=>this.textContent='Add',1800)">Add</button></div>`;
+  return `<div class="mcard" data-item="1" data-id="${escAttr(item.id||uid())}" data-name="${escAttr(item.name)}" data-type="${escAttr(item.type)}" data-desc="${escAttr(item.desc||'')}" data-time="${escAttr(item.time||'')}" data-price="${escAttr(item.price||'')}" data-img="${escAttr(item.image||'')}" data-hasvar="${item.hasVar?'true':'false'}" data-vars="${escAttr(JSON.stringify(item.vars||[]))}" data-category="${escAttr(item.category||'')}"><div class="mcard-img">${imgInner}</div><div class="mcard-body"><div class="mcard-name"><span class="vdot" style="border-color:${dotColor}"><span style="background:${dotColor}"></span></span>${escHtml(item.name)} ${catHtml}</div><div class="mcard-desc">${escHtml(item.desc||'')}${timeHtml}</div>${priceHtml}${varsHtml}</div><button class="addbtn" onclick="this.textContent='✓ Added';setTimeout(()=>this.textContent='Add',1800)">Add</button></div>`;
 }
 
 // ======================= PART C & D =======================
@@ -913,15 +892,6 @@ function buildItemCardEl(item, idx) {
 }
 
 function updateStats() {
-  const c = countAll();
-  document.getElementById('statHeadings').textContent = c.headings;
-  document.getElementById('statItems').textContent = c.items;
-  document.getElementById('statVeg').textContent = c.veg;
-  document.getElementById('statNonVeg').textContent = c.nonveg;
-  document.getElementById('statVariations').textContent = c.vars;
-}
-
-function countAll() {
   let items = 0, veg = 0, nonveg = 0, vars = 0;
   for (const k in STATE.menu) {
     const arr = STATE.menu[k] || [];
@@ -930,7 +900,11 @@ function countAll() {
     nonveg += arr.filter(i => i.type !== 'veg').length;
     vars += arr.reduce((s, i) => s + (i.vars ? i.vars.length : 0), 0);
   }
-  return { headings: Object.keys(STATE.menu).length, items, veg, nonveg, vars };
+  document.getElementById('statHeadings').textContent = Object.keys(STATE.menu).length;
+  document.getElementById('statItems').textContent = items;
+  document.getElementById('statVeg').textContent = veg;
+  document.getElementById('statNonVeg').textContent = nonveg;
+  document.getElementById('statVariations').textContent = vars;
 }
 
 // ======================= HEADING MODAL =======================
