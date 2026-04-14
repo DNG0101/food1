@@ -1,12 +1,9 @@
-
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Menu Manager Pro — Full CRUD</title>
+  <title>Menu Manager Pro — Full CRUD + Live Preview + Embed Code + Shoot</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     /* ============================================================
@@ -488,6 +485,12 @@
     .mt-16     { margin-top: 16px; }
     .w-full    { width: 100%; }
     .relative  { position: relative; }
+    /* ============================================================
+       PART C - embed textarea
+    ============================================================ */
+    .embed-panel { margin-top: 20px; }
+    .embed-textarea { width: 100%; background: #0a0e14; border: 1px solid var(--border2); border-radius: var(--radius-sm); color: #d4d4dc; font-family: 'Monaco', monospace; font-size: 12px; padding: 14px; resize: vertical; line-height: 1.45; }
+    .embed-textarea:focus { border-color: var(--accent); outline: none; }
   </style>
 </head>
 <body>
@@ -502,7 +505,7 @@
         <span class="app-title-icon">🍽️</span>
         Menu Manager Pro
       </div>
-      <div class="app-subtitle">Full CRUD · Live Preview · Google Drive Sync · Variations</div>
+      <div class="app-subtitle">Full CRUD · Live Preview · Google Drive Sync · Variations · Embed Code · Shoot to second Drive</div>
     </div>
     <div class="header-actions">
       <div id="syncStatusBar" class="sync-bar synced"><div class="sync-dot"></div><span id="syncStatusText">Saved</span></div>
@@ -512,8 +515,8 @@
       </div>
       <button class="btn btn-sm" id="loadDriveBtn">📂 Load Drive</button>
       <button class="btn btn-sm btn-success" id="saveDriveBtn">💾 Save to Drive</button>
-      <!-- NEW SHOOT BUTTON -->
-      <button class="btn btn-sm btn-primary" id="shootBtn">🔫 Shoot</button>
+      <!-- NEW SHOOT BUTTON (Part D) -->
+      <button class="btn btn-sm btn-primary" id="shootBtn">🔫 Shoot (Part C → Part D)</button>
     </div>
   </div>
 
@@ -580,9 +583,10 @@
     </div>
   </div>
 
+  <!-- Part B: Live Preview -->
   <div class="panel preview-panel">
     <div class="panel-header">
-      <div class="panel-title"><span class="panel-title-icon">🔍</span> Live Preview</div>
+      <div class="panel-title"><span class="panel-title-icon">🔍</span> Live Preview (Part B)</div>
       <div class="flex gap-8">
         <button class="btn btn-sm" id="refreshPreviewBtn">⟳ Refresh Preview</button>
         <button class="btn btn-sm" id="previewLocalBtn">👁 Preview Local</button>
@@ -590,6 +594,20 @@
     </div>
     <div class="panel-body no-pad" style="position:relative;">
       <iframe id="previewIframe" srcdoc="<div style='padding:40px;text-align:center;font-family:sans-serif;color:#888'>Click &ldquo;Preview Local&rdquo; or &ldquo;Refresh Preview&rdquo;</div>"></iframe>
+    </div>
+  </div>
+
+  <!-- Part C: Embeddable code (pure menu HTML/CSS, no html/head/body) -->
+  <div class="panel embed-panel">
+    <div class="panel-header">
+      <div class="panel-title"><span class="panel-title-icon">📄</span> Part C: Embeddable Menu Code (no &lt;html&gt;/&lt;head&gt;)</div>
+      <div class="copy-btn-group">
+        <button class="btn btn-sm" id="copyEmbedBtn">📋 Copy to Clipboard</button>
+      </div>
+    </div>
+    <div class="panel-body">
+      <textarea id="partCTextarea" class="embed-textarea" rows="8" readonly wrap="off" placeholder="// This code updates automatically. Use it in any other HTML file."></textarea>
+      <div class="text-dim fs-sm" style="margin-top:8px;">✅ This is the exact menu representation (CSS + HTML). Click <strong>Shoot</strong> to save it to Part D (second Drive text file).</div>
     </div>
   </div>
 
@@ -654,6 +672,7 @@
    FULL CRUD ENGINE – with dynamic BASE_URL
    Saves only BODY content to Drive, preview works with full template.
    Image upload fallback to Base64 ensures images are always saved.
+   + Part B (live preview), Part C (embed code), Part D (shoot to second URL)
 ============================================================ */
 const BASE_URL = "https://script.google.com/macros/s/AKfycby8qo4d7vCkTzQouZxuuZplEtFN-DPrZXmuuMV13OI1f4r2ba94Wq7QIDPYCXbAXZvd9Q/exec";
 
@@ -729,7 +748,6 @@ async function netFetch(url, options = {}, retries = CFG.MAX_RETRIES) {
 async function uploadImage(file) {
   if (!file) return null;
   if (file.size > 5 * 1024 * 1024) throw new Error('File too large (max 5 MB)');
-  
   // First attempt: Drive upload via Apps Script
   try {
     const form = new FormData();
@@ -744,7 +762,6 @@ async function uploadImage(file) {
     throw new Error(json.error || 'Upload failed');
   } catch (uploadErr) {
     console.warn('Drive upload failed, falling back to Base64:', uploadErr);
-    // Fallback: convert to data URL (guaranteed to be saved)
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => resolve(reader.result);
@@ -762,7 +779,6 @@ async function loadFromDrive() {
   try {
     const res = await netFetch(`${CFG.WEB_APP_URL}?action=getData`);
     const html = await res.text();
-    // Parse the HTML (works with both full document or body fragment)
     const parsed = parseMenuHTML(html);
     if (Object.keys(parsed).length === 0) { toast('Drive file is empty — showing local data', 'warning'); }
     else { STATE.pushHistory(); STATE.menu = parsed; STATE.isDriveLoaded = true; saveLocal(); toast(`Loaded ${Object.keys(parsed).length} headings from Drive`, 'success'); }
@@ -808,7 +824,7 @@ async function saveToDrive() {
   STATE.isSyncing = true; setSyncStatus('pending', 'Saving…');
   const btn = document.getElementById('saveDriveBtn'); const origLabel = btn.innerHTML; btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Saving…';
   try {
-    const bodyHtml = buildMenuBodyHTML();  // only the body content
+    const bodyHtml = buildMenuBodyHTML();
     await netFetch(CFG.WEB_APP_URL, { method: 'POST', body: bodyHtml, headers: { 'Content-Type': 'text/plain' } });
     markSynced(); saveLocal(); toast('Saved to Drive (body only) ✓', 'success');
   } catch (err) { setSyncStatus('error', 'Save failed'); toast('Save failed: ' + err.message, 'error', 7000); }
@@ -851,8 +867,54 @@ function buildItemCard(item) {
   return `<div class="mcard" data-item="1" data-id="${escAttr(item.id||uid())}" data-name="${escAttr(item.name)}" data-type="${escAttr(item.type)}" data-desc="${escAttr(item.desc||'')}" data-time="${escAttr(item.time||'')}" data-price="${escAttr(item.price||'')}" data-img="${escAttr(item.image||'')}" data-hasvar="${item.hasVar?'true':'false'}" data-vars="${dataVars}" data-category="${escAttr(item.category||'')}"><div class="mcard-img">${imgInner}</div><div class="mcard-body"><div class="mcard-name"><span class="vdot" style="border-color:${dotColor}"><span style="background:${dotColor}"></span></span>${escHtml(item.name)} ${catHtml}</div><div class="mcard-desc">${escHtml(item.desc||'')}${timeHtml}</div>${priceHtml}${varsHtml}</div><button class="addbtn" onclick="this.textContent='✓ Added';setTimeout(()=>this.textContent='Add',1800)">Add</button></div>`;
 }
 
-function renderAll() { renderHeadings(); renderItems(); updateStats(); }
+// ======================= PART C: Generate embed code (pure CSS + HTML, no html/head) =======================
+function generateEmbedCode() {
+  const STYLE = `:root{--bg:#0f1117;--surf:#1a1e2e;--surf2:#222638;--brd:#2e3350;--acc:#7c5cbf;--text:#e2e8f0;--mut:#8892a4}*{margin:0;padding:0;box-sizing:border-box}.menu-embed,body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);padding:24px 16px;max-width:700px;margin:0 auto}h1{font-size:20px;font-weight:800;color:#fff;margin:32px 0 12px;letter-spacing:-.3px;display:flex;align-items:center;gap:8px}h1:first-child{margin-top:0}.mcard{background:var(--surf);border:1px solid var(--brd);border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:14px;margin-bottom:10px;transition:.15s}.mcard:hover{border-color:var(--acc);background:var(--surf2)}.mcard-img{width:72px;height:72px;border-radius:10px;background:var(--surf2);overflow:hidden;flex-shrink:0;border:1px solid var(--brd)}.mcard-img img{width:100%;height:100%;object-fit:cover;display:block}.mcard-body{flex:1;min-width:0}.mcard-name{font-size:14.5px;font-weight:700;display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap}.vdot{width:14px;height:14px;border-radius:3px;border:2px solid;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}.vdot span{width:6px;height:6px;border-radius:50%;display:block}.mcard-desc{font-size:12.5px;color:var(--mut);margin-bottom:6px;line-height:1.4}.mcard-price{font-size:14px;font-weight:700;color:#a29bfe}.vars-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.vchip{background:var(--surf2);border:1px solid var(--brd);border-radius:8px;padding:5px 10px;font-size:12px;display:flex;align-items:center;gap:6px}.vchip-price{color:#a29bfe;font-weight:600}.vchip-img{width:20px;height:20px;border-radius:4px;object-fit:cover}.addbtn{background:var(--acc);color:#fff;border:none;border-radius:10px;padding:9px 18px;cursor:pointer;font-weight:600;font-size:13px;flex-shrink:0;transition:.15s}.addbtn:hover{filter:brightness(1.15)}@media(max-width:480px){.mcard{flex-wrap:wrap}.mcard-img{width:56px;height:56px}.addbtn{width:100%;margin-top:8px;text-align:center}}`.trim();
+  return `<style>${STYLE}</style>\n${buildMenuBodyHTML()}`;
+}
 
+function updatePartCTextarea() {
+  const embedCode = generateEmbedCode();
+  document.getElementById('partCTextarea').value = embedCode;
+}
+
+// ======================= SHOOT BUTTON (Part D) ======================= 
+async function shootToSecondTxt() {
+  if (SECOND_DRIVE_APP_SCRIPT_URL === "YOUR_SECOND_APP_SCRIPT_URL_HERE") {
+    toast("Please set SECOND_DRIVE_APP_SCRIPT_URL in the code first!", "error");
+    return;
+  }
+  const embedCode = document.getElementById('partCTextarea').value;
+  if (!embedCode.trim() || Object.keys(STATE.menu).length === 0) {
+    toast("No menu data to shoot. Create or load menu first.", "warning");
+    return;
+  }
+  const btn = document.getElementById('shootBtn');
+  const origHtml = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Shooting...';
+  try {
+    const res = await fetch(SECOND_DRIVE_APP_SCRIPT_URL, {
+      method: 'POST',
+      body: embedCode,
+      headers: { 'Content-Type': 'text/plain' }
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const result = await res.text();
+    toast('Menu code successfully copied to Part D (second text file)!', 'success');
+  } catch (err) {
+    toast('Shoot failed: ' + err.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = origHtml;
+  }
+}
+
+// ========== RENDER ALL (includes part C update + preview refresh) ==========
+function renderAll() { renderHeadings(); renderItems(); updateStats(); updatePartCTextarea(); refreshLivePreview(); }
+function refreshLivePreview() { const fullHtml = buildFullPreviewHTML(); document.getElementById('previewIframe').srcdoc = fullHtml; }
+
+// ========== ORIGINAL RENDER FUNCTIONS (preserved) ==========
 function renderHeadings() {
   const container = document.getElementById('headingsList');
   const search = STATE.headingSearch.toLowerCase();
@@ -906,7 +968,7 @@ function addVariationRow(name = '', price = '', img = '') { const id = `var_${_v
 document.getElementById('iImageFile').addEventListener('change', async e => { const file = e.target.files[0]; if (!file) return; const preview = document.getElementById('iImagePreview'); preview.innerHTML = '<span class="text-dim fs-sm"><span class="spinner spinner-accent" style="width:14px;height:14px;"></span> Uploading…</span>'; try { const url = await uploadImage(file); document.getElementById('iImageUrl').value = url; document.getElementById('iImageUrlInput').value = url; preview.innerHTML = `<img class="img-preview-thumb" src="${escAttr(url)}">`; toast('Image uploaded ✓', 'success'); } catch (err) { preview.innerHTML = `<span class="text-danger fs-sm">Upload failed: ${escHtml(err.message)}</span>`; toast('Image upload failed', 'error'); } });
 document.getElementById('iImageUrlApply').addEventListener('click', () => { const url = document.getElementById('iImageUrlInput').value.trim(); if (!url) return; document.getElementById('iImageUrl').value = url; document.getElementById('iImagePreview').innerHTML = `<img class="img-preview-thumb" src="${escAttr(url)}" onerror="this.src='';this.alt='Invalid URL'">`; toast('Image URL applied', 'info'); });
 
-// Drag & drop handlers (same as before, kept for brevity)
+// Drag & drop handlers (original)
 let _dragHeading = null;
 function handleHeadingDragStart(e) { _dragHeading = this.dataset.heading; this.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', _dragHeading); }
 function handleHeadingDragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; const target = this.dataset.heading; if (target !== _dragHeading) { document.querySelectorAll('.heading-item').forEach(el => el.classList.remove('drag-over')); this.classList.add('drag-over'); } }
@@ -945,12 +1007,11 @@ document.getElementById('bulkMoveCancelBtn').addEventListener('click', () => clo
 document.getElementById('bulkMoveConfirmBtn').addEventListener('click', () => { const dest = document.getElementById('bulkMoveTarget').value; if (!dest || !STATE.menu[dest]) return; STATE.pushHistory(); const toMove = (STATE.menu[STATE.currentHeading] || []).filter(item => STATE.selectedItems.has(item.id || item.name)); STATE.menu[STATE.currentHeading] = (STATE.menu[STATE.currentHeading] || []).filter(item => !STATE.selectedItems.has(item.id || item.name)); STATE.menu[dest].push(...toMove); STATE.selectedItems.clear(); STATE.bulkMode = false; closeModal('bulkMoveModal'); renderAll(); markPending(); toast(`Moved ${toMove.length} item(s) to "${dest}"`, 'success'); });
 
 // Preview functions – uses full HTML wrapper
-function previewLocal() { const fullHtml = buildFullPreviewHTML(); document.getElementById('previewIframe').srcdoc = fullHtml; toast('Preview updated', 'info'); }
-async function refreshPreview() {
+function previewLocal() { refreshLivePreview(); toast('Preview updated', 'info'); }
+async function refreshPreviewFromDrive() {
   try {
     const res = await netFetch(`${CFG.WEB_APP_URL}?action=getData`);
     const bodyHtml = await res.text();
-    // Wrap the fetched body content into a full document for preview
     const STYLE = `:root{--bg:#0f1117;--surf:#1a1e2e;--surf2:#222638;--brd:#2e3350;--acc:#7c5cbf;--text:#e2e8f0;--mut:#8892a4}*{margin:0;padding:0;box-sizing:border-box}body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);padding:24px 16px;max-width:700px;margin:0 auto}h1{font-size:20px;font-weight:800;color:#fff;margin:32px 0 12px;letter-spacing:-.3px;display:flex;align-items:center;gap:8px}h1:first-child{margin-top:0}.mcard{background:var(--surf);border:1px solid var(--brd);border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:14px;margin-bottom:10px;transition:.15s}.mcard:hover{border-color:var(--acc);background:var(--surf2)}.mcard-img{width:72px;height:72px;border-radius:10px;background:var(--surf2);overflow:hidden;flex-shrink:0;border:1px solid var(--brd)}.mcard-img img{width:100%;height:100%;object-fit:cover;display:block}.mcard-body{flex:1;min-width:0}.mcard-name{font-size:14.5px;font-weight:700;display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap}.vdot{width:14px;height:14px;border-radius:3px;border:2px solid;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}.vdot span{width:6px;height:6px;border-radius:50%;display:block}.mcard-desc{font-size:12.5px;color:var(--mut);margin-bottom:6px;line-height:1.4}.mcard-price{font-size:14px;font-weight:700;color:#a29bfe}.vars-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.vchip{background:var(--surf2);border:1px solid var(--brd);border-radius:8px;padding:5px 10px;font-size:12px;display:flex;align-items:center;gap:6px}.vchip-price{color:#a29bfe;font-weight:600}.vchip-img{width:20px;height:20px;border-radius:4px;object-fit:cover}.addbtn{background:var(--acc);color:#fff;border:none;border-radius:10px;padding:9px 18px;cursor:pointer;font-weight:600;font-size:13px;flex-shrink:0;transition:.15s}.addbtn:hover{filter:brightness(1.15)}@media(max-width:480px){.mcard{flex-wrap:wrap}.mcard-img{width:56px;height:56px}.addbtn{width:100%;margin-top:8px;text-align:center}}`.trim();
     const fullHtml = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Menu Preview</title><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet"><style>${STYLE}</style></head><body>${bodyHtml}</body></html>`;
     document.getElementById('previewIframe').srcdoc = fullHtml;
@@ -960,40 +1021,8 @@ async function refreshPreview() {
   }
 }
 document.getElementById('previewLocalBtn').addEventListener('click', previewLocal);
-document.getElementById('refreshPreviewBtn').addEventListener('click', refreshPreview);
-
-// ======================= SHOOT BUTTON ======================= 
-async function shootToSecondTxt() {
-  if (SECOND_DRIVE_APP_SCRIPT_URL === "YOUR_SECOND_APP_SCRIPT_URL_HERE") {
-    toast("Please set SECOND_DRIVE_APP_SCRIPT_URL in the code first!", "error");
-    return;
-  }
-  if (Object.keys(STATE.menu).length === 0) {
-    toast("No menu data to shoot. Load or create some headings first.", "warning");
-    return;
-  }
-  const btn = document.getElementById('shootBtn');
-  const origHtml = btn.innerHTML;
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span> Shooting...';
-  try {
-    const bodyHtml = buildMenuBodyHTML();
-    const res = await fetch(SECOND_DRIVE_APP_SCRIPT_URL, {
-      method: 'POST',
-      body: bodyHtml,
-      headers: { 'Content-Type': 'text/plain' }
-    });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const result = await res.text();
-    toast('Menu copied to second text file successfully!', 'success');
-  } catch (err) {
-    toast('Shoot failed: ' + err.message, 'error');
-  } finally {
-    btn.disabled = false;
-    btn.innerHTML = origHtml;
-  }
-}
-document.getElementById('shootBtn').addEventListener('click', shootToSecondTxt);
+document.getElementById('refreshPreviewBtn').addEventListener('click', refreshPreviewFromDrive);
+document.getElementById('copyEmbedBtn').addEventListener('click', () => { const ta = document.getElementById('partCTextarea'); ta.select(); document.execCommand('copy'); toast('Embed code copied to clipboard', 'success'); });
 
 function setLoadingOverlay(panelId, show) { const panel = document.getElementById(panelId); const existing = panel.querySelector('.loading-overlay'); if (show && !existing) { const ov = document.createElement('div'); ov.className = 'loading-overlay'; ov.innerHTML = `<div class="loading-block"><span class="spinner"></span> Loading from Drive…</div>`; panel.style.position = 'relative'; panel.appendChild(ov); } else if (!show && existing) { existing.remove(); } }
 
@@ -1020,6 +1049,7 @@ window.addEventListener('beforeunload', e => { if (STATE.pendingChanges) { e.pre
 setInterval(() => { if (STATE.pendingChanges) saveLocal(); }, 10000);
 
 document.getElementById('headingsList').addEventListener('click', headingActionHandler);
+document.getElementById('shootBtn').addEventListener('click', shootToSecondTxt);
 
 (function init() {
   const gotLocal = loadLocal();
