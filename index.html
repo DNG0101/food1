@@ -497,17 +497,18 @@
     </div>
   </div>
 
-  <!-- Part C: Embeddable code (pure menu HTML/CSS) – EDITABLE -->
+  <!-- Part C: Embeddable code (pure menu HTML/CSS) – EDITABLE, never auto‑overwritten -->
   <div class="panel embed-panel">
     <div class="panel-header">
       <div class="panel-title"><span class="panel-title-icon">📄</span> Part C: Embeddable Menu Code (no &lt;html&gt;/&lt;head&gt;)</div>
       <div class="copy-btn-group">
         <button class="btn btn-sm" id="copyEmbedBtn">📋 Copy to Clipboard</button>
+        <button class="btn btn-sm" id="generateEmbedBtn" style="margin-left:6px;">⟳ Generate from Menu</button>
       </div>
     </div>
     <div class="panel-body">
-      <textarea id="partCTextarea" class="embed-textarea" rows="8" wrap="off" placeholder="// This code updates automatically when menu changes. You can edit it manually before saving/shooting."></textarea>
-      <div class="text-dim fs-sm" style="margin-top:8px;">✅ Editable code. <strong>Save to Drive</strong> stores this exact code to 1st txt file. <strong>Shoot</strong> saves same code to 2nd txt file.</div>
+      <textarea id="partCTextarea" class="embed-textarea" rows="8" wrap="off" placeholder="// You can edit this code freely. It will never be overwritten automatically."></textarea>
+      <div class="text-dim fs-sm" style="margin-top:8px;">✏️ Editable – your changes are permanent. <strong>Save to Drive</strong> stores this exact code to 1st txt. <strong>Shoot</strong> saves it to 2nd txt. Use <strong>⟳ Generate from Menu</strong> to re‑create the default menu code.</div>
     </div>
   </div>
 
@@ -570,10 +571,12 @@
 <script>
 /* ============================================================
    FULL CRUD ENGINE – MODIFIED:
-   - Save to Drive stores EXACT Part C content (editable embed code)
-   - Load from Drive restores Part C content exactly and rebuilds menu
-   - Shoot button sends Part C content to second URL
-   - All original features (CRUD, variations, drag-drop, undo/redo, etc.) intact
+   - Part C textarea is fully independent: never auto‑overwritten.
+   - Save to Drive stores exact Part C content.
+   - Load from Drive restores Part C content and rebuilds menu.
+   - Shoot sends Part C content to second URL.
+   - "Generate from Menu" button updates Part C with current menu code.
+   - All original CRUD, preview, undo/redo, variations, etc. remain intact.
 ============================================================ */
 const BASE_URL = "https://script.google.com/macros/s/AKfycbyDHFu3zP6a9vF_HZVQEx78nECap-1DHlDwHpXKuj-wn5ejcfcxwi0SMGi8lNFteufPyw/exec";
 // 👇 SET THIS TO YOUR SECOND APP SCRIPT URL (deployed as a web app)
@@ -600,7 +603,6 @@ const STATE = {
   isDriveLoaded:  false,
   lastSaveTime:   null,
   pendingChanges: false,
-  skipPartCUpdate: false,   // flag to prevent overwriting Part C during load
   _history:   [],
   _future:    [],
   snapshot() { return JSON.parse(JSON.stringify(this.menu)); },
@@ -705,13 +707,10 @@ async function loadFromDrive() {
       saveLocal();
       toast(`Loaded ${Object.keys(parsed).length} headings from Drive (Part C restored)`, 'success');
     }
-    // Prevent auto-update of Part C after render (we just restored it)
-    STATE.skipPartCUpdate = true;
     renderAll();
     const keys = Object.keys(STATE.menu);
     if (keys.length && !STATE.currentHeading) selectHeading(keys[0]);
     markSynced();
-    STATE.skipPartCUpdate = false;
   } catch (err) { setSyncStatus('error', 'Load failed'); toast('Failed to load from Drive: ' + err.message, 'error', 6000); }
   finally { STATE.isSyncing = false; setLoadingOverlay('headingsPanel', false); }
 }
@@ -779,18 +778,16 @@ function buildItemCard(item) {
   return `<div class="mcard" data-item="1" data-id="${escAttr(item.id||uid())}" data-name="${escAttr(item.name)}" data-type="${escAttr(item.type)}" data-desc="${escAttr(item.desc||'')}" data-time="${escAttr(item.time||'')}" data-price="${escAttr(item.price||'')}" data-img="${escAttr(item.image||'')}" data-hasvar="${item.hasVar?'true':'false'}" data-vars="${dataVars}" data-category="${escAttr(item.category||'')}"><div class="mcard-img">${imgInner}</div><div class="mcard-body"><div class="mcard-name"><span class="vdot" style="border-color:${dotColor}"><span style="background:${dotColor}"></span></span>${escHtml(item.name)} ${catHtml}</div><div class="mcard-desc">${escHtml(item.desc||'')}${timeHtml}</div>${priceHtml}${varsHtml}</div><button class="addbtn" onclick="this.textContent='✓ Added';setTimeout(()=>this.textContent='Add',1800)">Add</button></div>`;
 }
 
-// Generate embed code (used for auto-update when not loading)
+// Generate embed code (used only for "Generate from Menu" button)
 function generateEmbedCode() {
   const STYLE = `:root{--bg:#0f1117;--surf:#1a1e2e;--surf2:#222638;--brd:#2e3350;--acc:#7c5cbf;--text:#e2e8f0;--mut:#8892a4}*{margin:0;padding:0;box-sizing:border-box}.menu-embed,body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);padding:24px 16px;max-width:700px;margin:0 auto}h1{font-size:20px;font-weight:800;color:#fff;margin:32px 0 12px;letter-spacing:-.3px;display:flex;align-items:center;gap:8px}h1:first-child{margin-top:0}.mcard{background:var(--surf);border:1px solid var(--brd);border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:14px;margin-bottom:10px;transition:.15s}.mcard:hover{border-color:var(--acc);background:var(--surf2)}.mcard-img{width:72px;height:72px;border-radius:10px;background:var(--surf2);overflow:hidden;flex-shrink:0;border:1px solid var(--brd)}.mcard-img img{width:100%;height:100%;object-fit:cover;display:block}.mcard-body{flex:1;min-width:0}.mcard-name{font-size:14.5px;font-weight:700;display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap}.vdot{width:14px;height:14px;border-radius:3px;border:2px solid;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}.vdot span{width:6px;height:6px;border-radius:50%;display:block}.mcard-desc{font-size:12.5px;color:var(--mut);margin-bottom:6px;line-height:1.4}.mcard-price{font-size:14px;font-weight:700;color:#a29bfe}.vars-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.vchip{background:var(--surf2);border:1px solid var(--brd);border-radius:8px;padding:5px 10px;font-size:12px;display:flex;align-items:center;gap:6px}.vchip-price{color:#a29bfe;font-weight:600}.vchip-img{width:20px;height:20px;border-radius:4px;object-fit:cover}.addbtn{background:var(--acc);color:#fff;border:none;border-radius:10px;padding:9px 18px;cursor:pointer;font-weight:600;font-size:13px;flex-shrink:0;transition:.15s}.addbtn:hover{filter:brightness(1.15)}@media(max-width:480px){.mcard{flex-wrap:wrap}.mcard-img{width:56px;height:56px}.addbtn{width:100%;margin-top:8px;text-align:center}}`.trim();
   return `<style>${STYLE}</style>\n${buildMenuBodyHTML()}`;
 }
 
-function updatePartCTextarea() {
-  if (STATE.skipPartCUpdate) return;
-  const ta = document.getElementById('partCTextarea');
-  if (document.activeElement !== ta) {
-    ta.value = generateEmbedCode();
-  }
+function generateAndSetEmbedCode() {
+  const code = generateEmbedCode();
+  document.getElementById('partCTextarea').value = code;
+  toast('Part C updated from current menu', 'success');
 }
 
 // ======================= SHOOT BUTTON (Part D) – saves Part C content to second URL =======================
@@ -839,8 +836,8 @@ async function shootToSecondTxt() {
   }
 }
 
-// ========== RENDER ALL ==========
-function renderAll() { renderHeadings(); renderItems(); updateStats(); updatePartCTextarea(); refreshLivePreview(); }
+// ========== RENDER ALL (does NOT touch Part C) ==========
+function renderAll() { renderHeadings(); renderItems(); updateStats(); refreshLivePreview(); }
 function refreshLivePreview() { const fullHtml = buildFullPreviewHTML(); document.getElementById('previewIframe').srcdoc = fullHtml; }
 
 // ========== ORIGINAL RENDER FUNCTIONS (preserved) ==========
@@ -952,6 +949,7 @@ async function refreshPreviewFromDrive() {
 document.getElementById('previewLocalBtn').addEventListener('click', previewLocal);
 document.getElementById('refreshPreviewBtn').addEventListener('click', refreshPreviewFromDrive);
 document.getElementById('copyEmbedBtn').addEventListener('click', () => { const ta = document.getElementById('partCTextarea'); ta.select(); document.execCommand('copy'); toast('Embed code copied to clipboard', 'success'); });
+document.getElementById('generateEmbedBtn').addEventListener('click', generateAndSetEmbedCode);
 
 function setLoadingOverlay(panelId, show) { const panel = document.getElementById(panelId); const existing = panel.querySelector('.loading-overlay'); if (show && !existing) { const ov = document.createElement('div'); ov.className = 'loading-overlay'; ov.innerHTML = `<div class="loading-block"><span class="spinner"></span> Loading from Drive…</div>`; panel.style.position = 'relative'; panel.appendChild(ov); } else if (!show && existing) { existing.remove(); } }
 
