@@ -47,16 +47,10 @@
       line-height: 1.5;
       -webkit-font-smoothing: antialiased;
     }
-    /* ============================================================
-       SCROLLBAR
-    ============================================================ */
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: var(--bg2); }
     ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 99px; }
     ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
-    /* ============================================================
-       LAYOUT
-    ============================================================ */
     .app-wrapper { max-width: 1640px; margin: 0 auto; padding: 20px 20px 60px; }
     .app-header {
       display: flex; align-items: center; justify-content: space-between;
@@ -75,9 +69,6 @@
       align-items: start;
     }
     @media (max-width: 1000px) { .main-grid { grid-template-columns: 1fr; } }
-    /* ============================================================
-       PANELS
-    ============================================================ */
     .panel {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -94,9 +85,6 @@
     .panel-title-icon { font-size: 16px; }
     .panel-body { padding: 18px 20px; }
     .panel-body.no-pad { padding: 0; }
-    /* ============================================================
-       BUTTONS
-    ============================================================ */
     .btn {
       display: inline-flex; align-items: center; gap: 6px;
       padding: 8px 16px; border-radius: var(--radius-sm);
@@ -118,9 +106,6 @@
     .btn-xs { padding: 3px 8px; font-size: 11px; border-radius: 6px; }
     .btn-icon { padding: 7px; border-radius: var(--radius-sm); font-size: 14px; }
     .btn-full { width: 100%; justify-content: center; }
-    /* ============================================================
-       FORM ELEMENTS
-    ============================================================ */
     .form-group { margin-bottom: 14px; }
     .form-label {
       display: block; font-size: 12px; font-weight: 600;
@@ -154,9 +139,6 @@
     .checkbox-label input[type="checkbox"] {
       width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer;
     }
-    /* ============================================================
-       BADGE / PILL / TAG
-    ============================================================ */
     .badge {
       display: inline-flex; align-items: center; gap: 4px;
       padding: 3px 9px; border-radius: 99px; font-size: 11px; font-weight: 600;
@@ -169,9 +151,6 @@
       border: 2px solid; flex-shrink: 0;
     }
     .vdot-inner { display: block; width: 6px; height: 6px; border-radius: 50%; margin: 1px auto 0; }
-    /* ============================================================
-       HEADING LIST (LEFT PANEL)
-    ============================================================ */
     .headings-list { display: flex; flex-direction: column; gap: 6px; max-height: 440px; overflow-y: auto; padding-right: 2px; }
     .heading-item {
       display: flex; align-items: center; justify-content: space-between;
@@ -194,9 +173,6 @@
     .heading-item:hover .heading-item-actions { opacity: 1; }
     .heading-item.dragging { opacity: .4; border-style: dashed; }
     .heading-item.drag-over { border-color: var(--accent); background: rgba(108,92,231,.1); }
-    /* ============================================================
-       ITEMS LIST (RIGHT PANEL)
-    ============================================================ */
     .items-grid { display: flex; flex-direction: column; gap: 10px; }
     .item-card {
       background: var(--surface2); border: 1px solid var(--border);
@@ -236,33 +212,21 @@
     }
     .variation-chip-img { width: 22px; height: 22px; border-radius: 4px; object-fit: cover; }
     .variation-chip-price { color: var(--accent2); font-weight: 600; }
-    /* ============================================================
-       DRAG HANDLE FOR ITEMS
-    ============================================================ */
     .item-drag-handle {
       position: absolute; left: -4px; top: 50%; transform: translateY(-50%);
       color: var(--text3); font-size: 16px; cursor: grab; opacity: 0;
       transition: opacity var(--transition); padding: 4px;
     }
     .item-card:hover .item-drag-handle { opacity: 1; }
-    /* ============================================================
-       SEARCH BAR
-    ============================================================ */
     .search-wrapper { position: relative; }
     .search-icon { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--text3); font-size: 14px; pointer-events: none; }
     .search-input { padding-left: 34px !important; }
-    /* ============================================================
-       TOOLBAR
-    ============================================================ */
     .toolbar {
       display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
       padding: 14px 20px; border-bottom: 1px solid var(--border); background: var(--surface2);
     }
     .toolbar-title { font-weight: 700; font-size: 15px; flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
     .toolbar-accent { color: var(--accent2); }
-    /* ============================================================
-       EMPTY STATE
-    ============================================================ */
     .empty-state {
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       padding: 52px 24px; text-align: center; color: var(--text3); gap: 12px;
@@ -270,9 +234,6 @@
     .empty-icon { font-size: 42px; opacity: .4; }
     .empty-title { font-size: 15px; font-weight: 600; color: var(--text2); }
     .empty-desc { font-size: 13px; max-width: 280px; line-height: 1.5; }
-    /* ============================================================
-       MODAL
-    ============================================================ */
     .modal-overlay {
       position: fixed; inset: 0; background: rgba(0,0,0,.75);
       display: flex; align-items: center; justify-content: center;
@@ -294,9 +255,6 @@
     .modal-close { background: none; border: none; color: var(--text3); font-size: 22px; cursor: pointer; padding: 4px; border-radius: 6px; line-height: 1; transition: color var(--transition); }
     .modal-close:hover { color: var(--text); }
     .modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border); }
-    /* ============================================================
-       TOAST NOTIFICATIONS
-    ============================================================ */
     #toast-container {
       position: fixed; bottom: 28px; right: 28px;
       display: flex; flex-direction: column; gap: 10px;
@@ -318,9 +276,6 @@
     .toast-warning { background: rgba(253,203,110,.12); border-color: rgba(253,203,110,.4); color: #fdd575; }
     @keyframes toastIn  { from { opacity:0; transform:translateY(12px) scale(.95); } to { opacity:1; transform:none; } }
     @keyframes toastOut { from { opacity:1; transform:none; } to { opacity:0; transform:translateY(12px) scale(.95); } }
-    /* ============================================================
-       LOADING / SPINNER
-    ============================================================ */
     .spinner {
       display: inline-block; width: 16px; height: 16px; border-radius: 50%;
       border: 2.5px solid rgba(255,255,255,.2); border-top-color: #fff;
@@ -334,9 +289,6 @@
       z-index: 100; border-radius: inherit;
     }
     .loading-block { display: flex; align-items: center; gap: 12px; padding: 20px 28px; background: var(--surface2); border: 1px solid var(--border2); border-radius: var(--radius); font-size: 13.5px; color: var(--text2); }
-    /* ============================================================
-       VARIATION ROW IN MODAL
-    ============================================================ */
     .var-row {
       background: var(--surface2); border: 1px solid var(--border);
       border-radius: var(--radius-sm); padding: 12px; margin-bottom: 10px;
@@ -344,14 +296,8 @@
     .var-row-fields { display: grid; grid-template-columns: 1fr 90px 1fr auto; gap: 8px; align-items: end; }
     .var-row-preview { margin-top: 8px; display: flex; gap: 8px; align-items: center; }
     .var-img-thumb { width: 40px; height: 40px; border-radius: 6px; object-fit: cover; border: 1px solid var(--border); }
-    /* ============================================================
-       PREVIEW SECTION
-    ============================================================ */
     .preview-panel { margin-top: 20px; }
     #previewIframe { width: 100%; height: 600px; border: none; border-radius: var(--radius); background: white; display: block; }
-    /* ============================================================
-       STATS ROW
-    ============================================================ */
     .stats-row { display: grid; grid-template-columns: repeat(auto-fit,minmax(120px,1fr)); gap: 10px; margin-bottom: 18px; }
     .stat-card {
       background: var(--surface2); border: 1px solid var(--border);
@@ -359,9 +305,6 @@
     }
     .stat-value { font-size: 22px; font-weight: 800; color: var(--accent2); }
     .stat-label { font-size: 11px; color: var(--text3); margin-top: 2px; font-weight: 600; text-transform: uppercase; letter-spacing: .4px; }
-    /* ============================================================
-       SYNC STATUS BAR
-    ============================================================ */
     .sync-bar {
       display: flex; align-items: center; gap: 8px; padding: 8px 14px;
       border-radius: var(--radius-sm); font-size: 12px; font-weight: 500;
@@ -375,13 +318,7 @@
     .sync-bar.error { color: var(--danger); border-color: rgba(225,112,85,.3); background: rgba(225,112,85,.08); }
     .sync-bar.error .sync-dot { background: var(--danger); }
     @keyframes pulse { 0%,100%{opacity:1}50%{opacity:.3} }
-    /* ============================================================
-       UNDO/REDO BAR
-    ============================================================ */
     .history-bar { display: flex; gap: 4px; }
-    /* ============================================================
-       FILTER BAR
-    ============================================================ */
     .filter-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
     .filter-chip {
       padding: 4px 12px; border-radius: 99px; font-size: 12px; font-weight: 500;
@@ -389,25 +326,13 @@
       cursor: pointer; transition: all var(--transition);
     }
     .filter-chip.active { background: var(--accent); color: #fff; border-color: var(--accent); }
-    /* ============================================================
-       IMAGE PREVIEW THUMB IN FORM
-    ============================================================ */
     .img-preview-thumb {
       margin-top: 8px; width: 80px; height: 80px; border-radius: var(--radius-sm);
       object-fit: cover; border: 1px solid var(--border); display: block;
     }
-    /* ============================================================
-       CONFIRM DIALOG
-    ============================================================ */
     .confirm-dialog .modal-box { max-width: 400px; }
     .confirm-msg { font-size: 14px; color: var(--text2); line-height: 1.6; margin-bottom: 6px; }
-    /* ============================================================
-       HEADING MODAL
-    ============================================================ */
     .heading-modal .modal-box { max-width: 420px; }
-    /* ============================================================
-       TOOLTIP
-    ============================================================ */
     [data-tip] { position: relative; }
     [data-tip]::after {
       content: attr(data-tip); position: absolute; bottom: calc(100% + 6px); left: 50%;
@@ -416,13 +341,7 @@
       white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity .15s; z-index: 1000;
     }
     [data-tip]:hover::after { opacity: 1; }
-    /* ============================================================
-       DIVIDER
-    ============================================================ */
     .divider { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
-    /* ============================================================
-       TABS (for modal sections)
-    ============================================================ */
     .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 18px; }
     .tab-btn {
       padding: 8px 16px; font-size: 13px; font-weight: 600; cursor: pointer;
@@ -432,30 +351,18 @@
     .tab-btn.active { color: var(--accent2); border-bottom-color: var(--accent); }
     .tab-pane { display: none; }
     .tab-pane.active { display: block; }
-    /* ============================================================
-       COUNTER BADGE
-    ============================================================ */
     .counter-badge {
       display: inline-flex; align-items: center; justify-content: center;
       min-width: 18px; height: 18px; border-radius: 99px; font-size: 10px;
       font-weight: 700; background: var(--accent); color: #fff; padding: 0 4px;
     }
-    /* ============================================================
-       SCROLLABLE ITEMS AREA
-    ============================================================ */
     .items-scroll { max-height: 600px; overflow-y: auto; padding-right: 4px; }
-    /* ============================================================
-       BULK ACTIONS
-    ============================================================ */
     .bulk-bar {
       display: none; align-items: center; gap: 10px;
       padding: 10px 20px; background: rgba(108,92,231,.1);
       border-bottom: 1px solid rgba(108,92,231,.3); font-size: 13px;
     }
     .bulk-bar.visible { display: flex; }
-    /* ============================================================
-       TYPE INDICATOR DOT
-    ============================================================ */
     .type-indicator {
       display: inline-flex; align-items: center; gap: 5px;
       font-size: 11.5px; font-weight: 600;
@@ -465,9 +372,6 @@
       display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
     }
     .type-dot-inner { width: 6px; height: 6px; border-radius: 50%; display: block; }
-    /* ============================================================
-       MISC
-    ============================================================ */
     .text-muted { color: var(--text2); }
     .text-dim   { color: var(--text3); }
     .text-accent{ color: var(--accent2); }
@@ -485,9 +389,6 @@
     .mt-16     { margin-top: 16px; }
     .w-full    { width: 100%; }
     .relative  { position: relative; }
-    /* ============================================================
-       PART C - embed textarea (now EDITABLE)
-    ============================================================ */
     .embed-panel { margin-top: 20px; }
     .embed-textarea { width: 100%; background: #0a0e14; border: 1px solid var(--border2); border-radius: var(--radius-sm); color: #d4d4dc; font-family: 'Monaco', monospace; font-size: 12px; padding: 14px; resize: vertical; line-height: 1.45; }
     .embed-textarea:focus { border-color: var(--accent); outline: none; }
@@ -515,7 +416,6 @@
       </div>
       <button class="btn btn-sm" id="loadDriveBtn">📂 Load Drive</button>
       <button class="btn btn-sm btn-success" id="saveDriveBtn">💾 Save to Drive</button>
-      <!-- NEW SHOOT BUTTON (Part D) -->
       <button class="btn btn-sm btn-primary" id="shootBtn">🔫 Shoot (Part C → Part D)</button>
     </div>
   </div>
@@ -597,7 +497,7 @@
     </div>
   </div>
 
-  <!-- Part C: Embeddable code (pure menu HTML/CSS, no html/head/body) – now EDITABLE -->
+  <!-- Part C: Embeddable code (pure menu HTML/CSS) – EDITABLE -->
   <div class="panel embed-panel">
     <div class="panel-header">
       <div class="panel-title"><span class="panel-title-icon">📄</span> Part C: Embeddable Menu Code (no &lt;html&gt;/&lt;head&gt;)</div>
@@ -606,14 +506,14 @@
       </div>
     </div>
     <div class="panel-body">
-      <textarea id="partCTextarea" class="embed-textarea" rows="8" wrap="off" placeholder="// This code updates automatically when menu changes. You can edit it manually before shooting."></textarea>
-      <div class="text-dim fs-sm" style="margin-top:8px;">✅ This is the exact menu representation (CSS + HTML). You can edit it. Click <strong>Shoot</strong> to save it to Part D (second Drive text file).</div>
+      <textarea id="partCTextarea" class="embed-textarea" rows="8" wrap="off" placeholder="// This code updates automatically when menu changes. You can edit it manually before saving/shooting."></textarea>
+      <div class="text-dim fs-sm" style="margin-top:8px;">✅ Editable code. <strong>Save to Drive</strong> stores this exact code to 1st txt file. <strong>Shoot</strong> saves same code to 2nd txt file.</div>
     </div>
   </div>
 
 </div>
 
-<!-- MODALS: itemModal, headingModal, confirmModal, bulkMoveModal -->
+<!-- MODALS (unchanged) -->
 <div class="modal-overlay" id="itemModal" role="dialog" aria-modal="true" aria-labelledby="itemModalTitle">
   <div class="modal-box">
     <div class="modal-header">
@@ -637,7 +537,7 @@
       <div id="simplePriceSection" class="form-group"><label class="form-label" for="iPrice">Price (₹)</label><input type="number" class="form-input" id="iPrice" placeholder="e.g. 249" min="0"></div>
     </div>
     <div class="tab-pane" id="imageTab">
-      <div class="form-group"><label class="form-label">Upload Image</label><input type="file" class="form-file" id="iImageFile" accept="image/*"><input type="hidden" id="iImageUrl"><div id="iImagePreview"></div><p class="fs-sm text-dim mt-8">Supported: JPG, PNG, WEBP, GIF. Max 5 MB. Image will be stored (Base64 if upload fails).</p></div>
+      <div class="form-group"><label class="form-label">Upload Image</label><input type="file" class="form-file" id="iImageFile" accept="image/*"><input type="hidden" id="iImageUrl"><div id="iImagePreview"></div><p class="fs-sm text-dim mt-8">Supported: JPG, PNG, WEBP, GIF. Max 5 MB.</p></div>
       <div class="form-group"><label class="form-label">Or paste an image URL</label><input type="url" class="form-input" id="iImageUrlInput" placeholder="https://…"><button class="btn btn-sm mt-8" id="iImageUrlApply">Apply URL</button></div>
     </div>
     <div class="tab-pane" id="variationsTab">
@@ -669,14 +569,13 @@
 
 <script>
 /* ============================================================
-   FULL CRUD ENGINE – with dynamic BASE_URL
-   Saves only BODY content to Drive, preview works with full template.
-   Image upload fallback to Base64 ensures images are always saved.
-   + Part B (live preview), Part C (embed code), Part D (shoot to second URL)
-   + Part C textarea is now EDITABLE (removed readonly)
+   FULL CRUD ENGINE – MODIFIED:
+   - Save to Drive stores EXACT Part C content (editable embed code)
+   - Load from Drive restores Part C content exactly and rebuilds menu
+   - Shoot button sends Part C content to second URL
+   - All original features (CRUD, variations, drag-drop, undo/redo, etc.) intact
 ============================================================ */
 const BASE_URL = "https://script.google.com/macros/s/AKfycbyDHFu3zP6a9vF_HZVQEx78nECap-1DHlDwHpXKuj-wn5ejcfcxwi0SMGi8lNFteufPyw/exec";
-
 // 👇 SET THIS TO YOUR SECOND APP SCRIPT URL (deployed as a web app)
 const SECOND_DRIVE_APP_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw6agrpxLG61AQl0LM5nbAYl1ISFO7oCDmcc5OwJITg-5a9kM6pPxaQmkfVspogW2aN_A/exec";
 
@@ -701,6 +600,7 @@ const STATE = {
   isDriveLoaded:  false,
   lastSaveTime:   null,
   pendingChanges: false,
+  skipPartCUpdate: false,   // flag to prevent overwriting Part C during load
   _history:   [],
   _future:    [],
   snapshot() { return JSON.parse(JSON.stringify(this.menu)); },
@@ -745,11 +645,9 @@ async function netFetch(url, options = {}, retries = CFG.MAX_RETRIES) {
   for (let attempt = 1; attempt <= retries; attempt++) { try { const res = await fetch(url, options); if (!res.ok) throw new Error(`HTTP ${res.status}`); return res; } catch (err) { if (attempt === retries) throw err; await sleep(CFG.RETRY_DELAY * attempt); } }
 }
 
-// Improved uploadImage with Base64 fallback (ensures images are always saved)
 async function uploadImage(file) {
   if (!file) return null;
   if (file.size > 5 * 1024 * 1024) throw new Error('File too large (max 5 MB)');
-  // First attempt: Drive upload via Apps Script
   try {
     const form = new FormData();
     form.append('action', 'uploadImage');
@@ -772,6 +670,21 @@ async function uploadImage(file) {
   }
 }
 
+// ======================= SAVE TO DRIVE (stores exact Part C content) =======================
+async function saveToDrive() {
+  if (STATE.isSyncing) { toast('Already syncing…', 'info'); return; }
+  const embedCode = document.getElementById('partCTextarea').value;
+  if (!embedCode.trim() || Object.keys(STATE.menu).length === 0) { toast('Nothing to save (menu empty?)', 'warning'); return; }
+  STATE.isSyncing = true; setSyncStatus('pending', 'Saving…');
+  const btn = document.getElementById('saveDriveBtn'); const origLabel = btn.innerHTML; btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Saving…';
+  try {
+    await netFetch(CFG.WEB_APP_URL, { method: 'POST', body: embedCode, headers: { 'Content-Type': 'text/plain' } });
+    markSynced(); saveLocal(); toast('Saved Part C content to Drive (1st txt file) ✓', 'success');
+  } catch (err) { setSyncStatus('error', 'Save failed'); toast('Save failed: ' + err.message, 'error', 7000); }
+  finally { STATE.isSyncing = false; btn.disabled = false; btn.innerHTML = origLabel; }
+}
+
+// ======================= LOAD FROM DRIVE (restores Part C exactly and rebuilds menu) =======================
 async function loadFromDrive() {
   if (STATE.isSyncing) return;
   STATE.isSyncing = true;
@@ -779,18 +692,31 @@ async function loadFromDrive() {
   setLoadingOverlay('headingsPanel', true);
   try {
     const res = await netFetch(`${CFG.WEB_APP_URL}?action=getData`);
-    const html = await res.text();
-    const parsed = parseMenuHTML(html);
+    const rawHtml = await res.text();
+    // Restore Part C textarea exactly as saved
+    document.getElementById('partCTextarea').value = rawHtml;
+    // Parse rawHtml to rebuild menu (works because embed contains h1 + .mcard)
+    const parsed = parseMenuHTML(rawHtml);
     if (Object.keys(parsed).length === 0) { toast('Drive file is empty — showing local data', 'warning'); }
-    else { STATE.pushHistory(); STATE.menu = parsed; STATE.isDriveLoaded = true; saveLocal(); toast(`Loaded ${Object.keys(parsed).length} headings from Drive`, 'success'); }
+    else {
+      STATE.pushHistory();
+      STATE.menu = parsed;
+      STATE.isDriveLoaded = true;
+      saveLocal();
+      toast(`Loaded ${Object.keys(parsed).length} headings from Drive (Part C restored)`, 'success');
+    }
+    // Prevent auto-update of Part C after render (we just restored it)
+    STATE.skipPartCUpdate = true;
     renderAll();
     const keys = Object.keys(STATE.menu);
     if (keys.length && !STATE.currentHeading) selectHeading(keys[0]);
     markSynced();
+    STATE.skipPartCUpdate = false;
   } catch (err) { setSyncStatus('error', 'Load failed'); toast('Failed to load from Drive: ' + err.message, 'error', 6000); }
   finally { STATE.isSyncing = false; setLoadingOverlay('headingsPanel', false); }
 }
 
+// Parse menu from HTML that contains <h1> and .mcard elements (works with embed code)
 function parseMenuHTML(html) {
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, 'text/html');
@@ -818,21 +744,13 @@ function parseItemFromCard(el) {
 }
 function parseItemFromDataAttrs(el) { return { id: el.getAttribute('data-id') || uid(), name: el.getAttribute('data-name') || 'Unnamed', type: el.getAttribute('data-type') || 'veg', desc: el.getAttribute('data-desc') || '', time: el.getAttribute('data-time') || '', image: el.getAttribute('data-img') || '', price: el.getAttribute('data-price') || '', hasVar: el.getAttribute('data-hasvar') === 'true', vars: JSON.parse(el.getAttribute('data-vars') || '[]'), category: el.getAttribute('data-category') || '' }; }
 
-// Save only the BODY fragment (no <html>, <head>, etc.)
-async function saveToDrive() {
-  if (STATE.isSyncing) { toast('Already syncing…', 'info'); return; }
-  if (Object.keys(STATE.menu).length === 0) { toast('Nothing to save', 'warning'); return; }
-  STATE.isSyncing = true; setSyncStatus('pending', 'Saving…');
-  const btn = document.getElementById('saveDriveBtn'); const origLabel = btn.innerHTML; btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Saving…';
-  try {
-    const bodyHtml = buildMenuBodyHTML();
-    await netFetch(CFG.WEB_APP_URL, { method: 'POST', body: bodyHtml, headers: { 'Content-Type': 'text/plain' } });
-    markSynced(); saveLocal(); toast('Saved to Drive (body only) ✓', 'success');
-  } catch (err) { setSyncStatus('error', 'Save failed'); toast('Save failed: ' + err.message, 'error', 7000); }
-  finally { STATE.isSyncing = false; btn.disabled = false; btn.innerHTML = origLabel; }
+// Build full preview HTML (unchanged)
+function buildFullPreviewHTML() {
+  const STYLE = `:root{--bg:#0f1117;--surf:#1a1e2e;--surf2:#222638;--brd:#2e3350;--acc:#7c5cbf;--text:#e2e8f0;--mut:#8892a4}*{margin:0;padding:0;box-sizing:border-box}body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);padding:24px 16px;max-width:700px;margin:0 auto}h1{font-size:20px;font-weight:800;color:#fff;margin:32px 0 12px;letter-spacing:-.3px;display:flex;align-items:center;gap:8px}h1:first-child{margin-top:0}.mcard{background:var(--surf);border:1px solid var(--brd);border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:14px;margin-bottom:10px;transition:.15s}.mcard:hover{border-color:var(--acc);background:var(--surf2)}.mcard-img{width:72px;height:72px;border-radius:10px;background:var(--surf2);overflow:hidden;flex-shrink:0;border:1px solid var(--brd)}.mcard-img img{width:100%;height:100%;object-fit:cover;display:block}.mcard-body{flex:1;min-width:0}.mcard-name{font-size:14.5px;font-weight:700;display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap}.vdot{width:14px;height:14px;border-radius:3px;border:2px solid;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}.vdot span{width:6px;height:6px;border-radius:50%;display:block}.mcard-desc{font-size:12.5px;color:var(--mut);margin-bottom:6px;line-height:1.4}.mcard-price{font-size:14px;font-weight:700;color:#a29bfe}.vars-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.vchip{background:var(--surf2);border:1px solid var(--brd);border-radius:8px;padding:5px 10px;font-size:12px;display:flex;align-items:center;gap:6px}.vchip-price{color:#a29bfe;font-weight:600}.vchip-img{width:20px;height:20px;border-radius:4px;object-fit:cover}.addbtn{background:var(--acc);color:#fff;border:none;border-radius:10px;padding:9px 18px;cursor:pointer;font-weight:600;font-size:13px;flex-shrink:0;transition:.15s}.addbtn:hover{filter:brightness(1.15)}@media(max-width:480px){.mcard{flex-wrap:wrap}.mcard-img{width:56px;height:56px}.addbtn{width:100%;margin-top:8px;text-align:center}}`.trim();
+  const body = buildMenuBodyHTML();
+  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Menu Preview</title><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet"><style>${STYLE}</style></head><body>${body}</body></html>`;
 }
 
-// Build only the inner body content (h1 + mcard divs) – what gets saved to Drive.
 function buildMenuBodyHTML() {
   let body = '';
   for (const heading in STATE.menu) {
@@ -841,13 +759,6 @@ function buildMenuBodyHTML() {
     for (const item of items) body += buildItemCard(item);
   }
   return body;
-}
-
-// Build full HTML document (used for preview)
-function buildFullPreviewHTML() {
-  const STYLE = `:root{--bg:#0f1117;--surf:#1a1e2e;--surf2:#222638;--brd:#2e3350;--acc:#7c5cbf;--text:#e2e8f0;--mut:#8892a4}*{margin:0;padding:0;box-sizing:border-box}body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);padding:24px 16px;max-width:700px;margin:0 auto}h1{font-size:20px;font-weight:800;color:#fff;margin:32px 0 12px;letter-spacing:-.3px;display:flex;align-items:center;gap:8px}h1:first-child{margin-top:0}.mcard{background:var(--surf);border:1px solid var(--brd);border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:14px;margin-bottom:10px;transition:.15s}.mcard:hover{border-color:var(--acc);background:var(--surf2)}.mcard-img{width:72px;height:72px;border-radius:10px;background:var(--surf2);overflow:hidden;flex-shrink:0;border:1px solid var(--brd)}.mcard-img img{width:100%;height:100%;object-fit:cover;display:block}.mcard-body{flex:1;min-width:0}.mcard-name{font-size:14.5px;font-weight:700;display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap}.vdot{width:14px;height:14px;border-radius:3px;border:2px solid;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}.vdot span{width:6px;height:6px;border-radius:50%;display:block}.mcard-desc{font-size:12.5px;color:var(--mut);margin-bottom:6px;line-height:1.4}.mcard-price{font-size:14px;font-weight:700;color:#a29bfe}.vars-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.vchip{background:var(--surf2);border:1px solid var(--brd);border-radius:8px;padding:5px 10px;font-size:12px;display:flex;align-items:center;gap:6px}.vchip-price{color:#a29bfe;font-weight:600}.vchip-img{width:20px;height:20px;border-radius:4px;object-fit:cover}.addbtn{background:var(--acc);color:#fff;border:none;border-radius:10px;padding:9px 18px;cursor:pointer;font-weight:600;font-size:13px;flex-shrink:0;transition:.15s}.addbtn:hover{filter:brightness(1.15)}@media(max-width:480px){.mcard{flex-wrap:wrap}.mcard-img{width:56px;height:56px}.addbtn{width:100%;margin-top:8px;text-align:center}}`.trim();
-  const body = buildMenuBodyHTML();
-  return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Menu Preview</title><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet"><style>${STYLE}</style></head><body>${body}</body></html>`;
 }
 
 function buildItemCard(item) {
@@ -868,78 +779,59 @@ function buildItemCard(item) {
   return `<div class="mcard" data-item="1" data-id="${escAttr(item.id||uid())}" data-name="${escAttr(item.name)}" data-type="${escAttr(item.type)}" data-desc="${escAttr(item.desc||'')}" data-time="${escAttr(item.time||'')}" data-price="${escAttr(item.price||'')}" data-img="${escAttr(item.image||'')}" data-hasvar="${item.hasVar?'true':'false'}" data-vars="${dataVars}" data-category="${escAttr(item.category||'')}"><div class="mcard-img">${imgInner}</div><div class="mcard-body"><div class="mcard-name"><span class="vdot" style="border-color:${dotColor}"><span style="background:${dotColor}"></span></span>${escHtml(item.name)} ${catHtml}</div><div class="mcard-desc">${escHtml(item.desc||'')}${timeHtml}</div>${priceHtml}${varsHtml}</div><button class="addbtn" onclick="this.textContent='✓ Added';setTimeout(()=>this.textContent='Add',1800)">Add</button></div>`;
 }
 
-// ======================= PART C: Generate embed code (pure CSS + HTML, no html/head) =======================
+// Generate embed code (used for auto-update when not loading)
 function generateEmbedCode() {
   const STYLE = `:root{--bg:#0f1117;--surf:#1a1e2e;--surf2:#222638;--brd:#2e3350;--acc:#7c5cbf;--text:#e2e8f0;--mut:#8892a4}*{margin:0;padding:0;box-sizing:border-box}.menu-embed,body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);padding:24px 16px;max-width:700px;margin:0 auto}h1{font-size:20px;font-weight:800;color:#fff;margin:32px 0 12px;letter-spacing:-.3px;display:flex;align-items:center;gap:8px}h1:first-child{margin-top:0}.mcard{background:var(--surf);border:1px solid var(--brd);border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:14px;margin-bottom:10px;transition:.15s}.mcard:hover{border-color:var(--acc);background:var(--surf2)}.mcard-img{width:72px;height:72px;border-radius:10px;background:var(--surf2);overflow:hidden;flex-shrink:0;border:1px solid var(--brd)}.mcard-img img{width:100%;height:100%;object-fit:cover;display:block}.mcard-body{flex:1;min-width:0}.mcard-name{font-size:14.5px;font-weight:700;display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap}.vdot{width:14px;height:14px;border-radius:3px;border:2px solid;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}.vdot span{width:6px;height:6px;border-radius:50%;display:block}.mcard-desc{font-size:12.5px;color:var(--mut);margin-bottom:6px;line-height:1.4}.mcard-price{font-size:14px;font-weight:700;color:#a29bfe}.vars-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.vchip{background:var(--surf2);border:1px solid var(--brd);border-radius:8px;padding:5px 10px;font-size:12px;display:flex;align-items:center;gap:6px}.vchip-price{color:#a29bfe;font-weight:600}.vchip-img{width:20px;height:20px;border-radius:4px;object-fit:cover}.addbtn{background:var(--acc);color:#fff;border:none;border-radius:10px;padding:9px 18px;cursor:pointer;font-weight:600;font-size:13px;flex-shrink:0;transition:.15s}.addbtn:hover{filter:brightness(1.15)}@media(max-width:480px){.mcard{flex-wrap:wrap}.mcard-img{width:56px;height:56px}.addbtn{width:100%;margin-top:8px;text-align:center}}`.trim();
   return `<style>${STYLE}</style>\n${buildMenuBodyHTML()}`;
 }
 
 function updatePartCTextarea() {
-  // Only auto-update if the user hasn't manually focused/edited? For simplicity, we auto-update on every render.
-  // This means manual edits will be overwritten when menu changes. The user can re-edit if needed.
-  // If you want to preserve manual edits, you can add a flag, but for now keep it simple.
-  const embedCode = generateEmbedCode();
+  if (STATE.skipPartCUpdate) return;
   const ta = document.getElementById('partCTextarea');
-  // Only update if the textarea is not currently focused (to avoid interrupting typing)
   if (document.activeElement !== ta) {
-    ta.value = embedCode;
+    ta.value = generateEmbedCode();
   }
 }
 
-// ======================= SHOOT BUTTON (Part D) – FIXED with better error handling ======================= 
+// ======================= SHOOT BUTTON (Part D) – saves Part C content to second URL =======================
 async function shootToSecondTxt() {
-  // Check if URL is valid and not the placeholder
   if (!SECOND_DRIVE_APP_SCRIPT_URL || SECOND_DRIVE_APP_SCRIPT_URL === "YOUR_SECOND_APP_SCRIPT_URL_HERE") {
-    toast("Please set SECOND_DRIVE_APP_SCRIPT_URL in the code (must point to your second Apps Script web app URL).", "error");
+    toast("Please set SECOND_DRIVE_APP_SCRIPT_URL (must point to your second Apps Script web app URL).", "error");
     return;
   }
-  
   const embedCode = document.getElementById('partCTextarea').value;
   if (!embedCode.trim() || Object.keys(STATE.menu).length === 0) {
     toast("No menu data to shoot. Create or load menu first.", "warning");
     return;
   }
-  
   const btn = document.getElementById('shootBtn');
   const origHtml = btn.innerHTML;
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span> Shooting...';
-  
   try {
-    // Try to send as text/plain (most direct)
     const res = await fetch(SECOND_DRIVE_APP_SCRIPT_URL, {
       method: 'POST',
       body: embedCode,
       headers: { 'Content-Type': 'text/plain' },
       mode: 'cors'
     });
-    
     if (!res.ok) {
       let errorText = `HTTP ${res.status}`;
-      try {
-        const errBody = await res.text();
-        if (errBody) errorText += `: ${errBody.slice(0, 100)}`;
-      } catch(e) {}
+      try { const errBody = await res.text(); if (errBody) errorText += `: ${errBody.slice(0, 100)}`; } catch(e) {}
       throw new Error(errorText);
     }
-    
     const responseText = await res.text();
     console.log('Shoot response:', responseText);
-    toast('✅ Menu code successfully copied to Part D (second text file)!', 'success');
-    
+    toast('✅ Menu code successfully saved to Part D (second text file)!', 'success');
   } catch (err) {
     console.error('Shoot error:', err);
     toast(`❌ Shoot failed: ${err.message}`, 'error');
-    
-    // Offer manual copy as fallback
     const manualCopy = confirm("Automatic upload failed.\n\nDo you want to copy the embed code to your clipboard so you can manually paste it into your second Drive file?");
     if (manualCopy) {
       try {
         await navigator.clipboard.writeText(embedCode);
         toast("Embed code copied to clipboard! You can now paste it into your second Drive text file.", "success", 5000);
-      } catch (clipErr) {
-        toast("Could not copy automatically. Please select the textarea content and copy manually.", "error");
-      }
+      } catch (clipErr) { toast("Could not copy automatically. Please select the textarea content and copy manually.", "error"); }
     }
   } finally {
     btn.disabled = false;
@@ -947,7 +839,7 @@ async function shootToSecondTxt() {
   }
 }
 
-// ========== RENDER ALL (includes part C update + preview refresh) ==========
+// ========== RENDER ALL ==========
 function renderAll() { renderHeadings(); renderItems(); updateStats(); updatePartCTextarea(); refreshLivePreview(); }
 function refreshLivePreview() { const fullHtml = buildFullPreviewHTML(); document.getElementById('previewIframe').srcdoc = fullHtml; }
 
@@ -1104,10 +996,3 @@ document.getElementById('shootBtn').addEventListener('click', shootToSecondTxt);
 </script>
 </body>
 </html>
-*in part c what ever text is present ,it saved in 1st txt file.
-*when the user clicks on shoot,then what ever code is persent in 1st txt ,the same code is replaced in 2nd txt
-*actually what ever code is generated in part c ,i use that code in other html files,just i dont require html and head and title tags,,,because what ever we see in part b ,i wants to that same in other html pages..soo
-*above code is already working perfectly , but some extra thing also comming in part d
-
-
-now provide me the fully updated code
